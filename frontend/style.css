@@ -129,43 +129,68 @@ nav a {
   box-shadow: 0 8px 24px rgba(92, 53, 180, 0.25); 
 }
 
-
-/* Formulários */
-input, textarea, select {
+.sobre {
   background-color: var(--card-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 8px 12px;
-  width: 100%;
-  box-sizing: border-box;
+  border-radius: 8px;
+  padding: 16px;
+  
+  margin: 17px 16px 17px 16px; 
+  
+  /* Configuração de animação original adaptada */
+  transition: var(--transition);
 }
 
-/* Botões */
+/* Efeito de mouse sobre os cards de avaliação */
+.sobre:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(92, 53, 180, 0.25); 
+}
+
+
+
+/* Formulários */
+/* Formulários (Alinhado com margens e espaçamento do app) */
+input, textarea, select {
+  background-color: var(--bg-color); /* Ajustado para dar contraste dentro do card */
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  transition: border-color 0.2s;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #5c35b4; /* Destaca a borda ao focar com o roxo do app */
+}
+
+/* Botões (Adaptado para ocupar largura total igual ao Login/Cadastro) */
 button {
   background-color: var(--primary-color);
   color: #ffffff;
   border: none;
   border-radius: 6px;
-  padding: 10px 20px;
+  padding: 12px 20px;
   cursor: pointer;
   font-size: 1rem;
+  font-weight: bold;
+  width: 100%; /* Ocupa toda a extensão do card de avaliação */
+  transition: opacity 0.2s, transform 0.1s;
 }
 
 button:hover {
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
-/* Botão de tema */
-#btn-tema {
-  background-color: transparent;
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  font-size: 0.9rem;
-  padding: 6px 12px;
+button:active {
+  transform: scale(0.98);
 }
 
-/* ===== ESTRELAS INTERATIVAS ===== */
 .estrelas-container {
   display: flex;
   flex-direction: row-reverse;
@@ -185,13 +210,18 @@ button:hover {
   transition: color 0.15s ease, transform 0.1s ease;
 }
 
-/* Estrela selecionada e todas as anteriores (flex-direction: row-reverse faz a mágica) */
+/* Mantém as estrelas acesas da esquerda para a direita no clique ou hover */
 .estrelas-container input[type="radio"]:checked ~ label,
 .estrelas-container label:hover,
 .estrelas-container label:hover ~ label {
   color: #f5a623;
+}
+
+/* Corrige o transform para ampliar unicamente a estrela sob o mouse */
+.estrelas-container label:hover {
   transform: scale(1.15);
 }
+
 
 .data-postagem {
 color: #777; /* Deixa o texto cinza claro */
@@ -200,7 +230,6 @@ margin-top: 10px; /* Dá um espaço em relação às estrelas */
 display: block;
 }
 
-/* ===== ESTRUTURA E ANIMAÇÃO DAS CAIXAS DE LOGIN/CADASTRO ORIGINAL ===== */
 #caixaLogin, #caixaCadastro {
   max-width: 400px;
   margin: 80px auto;
@@ -239,7 +268,6 @@ display: block;
   width: 100%;
 }
 
-/* ===== ESTILOS DA BUSCA INTEGRADA DA DEEZER ===== */
 .busca-container {
   position: relative; /* Mantém a lista ancorada ao container do input */
   display: flex;

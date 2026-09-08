@@ -53,32 +53,31 @@
     </header>
 
     <!-- Conteúdo principal do formulário -->
-    <main>
-        <section>
-            <h2>Avaliar Música</h2>
-            <p>Compartilhe sua opinião musical</p>
-        </section>
+    <main id="home-container">
+        <!-- O formulário agora utiliza a classe card-avaliacao para herdar todo o estilo visual -->
+        <section class="card-avaliacao">
+            <h2 style="color: var(--primary-color); margin-top: 0; font-size: 1.5rem;">Avaliar Música</h2>
+            <p style="margin-bottom: 20px; color: #8b88a0;">Compartilhe sua opinião musical</p>
 
-        <section>
             <form id="formAvaliacao">
-                <div>
-                    <label for="musicaAvaliacao">Música</label>
+                <div class="busca-container" style="margin-bottom: 15px;">
+                    <label for="musicaAvaliacao" style="display: block; margin-bottom: 5px; font-weight: 500;">Música</label>
                     <input type="text" id="musicaAvaliacao" placeholder="Nome da Música" required>
                 </div>
 
-                <div>
-                    <label for="artistaAvaliacao">Artista</label>
+                <div style="margin-bottom: 15px;">
+                    <label for="artistaAvaliacao" style="display: block; margin-bottom: 5px; font-weight: 500;">Artista</label>
                     <input type="text" id="artistaAvaliacao" placeholder="Nome do Artista" required>
                 </div>
 
-                <div>
-                    <label for="comentarioAvaliacao">Comentário</label>
+                <div style="margin-bottom: 15px;">
+                    <label for="comentarioAvaliacao" style="display: block; margin-bottom: 5px; font-weight: 500;">Comentário</label>
                     <textarea id="comentarioAvaliacao" rows="4" placeholder="Escreva seu comentário..." required></textarea>
                 </div>
 
                 <!-- Campo nota: estrelas clicáveis -->
-                <div>
-                    <label>Nota</label>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 500;">Nota</label>
                     <div class="estrelas-container">
                         <input type="radio" id="star5" name="nota" value="5">
                         <label for="star5" title="5 estrelas">★</label>
@@ -101,12 +100,6 @@
             </form>
 
             <!-- Parágrafo de mensagem de feedback -->
-            <p id="mensagemAvaliacao"></p>
+            <p id="mensagemAvaliacao" style="margin-top: 15px; text-align: center;"></p>
         </section>
     </main>
-
-    <!-- Script da página (linkado corretamente) -->
-    <script src="../js/avaliar.js"></script>
-
-</body>
-</html>

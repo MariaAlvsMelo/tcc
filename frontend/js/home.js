@@ -22,6 +22,18 @@ async function carregarAvaliacoes() {
 
         // Renderiza cada card de avaliação recebido da API
         dados.avaliacoes.forEach((avaliacao) => {
+            
+            // Formata a data recebida da API antes de exibir no HTML
+            const dataFormatada = avaliacao.data_avaliacao 
+                ? new Date(avaliacao.data_avaliacao).toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })
+                : "Sem data";
+
             avaliacoesContainer.innerHTML += `
                 <div class="card-avaliacao">
                     <h3>${avaliacao.musica}</h3>
@@ -29,7 +41,7 @@ async function carregarAvaliacoes() {
                     <p>${avaliacao.comentario}</p>
                     <p>${gerarEstrelas(avaliacao.nota)}</p>
                     <p class="data-postagem" style="color: #777; font-size: 0.85rem; margin-top: 10px;">
-                        <small>${avaliacao.data_avaliacao}</small>
+                        <small>${dataFormatada}</small> 
                     </p>
                 </div>
             `;
