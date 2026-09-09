@@ -10,7 +10,6 @@ const usuarioModel = {
 
     // Login de usuário
     login: (email, senha, callback) => {
-        // Busca apenas pelo e-mail para permitir validação segura de senha posteriormente
         const sql = "SELECT id, nome_usuario, email, senha FROM usuario WHERE email = ? LIMIT 1";
         conexao.query(sql, [email], callback);
     },
@@ -26,8 +25,6 @@ const usuarioModel = {
         const sql = "SELECT id, musica, artista, comentario, nota, data_avaliacao FROM avaliacoes ORDER BY data_avaliacao DESC";
         conexao.query(sql, callback);
     },
-
-    
 
 };
 

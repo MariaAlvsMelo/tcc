@@ -8,7 +8,7 @@
 }
 
 body {
-  background-color: #0b0813; /* Fundo escuro do app */
+  background-color: #0b0813; 
   font-family: sans-serif;
 }
 
@@ -18,7 +18,17 @@ body {
   align-items: center;     /* Alinha verticalmente o logo e o menu */
   padding: 20px;
   background-color: #0d0a1b;
-  position: relative;      /* Necessário para o posicionamento do logo */
+  position: fixed;         /* Mudou de relative para fixed */
+  top: 0;                  /* Fixa no topo */
+  left: 0;                 /* Alinha à esquerda */
+  width: 100%;             /* Ocupa toda a largura da tela */
+  box-sizing: border-box;  /* Garante que o padding não quebre a largura */
+  z-index: 1000;           /* Garante que o menu fique acima de tudo */
+  transition: transform 0.3s ease-in-out; /* Suaviza a subida/descida */
+}
+
+.cabecalho--hidden {
+  transform: translateY(-100%); /* Esconde o cabeçalho empurrando para cima */
 }
 
 .cabecalho-menu {
@@ -93,17 +103,17 @@ header, .cabecalho {
 }
 
 /* Links de navegação */
-nav a {
-  color: var(--primary-color);
-}
+
 
 /* CENTRALIZAÇÃO DO CONTAINER DE AVALIAÇÕES */
 #home-container {
   max-width: 600px;
   margin: 40px auto;
-  padding: 0 20px;
 }
 
+.textfeed {
+  padding-top: 95px;
+}
 /* Cards de avaliação */
 .card-avaliacao {
   background-color: var(--card-bg);
@@ -140,6 +150,8 @@ nav a {
   
   /* Configuração de animação original adaptada */
   transition: var(--transition);
+  padding-top: 95px;
+
 }
 
 /* Efeito de mouse sobre os cards de avaliação */

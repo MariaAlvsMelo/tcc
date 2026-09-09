@@ -55,3 +55,18 @@ async function carregarAvaliacoes() {
 
 // Inicializa a listagem ao carregar a página
 carregarAvaliacoes();
+
+const cabecalho = document.querySelector('.cabecalho');
+let lastScrollY = window.scrollY;
+
+// Garante que o código só rode se o cabeçalho realmente existir nesta página
+if (cabecalho) {
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > lastScrollY) {
+            cabecalho.classList.add('cabecalho--hidden'); // Some ao descer
+        } else {
+            cabecalho.classList.remove('cabecalho--hidden'); // Aparece ao subir
+        }
+        lastScrollY = window.scrollY;
+    });
+}

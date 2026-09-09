@@ -48,4 +48,3 @@ formAvaliacao.addEventListener("submit", async function (event) {
         mensagemAvaliacao.style.color = "red";
     }
 });
-
