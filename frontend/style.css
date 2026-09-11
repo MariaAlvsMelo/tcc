@@ -1,347 +1,1566 @@
-:root {
-  --bg-color: #1a1a2e;
-  --text-color: #e6e6e6;
-  --card-bg: #16213e;
-  --primary-color: #e94560;
-  --border-color: #2a2a4a;
-  --transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+/* =========================================================
+   ENTRE NOTAS
+   ESTILO GERAL DO SITE
+   ========================================================= */
+
+
+/* =========================================================
+   VARIÁVEIS
+   ========================================================= */
+
+   :root {
+    --bg-color: #080613;
+    --bg-secondary: #0d0a1b;
+    --card-bg: #10152d;
+    --card-bg-light: #141a38;
+
+    --purple: #7c3cff;
+    --purple-light: #9b63ff;
+    --purple-dark: #5423bd;
+
+    --blue: #18244d;
+    --blue-light: #27366d;
+
+    --text-color: #f2efff;
+    --text-secondary: #b8b4ca;
+    --text-muted: #77738e;
+
+    --border-color: rgba(124, 60, 255, 0.25);
+    --border-light: rgba(255, 255, 255, 0.08);
+
+    --success: #54d98b;
+    --error: #ff5c7c;
+
+    --radius: 14px;
+
+    --shadow:
+        0 10px 35px rgba(0, 0, 0, 0.35);
+
+    --purple-shadow:
+        0 0 25px rgba(124, 60, 255, 0.25);
+
+    --transition:
+        all 0.3s ease;
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-  background-color: #0b0813; 
-  font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 50% -20%,
+            rgba(94, 45, 190, 0.16),
+            transparent 40%
+        ),
+        var(--bg-color);
+
+    color: var(--text-color);
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    line-height: 1.5;
 }
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+a {
+    color: inherit;
+}
+
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
 
 .cabecalho {
-  display: flex;
-  justify-content: center; /* Mantém o menu no centro */
-  align-items: center;     /* Alinha verticalmente o logo e o menu */
-  padding: 20px;
-  background-color: #0d0a1b;
-  position: fixed;         /* Mudou de relative para fixed */
-  top: 0;                  /* Fixa no topo */
-  left: 0;                 /* Alinha à esquerda */
-  width: 100%;             /* Ocupa toda a largura da tela */
-  box-sizing: border-box;  /* Garante que o padding não quebre a largura */
-  z-index: 1000;           /* Garante que o menu fique acima de tudo */
-  transition: transform 0.3s ease-in-out; /* Suaviza a subida/descida */
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+
+    height: 82px;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 12px 25px;
+
+    background:
+        rgba(8, 6, 19, 0.92);
+
+    border-bottom:
+        1px solid rgba(124, 60, 255, 0.15);
+
+    backdrop-filter: blur(15px);
+
+    z-index: 1000;
+
+    transition:
+        transform 0.3s ease-in-out;
 }
+
+
+/* Cabeçalho escondido ao rolar */
 
 .cabecalho--hidden {
-  transform: translateY(-100%); /* Esconde o cabeçalho empurrando para cima */
+    transform: translateY(-100%);
 }
 
-.cabecalho-menu {
-  display: flex;
-  gap: 15px;
-  background-color: rgba(255, 255, 255, 0.03);
-  padding: 8px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
 
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #8b88a0;
-  text-decoration: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease; /* Transição suave para cores e brilho */
-  border: 1px solid transparent; /* Evita que o layout pule ao aplicar borda */
-}
+/* =========================================================
+   LOGO
+   ========================================================= */
 
 .nav-logo {
-  position: absolute;      /* Remove o logo do fluxo central do flexbox */
-  left: 20px;              /* Alinha o logo na extremidade esquerda */
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #8b88a0;
-  text-decoration: none;
-  padding: 10px 20px;
-  transition: all 0.2s ease;
+    position: absolute;
+
+    left: 25px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #a970ff;
+
+    text-decoration: none;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.3px;
+
+    padding: 10px 15px;
+
+    transition: var(--transition);
 }
+
+.nav-logo::before {
+    content: "♫";
+
+    font-size: 25px;
+
+    color: #8b4dff;
+
+    text-shadow:
+        0 0 12px rgba(139, 77, 255, 0.8);
+}
+
+.nav-logo:hover {
+    color: white;
+
+    text-shadow:
+        0 0 15px rgba(139, 77, 255, 0.7);
+}
+
+
+/* =========================================================
+   LINK SOBRE
+   ========================================================= */
 
 .nav-sobre {
-  position: absolute;      /* Remove o logo do fluxo central do flexbox */
-  right: 20px; /* Alinha o elemento na extremidade direita */
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #8b88a0;
-  text-decoration: none;
-  padding: 10px 20px;
-  transition: all 0.2s ease;
+    position: absolute;
+
+    right: 25px;
+
+    padding: 10px 15px;
+
+    color: var(--text-secondary);
+
+    text-decoration: none;
+
+    font-size: 15px;
+
+    transition: var(--transition);
 }
+
+.nav-sobre:hover {
+    color: white;
+
+    text-shadow:
+        0 0 12px rgba(139, 77, 255, 0.7);
+}
+
+
+/* =========================================================
+   MENU
+   ========================================================= */
+
+.cabecalho-menu {
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 6px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 13px;
+
+    box-shadow:
+        inset 0 0 20px rgba(124, 60, 255, 0.04);
+}
+
+
+.nav-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 10px 20px;
+
+    border-radius: 9px;
+
+    color: #8f8ba5;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    border: 1px solid transparent;
+
+    transition: var(--transition);
+}
+
+
+.nav-item .icon {
+    font-size: 16px;
+}
+
 
 .nav-item:hover {
-  background-color: rgba(59, 32, 115, 0.4); /* Roxo mais suave ao passar o mouse */
-  color: #ffffff;
-  border: 1px solid #5c35b4;
-  box-shadow: 0 0 10px rgba(92, 53, 180, 0.5); /* Brilho sutil */
+    color: white;
+
+    background:
+        rgba(92, 53, 180, 0.25);
+
+    border-color:
+        rgba(124, 60, 255, 0.45);
+
+    box-shadow:
+        0 0 15px rgba(92, 53, 180, 0.2);
 }
 
-/* Fundo e texto geral da página */
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
+
+.nav-item.active {
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(112, 60, 255, 0.3),
+            rgba(124, 60, 255, 0.12)
+        );
+
+    border-color:
+        rgba(124, 60, 255, 0.3);
+
+    box-shadow:
+        0 0 18px rgba(112, 60, 255, 0.18);
 }
 
-/* Cabeçalho / header */
-header, .cabecalho {
-  background-color: var(--card-bg);
-  color: var();
-  border-bottom: 1px solid var(--border-color);
-  padding: 12px 24px;
+
+/* =========================================================
+   CONTEÚDO GERAL
+   ========================================================= */
+
+main,
+section {
+    width: 100%;
 }
 
-/* Links de navegação */
 
+/* =========================================================
+   BANNER INICIAL
+   ========================================================= */
 
-/* CENTRALIZAÇÃO DO CONTAINER DE AVALIAÇÕES */
-#home-container {
-  max-width: 600px;
-  margin: 40px auto;
+.banner-inicial {
+    position: relative;
+
+    width: calc(100% - 80px);
+
+    max-width: 1450px;
+
+    min-height: 360px;
+
+    margin:
+        105px auto 40px;
+
+    border-radius: 18px;
+
+    overflow: hidden;
+
+    border:
+        1px solid rgba(116, 67, 255, 0.55);
+
+    background:
+        linear-gradient(
+            110deg,
+            #0c0920,
+            #17103b,
+            #110b2d
+        );
+
+    box-shadow:
+        0 0 35px rgba(100, 45, 255, 0.14);
 }
+
+
+/* Capas */
+
+.capas-banner {
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 15px;
+
+    overflow: hidden;
+
+    opacity: 0.45;
+
+    transform:
+        rotate(-3deg)
+        scale(1.1);
+}
+
+
+.capas-banner img {
+    width: 250px;
+    height: 250px;
+
+    object-fit: cover;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+
+/* Overlay */
+
+.banner-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            #0b0813 0%,
+            rgba(11, 8, 19, 0.96) 28%,
+            rgba(11, 8, 19, 0.72) 55%,
+            rgba(11, 8, 19, 0.35) 100%
+        );
+
+    z-index: 1;
+}
+
+
+/* Conteúdo */
+
+.conteudo-banner {
+    position: relative;
+
+    z-index: 2;
+
+    min-height: 360px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 40px;
+
+    padding: 45px 55px;
+}
+
+
+/* Texto */
+
+.texto-banner {
+    max-width: 650px;
+}
+
+
+.subtitulo-banner {
+    display: block;
+
+    margin-bottom: 12px;
+
+    color: #a970ff;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+}
+
+
+.texto-banner h1 {
+    margin: 0 0 18px;
+
+    color: white;
+
+    font-size: clamp(32px, 4vw, 52px);
+
+    line-height: 1.08;
+}
+
+
+.texto-banner h1 span {
+    color: #8b4dff;
+
+    text-shadow:
+        0 0 20px rgba(139, 77, 255, 0.5);
+}
+
+
+.texto-banner p {
+    max-width: 610px;
+
+    margin: 0 0 25px;
+
+    color: #d2cee4;
+
+    font-size: 16px;
+
+    line-height: 1.6;
+}
+
+
+.texto-banner p strong {
+    color: white;
+}
+
+
+/* Botão do banner */
+
+.botao-banner {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 13px 22px;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #703cff,
+            #9a50ff
+        );
+
+    color: white;
+
+    text-decoration: none;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    box-shadow:
+        0 5px 20px rgba(112, 60, 255, 0.35);
+
+    transition: var(--transition);
+}
+
+
+.botao-banner:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 8px 30px rgba(112, 60, 255, 0.55);
+}
+
+
+/* Informações */
+
+.info-banner {
+    width: 330px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 25px;
+}
+
+
+.item-info-banner {
+    display: flex;
+
+    gap: 15px;
+
+    align-items: flex-start;
+}
+
+
+.icone-info {
+    font-size: 25px;
+
+    filter:
+        drop-shadow(
+            0 0 8px rgba(139, 77, 255, 0.7)
+        );
+}
+
+
+.item-info-banner h3 {
+    margin: 0 0 7px;
+
+    color: white;
+
+    font-size: 17px;
+}
+
+
+.item-info-banner p {
+    margin: 0;
+
+    color: #bbb6d0;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+}
+
+
+/* Tecnologias */
+
+.tecnologias-banner {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+}
+
+
+.tecnologias-banner span {
+    padding: 6px 10px;
+
+    border-radius: 6px;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    color: #ddd8ed;
+
+    font-size: 12px;
+}
+
+
+/* Frase */
+
+.frase-banner {
+    color: #a970ff;
+
+    font-size: 21px;
+
+    font-weight: bold;
+
+    font-style: italic;
+
+    text-shadow:
+        0 0 15px rgba(139, 77, 255, 0.5);
+}
+
+
+/* =========================================================
+   FEED
+   ========================================================= */
+
+.feed-section {
+    width: calc(100% - 80px);
+
+    max-width: 1400px;
+
+    margin: 0 auto;
+
+    padding-bottom: 50px;
+}
+
 
 .textfeed {
-  padding-top: 95px;
+    margin:
+        10px 0 25px;
+
+    color: #f4f1ff;
+
+    font-size: 28px;
+
+    font-weight: 700;
 }
-/* Cards de avaliação */
+
+
+/* Container das avaliações */
+
+#home-container {
+    width: 100%;
+
+    max-width: 1400px;
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 20px;
+}
+
+
+/* =========================================================
+   CARDS DE AVALIAÇÃO
+   ========================================================= */
+
 .card-avaliacao {
-  background-color: var(--card-bg);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 17px;
-  overflow-wrap: break-word; /* Força quebra de palavras longas/links */
-  word-wrap: break-word;     /* Suporte para navegadores antigos */
-  word-break: break-word;    /* Garante a quebra em blocos flex/grid */
-  
-  /* Configuração de animação original adaptada */
-  transition: var(--transition);
+    padding: 22px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(18, 24, 52, 0.98),
+            rgba(12, 16, 37, 0.98)
+        );
+
+    border:
+        1px solid rgba(87, 104, 180, 0.25);
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.25);
+
+    transition: var(--transition);
 }
 
 
-/* Efeito de mouse sobre os cards de avaliação */
-/* Efeito sutil de luz apenas atrás do card */
 .card-avaliacao:hover {
-  transform: translateY(-3px);
-  /* Brilho roxo sutil e expandido apenas por trás */
-  box-shadow: 0 8px 24px rgba(92, 53, 180, 0.25); 
-}
+    transform: translateY(-4px);
 
-.sobre {
-  background-color: var(--card-bg);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 16px;
-  
-  margin: 17px 16px 17px 16px; 
-  
-  /* Configuração de animação original adaptada */
-  transition: var(--transition);
-  padding-top: 95px;
+    border-color:
+        rgba(124, 60, 255, 0.5);
 
-}
-
-/* Efeito de mouse sobre os cards de avaliação */
-.sobre:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(92, 53, 180, 0.25); 
+    box-shadow:
+        0 10px 30px rgba(85, 38, 180, 0.18);
 }
 
 
+.card-avaliacao h3 {
+    margin:
+        0 0 5px;
 
-/* Formulários */
-/* Formulários (Alinhado com margens e espaçamento do app) */
-input, textarea, select {
-  background-color: var(--bg-color); /* Ajustado para dar contraste dentro do card */
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
-  font-family: sans-serif;
-  transition: border-color 0.2s;
+    color: white;
+
+    font-size: 20px;
 }
 
-input:focus, textarea:focus {
-  outline: none;
-  border-color: #5c35b4; /* Destaca a borda ao focar com o roxo do app */
+
+.card-avaliacao p {
+    margin:
+        7px 0;
+
+    color: #bbb8cd;
+
+    font-size: 15px;
 }
 
-/* Botões (Adaptado para ocupar largura total igual ao Login/Cadastro) */
-button {
-  background-color: var(--primary-color);
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 12px 20px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  width: 100%; /* Ocupa toda a extensão do card de avaliação */
-  transition: opacity 0.2s, transform 0.1s;
-}
 
-button:hover {
-  opacity: 0.9;
-}
-
-button:active {
-  transform: scale(0.98);
-}
-
-.estrelas-container {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-  gap: 4px;
-  margin: 8px 0;
-}
-
-.estrelas-container input[type="radio"] {
-  display: none;
-}
-
-.estrelas-container label {
-  font-size: 2rem;
-  color: #ccc;
-  cursor: pointer;
-  transition: color 0.15s ease, transform 0.1s ease;
-}
-
-/* Mantém as estrelas acesas da esquerda para a direita no clique ou hover */
-.estrelas-container input[type="radio"]:checked ~ label,
-.estrelas-container label:hover,
-.estrelas-container label:hover ~ label {
-  color: #f5a623;
-}
-
-/* Corrige o transform para ampliar unicamente a estrela sob o mouse */
-.estrelas-container label:hover {
-  transform: scale(1.15);
+.card-avaliacao strong {
+    color: #e9e5fa;
 }
 
 
 .data-postagem {
-color: #777; /* Deixa o texto cinza claro */
-font-size: 0.85rem; /* Diminui um pouco o tamanho da fonte */
-margin-top: 10px; /* Dá um espaço em relação às estrelas */
-display: block;
+    color: #77738e !important;
+
+    font-size: 13px !important;
 }
 
-#caixaLogin, #caixaCadastro {
-  max-width: 400px;
-  margin: 80px auto;
-  padding: 30px;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-sizing: border-box;
-  
-  /* Configuração de animação idêntica ao feed */
-  transition: var(--transition);
+
+/* Capa dentro do card */
+
+.card-avaliacao img {
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.35);
 }
 
-/* Efeito de mouse sobre os boxes de login/cadastro */
-#caixaLogin:hover, #caixaCadastro:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+/* =========================================================
+   PÁGINA AVALIAR
+   ========================================================= */
+
+#home-container,
+.card-avaliacao {
+    scroll-margin-top: 100px;
 }
 
-#caixaLogin h1, #caixaCadastro h1 {
-  margin-top: 0;
-  margin-bottom: 20px;
+
+.card-avaliacao form {
+    width: 100%;
 }
 
-#caixaLogin h2, #caixaCadastro h2 {
-  color: var(--primary-color);
-  margin-top: 0;
-  font-size: 1.5rem;
+
+/* Container de avaliação */
+
+.card-avaliacao:has(#formAvaliacao) {
+    max-width: 750px;
+
+    margin:
+        120px auto 50px;
+
+    padding: 35px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #111733,
+            #0d1128
+        );
+
+    border:
+        1px solid rgba(124, 60, 255, 0.25);
+
+    box-shadow:
+        0 15px 45px rgba(0, 0, 0, 0.3);
 }
 
-#caixaLogin input, #caixaCadastro input {
-  margin-bottom: 15px;
+
+/* =========================================================
+   FORMULÁRIOS
+   ========================================================= */
+
+label {
+    display: block;
+
+    margin:
+        0 0 8px;
+
+    color: #ddd9eb;
+
+    font-size: 14px;
+
+    font-weight: 600;
 }
 
-#caixaLogin button, #caixaCadastro button {
-  width: 100%;
+
+input,
+textarea,
+select {
+    width: 100%;
+
+    padding: 13px 15px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    color: white;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 9px;
+
+    outline: none;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    transition: var(--transition);
 }
+
+
+input::placeholder,
+textarea::placeholder {
+    color: #68647a;
+}
+
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color:
+        rgba(124, 60, 255, 0.75);
+
+    background:
+        rgba(124, 60, 255, 0.045);
+
+    box-shadow:
+        0 0 0 3px rgba(124, 60, 255, 0.1);
+}
+
+
+textarea {
+    min-height: 130px;
+
+    resize: vertical;
+}
+
+
+/* =========================================================
+   BUSCA DE MÚSICA
+   ========================================================= */
 
 .busca-container {
-  position: relative; /* Mantém a lista ancorada ao container do input */
-  display: flex;
-  flex-direction: column;
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    width: 100%;
 }
 
-/* Lista suspensa de sugestões flutuando EXATAMENTE abaixo do input */
-#sugestoes-container {
-  position: absolute;
-  top: 100%; /* Coloca a lista colada na borda inferior do input */
-  left: 0;
-  width: 100%;
-  background-color: var(--card-bg, #16213e);
-  border: 1px solid var(--border-color, #2a2a4a);
-  border-top: none; /* Remove a borda de cima para parecer uma extensão do input */
-  border-radius: 0 0 10px 10px;
-  max-height: 220px;
-  overflow-y: auto;
-  z-index: 999; /* Garante que vai flutuar por cima do campo "Artista" */
-  box-shadow: 0 8px 24px rgba(92, 53, 180, 0.25); /* Sua luz roxa sutil */
-  box-sizing: border-box;
+
+#listaSugestoes {
+    position: absolute;
+
+    top: calc(100% + 5px);
+
+    left: 0;
+
+    width: 100%;
+
+    max-height: 300px;
+
+    overflow-y: auto;
+
+    background:
+        #11152d;
+
+    border:
+        1px solid rgba(124, 60, 255, 0.35);
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.5);
+
+    z-index: 50;
 }
 
-.sugestoes-oculto {
-  display: none;
+
+/* Sugestão */
+
+.sugestao-musica {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 10px 12px;
+
+    cursor: pointer;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.05);
+
+    transition: var(--transition);
 }
 
-/* Linhas de sugestões da Deezer */
-.sugestao-item {
-  padding: 10px 15px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: background-color 0.2s;
+
+.sugestao-musica:last-child {
+    border-bottom: none;
 }
 
-.sugestao-item:hover {
-  background-color: rgba(59, 32, 115, 0.4); /* Roxo suave do seu cabeçalho */
+
+.sugestao-musica:hover {
+    background:
+        rgba(124, 60, 255, 0.15);
 }
 
-.sugestao-item img {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-  object-fit: cover;
+
+.sugestao-musica img {
+    width: 50px;
+
+    height: 50px;
+
+    object-fit: cover;
+
+    border-radius: 7px;
 }
+
 
 .sugestao-info {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
 }
 
-.sugestao-titulo {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: var(--text-color, #e6e6e6);
+
+.sugestao-info strong {
+    color: white;
+
+    font-size: 14px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
 }
 
-.sugestao-artista {
-  font-size: 0.8rem;
-  color: #8b88a0;
+
+.sugestao-info span {
+    color: #89859e;
+
+    font-size: 13px;
 }
 
+
+/* =========================================================
+   MÚSICA SELECIONADA
+   ========================================================= */
+
+#musicaSelecionada {
+    display: none;
+
+    margin:
+        20px 0;
+
+    padding: 15px;
+
+    background:
+        rgba(124, 60, 255, 0.07);
+
+    border:
+        1px solid rgba(124, 60, 255, 0.2);
+
+    border-radius: 12px;
+}
+
+
+#musicaSelecionada img {
+    width: 110px;
+
+    height: 110px;
+
+    object-fit: cover;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+
+#tituloMusicaSelecionada {
+    margin:
+        12px 0 3px;
+
+    color: white;
+
+    font-size: 18px;
+
+    font-weight: bold;
+}
+
+
+#albumMusicaSelecionada {
+    margin: 0;
+
+    color: #928da8;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   ESTRELAS
+   ========================================================= */
+
+.estrelas-container {
+    display: flex;
+
+    flex-direction: row-reverse;
+
+    justify-content: flex-end;
+
+    gap: 5px;
+
+    margin:
+        10px 0 20px;
+}
+
+
+.estrelas-container input {
+    display: none;
+}
+
+
+.estrelas-container label {
+    width: auto;
+
+    margin: 0;
+
+    color: #4d4960;
+
+    font-size: 32px;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.estrelas-container label:hover {
+    transform: scale(1.12);
+}
+
+
+.estrelas-container label:hover,
+.estrelas-container label:hover ~ label {
+    color: #a970ff;
+}
+
+
+.estrelas-container input:checked ~ label {
+    color: #a970ff;
+
+    text-shadow:
+        0 0 10px rgba(169, 112, 255, 0.5);
+}
+
+
+/* =========================================================
+   BOTÕES
+   ========================================================= */
+
+button {
+    border: none;
+
+    outline: none;
+
+    cursor: pointer;
+
+    font-family: inherit;
+}
+
+
+button[type="submit"],
+.btn-primary {
+    width: 100%;
+
+    padding: 13px 20px;
+
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #713cff,
+            #9954ff
+        );
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    box-shadow:
+        0 6px 20px rgba(113, 60, 255, 0.25);
+
+    transition: var(--transition);
+}
+
+
+button[type="submit"]:hover,
+.btn-primary:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 28px rgba(113, 60, 255, 0.45);
+}
+
+
+/* =========================================================
+   MENSAGENS
+   ========================================================= */
+
+#mensagemAvaliacao {
+    margin-top: 15px;
+
+    text-align: center;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   LOGIN / CADASTRO
+   ========================================================= */
+
+.login-container,
+.cadastro-container {
+    width: 100%;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 30px;
+}
+
+
+.login-card,
+.cadastro-card {
+    width: 100%;
+
+    max-width: 430px;
+
+    padding: 35px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #111733,
+            #0c1025
+        );
+
+    border:
+        1px solid rgba(124, 60, 255, 0.25);
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.45),
+        0 0 30px rgba(124, 60, 255, 0.08);
+}
+
+
+.login-card h1,
+.cadastro-card h1 {
+    margin:
+        0 0 8px;
+
+    color: white;
+
+    text-align: center;
+
+    font-size: 30px;
+}
+
+
+.login-card p,
+.cadastro-card p {
+    color: #858198;
+
+    text-align: center;
+
+    font-size: 14px;
+}
+
+
+.login-card form,
+.cadastro-card form {
+    margin-top: 25px;
+}
+
+
+.login-card input,
+.cadastro-card input {
+    margin-bottom: 15px;
+}
+
+
+/* =========================================================
+   PERFIL
+   ========================================================= */
+
+.perfil-container {
+    width: calc(100% - 40px);
+
+    max-width: 900px;
+
+    margin:
+        120px auto 50px;
+}
+
+
+.perfil-card {
+    padding: 35px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #111733,
+            #0c1025
+        );
+
+    border:
+        1px solid rgba(124, 60, 255, 0.25);
+
+    border-radius: 16px;
+
+    box-shadow:
+        var(--shadow);
+}
+
+
+.perfil-card h1,
+.perfil-card h2 {
+    color: white;
+}
+
+
+.perfil-card p {
+    color: #aaa6bb;
+}
+
+
+/* =========================================================
+   SOBRE
+   ========================================================= */
+
+.sobre-container {
+    width: calc(100% - 40px);
+
+    max-width: 1000px;
+
+    margin:
+        120px auto 50px;
+}
+
+
+.sobre-card {
+    padding: 40px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #111733,
+            #0c1025
+        );
+
+    border:
+        1px solid rgba(124, 60, 255, 0.25);
+
+    border-radius: 16px;
+
+    box-shadow:
+        var(--shadow);
+}
+
+
+.sobre-card h1,
+.sobre-card h2 {
+    color: white;
+}
+
+
+.sobre-card h1 {
+    font-size: 35px;
+}
+
+
+.sobre-card h2 {
+    margin-top: 30px;
+
+    color: #a970ff;
+}
+
+
+.sobre-card p {
+    color: #aaa6bb;
+
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+
+::-webkit-scrollbar-track {
+    background: #080613;
+}
+
+
+::-webkit-scrollbar-thumb {
+    background:
+        #35205f;
+
+    border-radius: 10px;
+}
+
+
+::-webkit-scrollbar-thumb:hover {
+    background:
+        #6233a8;
+}
+
+
+/* =========================================================
+   SELEÇÃO DE TEXTO
+   ========================================================= */
+
+::selection {
+    background: #713cff;
+
+    color: white;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    #home-container {
+        grid-template-columns: 1fr;
+    }
+
+    .info-banner {
+        width: 280px;
+    }
+
+    .conteudo-banner {
+        gap: 25px;
+
+        padding: 40px;
+    }
+}
+
+
+@media (max-width: 800px) {
+
+    .cabecalho {
+        height: 70px;
+    }
+
+    .nav-logo {
+        left: 10px;
+
+        font-size: 18px;
+    }
+
+    .nav-sobre {
+        right: 10px;
+
+        display: none;
+    }
+
+    .cabecalho-menu {
+        gap: 2px;
+    }
+
+    .nav-item {
+        padding: 9px 12px;
+
+        font-size: 13px;
+    }
+
+    .nav-item .icon {
+        font-size: 14px;
+    }
+
+
+    .banner-inicial {
+        width: calc(100% - 30px);
+
+        margin-top: 90px;
+    }
+
+    .conteudo-banner {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        min-height: auto;
+
+        padding: 35px 30px;
+    }
+
+    .texto-banner {
+        max-width: 100%;
+    }
+
+    .info-banner {
+        width: 100%;
+    }
+
+    .capas-banner {
+        opacity: 0.25;
+    }
+
+
+    .feed-section {
+        width: calc(100% - 30px);
+    }
+
+
+    .card-avaliacao:has(#formAvaliacao) {
+        width: calc(100% - 30px);
+
+        margin-top: 100px;
+
+        padding: 25px;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .cabecalho {
+        padding: 8px;
+    }
+
+    .nav-logo {
+        display: none;
+    }
+
+    .cabecalho-menu {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+    .nav-item {
+        padding: 8px 10px;
+
+        font-size: 12px;
+    }
+
+
+    .banner-inicial {
+        width: calc(100% - 20px);
+
+        margin-top: 80px;
+
+        border-radius: 14px;
+    }
+
+    .conteudo-banner {
+        padding: 28px 22px;
+    }
+
+    .texto-banner h1 {
+        font-size: 32px;
+    }
+
+    .texto-banner p {
+        font-size: 14px;
+    }
+
+    .subtitulo-banner {
+        font-size: 13px;
+    }
+
+
+    .textfeed {
+        font-size: 23px;
+    }
+
+
+    .card-avaliacao {
+        padding: 17px;
+    }
+
+
+    .card-avaliacao > div {
+        gap: 12px !important;
+    }
+
+
+    .card-avaliacao img {
+        width: 85px !important;
+
+        height: 85px !important;
+    }
+
+
+    .card-avaliacao h3 {
+        font-size: 17px;
+    }
+
+
+    .card-avaliacao p {
+        font-size: 13px;
+    }
+
+
+    .estrelas-container label {
+        font-size: 27px;
+    }
+
+
+    .login-card,
+    .cadastro-card {
+        padding: 25px;
+    }
+}

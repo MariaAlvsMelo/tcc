@@ -11,7 +11,6 @@
   <!-- Cabeçalho de navegação do site -->
   <header class="cabecalho">
     <a href="home.html" class="nav-logo">Entre Notas</a>
-    <a href="sobre.html" class="nav-sobre">Sobre</a>
     <nav class="cabecalho-menu">
       <a href="home.html" class="nav-item active">
         <span class="icon">🏠</span> Feed
@@ -26,12 +25,96 @@
   </header>
   
   <!-- Seção principal de avaliações -->
-  <section>
-    <h2 class="textfeed">Avaliações compartilhadas</h2>
-    
-    <!-- Onde o JavaScript vai injetar os cards com as avaliações e as datas -->
-    <div id="home-container" class="row g-3"></div>
-  </section>
+<!-- BANNER INICIAL -->
+<section class="banner-inicial">
+
+  <!-- Capas decorativas -->
+  <div class="capas-banner">
+      <img src="https://cdn-images.dzcdn.net/images/cover/8b3f9f2e7e9e5c5f8b8e4b7b8e5c5f8e/500x500-000000-80-0-0.jpg" alt="">
+      <img src="https://cdn-images.dzcdn.net/images/cover/6d7f9c5c8e2e5c5f8b8e4b7b8e5c5f8e/500x500-000000-80-0-0.jpg" alt="">
+      <img src="https://cdn-images.dzcdn.net/images/cover/5f8e4b7b8e5c5f8b8e4b7b8e5c5f8e5c/500x500-000000-80-0-0.jpg" alt="">
+      <img src="https://cdn-images.dzcdn.net/images/cover/7b8e5c5f8b8e4b7b8e5c5f8e4b7b8e5c/500x500-000000-80-0-0.jpg" alt="">
+  </div>
+
+  <!-- Escurece as capas -->
+  <div class="banner-overlay"></div>
+
+  <div class="conteudo-banner">
+
+      <div class="texto-banner">
+
+          <span class="subtitulo-banner">
+              ♫ BEM-VINDO AO ENTRE NOTAS!
+          </span>
+
+          <h1>
+              Sua opinião também<br>
+              faz parte <span>da música.</span>
+          </h1>
+
+          <p>
+              Descubra músicas, compartilhe suas opiniões e avalie
+              seus álbuns, faixas e artistas favoritos.
+              <strong>Aqui, cada nota conta e cada ritmo ganha voz.</strong>
+          </p>
+
+          <a href="avaliar.html" class="botao-banner">
+              ⭐ Avaliar agora
+              <span>→</span>
+          </a>
+
+      </div>
+
+      <div class="info-banner">
+
+          <div class="item-info-banner">
+              <span class="icone-info">🎓</span>
+
+              <div>
+                  <h3>Projeto de TCC</h3>
+                  <p>
+                      Ensino Médio Técnico em
+                      Análise e Desenvolvimento de Sistemas.
+                  </p>
+              </div>
+          </div>
+
+          <div class="item-info-banner">
+            <span class="icone-info">💻</span>
+        
+            <div>
+                <h3>Tecnologias utilizadas</h3>
+        
+                <div class="tecnologias-banner">
+        
+                    <span>HTML</span>
+                    <span>CSS</span>
+                    <span>JavaScript</span>
+        
+                    <span>Node.js</span>
+                    <span>Express</span>
+                    <span>MySQL</span>
+        
+                    <span class="tecnologia-api">
+                        🎵 API Deezer
+                    </span>
+        
+                    <span>GitHub</span>
+                    <span>VS Code</span>
+        
+                </div>
+            </div>
+        </div>
+
+</section>
+
+
+<!-- FEED -->
+<section class="feed-section">
+
+  <div id="home-container" class="row g-3"></div>
+
+</section>
 
   <!-- Script da página (linkado corretamente) -->
   <script src="../js/home.js"></script>

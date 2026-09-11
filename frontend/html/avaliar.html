@@ -1,114 +1,718 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliar</title>
-    <link rel="stylesheet" href="../style.css">
-    <style>
-          body {
-            min-height: 110vh; 
-        }
-        #home-container {
-            padding-top: 90px; /* Cria o espaço necessário para o formulário descer do cabeçalho */
-            box-sizing: border-box;
-        }
-        .estrelas-container {
-            display: flex;
-            flex-direction: row-reverse;
-            justify-content: flex-end;
-            gap: 4px;
-            margin: 8px 0;
-        }
 
-        .estrelas-container input[type="radio"] {
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Avaliar</title>
+
+    <link rel="stylesheet" href="../style.css">
+
+    <style>
+        /* ==========================================
+           ESPAÇAMENTO DO CONTEÚDO
+        ========================================== */
+        .lista-sugestoes {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1a1a30;
+            border: 1px solid #30304d;
+            border-radius: 8px;
+            z-index: 1000;
+            max-height: 350px;
+            overflow-y: auto;
             display: none;
         }
 
-        .estrelas-container label {
-            font-size: 2rem;
-            color: #ccc;
+        .sugestao-musica {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
             cursor: pointer;
-            transition: color 0.15s ease, transform 0.1s ease;
+            transition: background 0.2s;
         }
 
-        .estrelas-container input[type="radio"]:checked ~ label,
+        .sugestao-musica:hover {
+            background: #272747;
+        }
+
+        .sugestao-musica img {
+            width: 55px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .sugestao-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sugestao-info strong {
+            color: white;
+        }
+
+        .sugestao-info span {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        #home-container {
+
+            padding-top: 90px;
+
+            box-sizing: border-box;
+
+        }
+
+
+        /* ==========================================
+           ESTRELAS
+        ========================================== */
+
+        .estrelas-container {
+
+            display: flex;
+
+            flex-direction: row-reverse;
+
+            justify-content: flex-end;
+
+            gap: 4px;
+
+            margin: 8px 0;
+
+        }
+
+
+        .estrelas-container input[type="radio"] {
+
+            display: none;
+
+        }
+
+
+        .estrelas-container label {
+
+            font-size: 2rem;
+
+            color: #ccc;
+
+            cursor: pointer;
+
+            transition:
+                color 0.15s ease,
+                transform 0.1s ease;
+
+        }
+
+
+        .estrelas-container input[type="radio"]:checked~label,
         .estrelas-container label:hover,
-        .estrelas-container label:hover ~ label {
+        .estrelas-container label:hover~label {
+
             color: #f5a623;
+
             transform: scale(1.15);
+
+        }
+
+
+        /* ==========================================
+           ÁREA DE BUSCA DA DEEZER
+        ========================================== */
+
+        .busca-container {
+
+            position: relative;
+
+            margin-bottom: 15px;
+
+        }
+
+
+        /* ==========================================
+           LISTA DE SUGESTÕES
+        ========================================== */
+
+        .lista-sugestoes {
+
+            position: absolute;
+
+            top: calc(100% + 4px);
+
+            left: 0;
+
+            right: 0;
+
+            background: #1a1a30;
+
+            border: 1px solid #30304d;
+
+            border-radius: 8px;
+
+            z-index: 1000;
+
+            max-height: 350px;
+
+            overflow-y: auto;
+
+            display: none;
+
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.35);
+
+        }
+
+
+        /* Cada sugestão */
+
+        .sugestao-musica {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 10px;
+
+            cursor: pointer;
+
+            transition:
+                background 0.2s ease;
+
+        }
+
+
+        .sugestao-musica:hover {
+
+            background: #272747;
+
+        }
+
+
+        /* Capa da sugestão */
+
+        .sugestao-musica img {
+
+            width: 55px;
+
+            height: 55px;
+
+            object-fit: cover;
+
+            border-radius: 6px;
+
+            flex-shrink: 0;
+
+        }
+
+
+        /* Informações da sugestão */
+
+        .sugestao-info {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 4px;
+
+            overflow: hidden;
+
+        }
+
+
+        .sugestao-info strong {
+
+            color: white;
+
+            font-size: 0.95rem;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+        .sugestao-info span {
+
+            color: #aaa;
+
+            font-size: 0.9rem;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+        /* ==========================================
+           MÚSICA SELECIONADA
+        ========================================== */
+
+        #musicaSelecionada {
+
+            display: none;
+
+            margin-bottom: 20px;
+
+            padding: 15px;
+
+            background: rgba(255, 255, 255, 0.03);
+
+            border-radius: 10px;
+
+        }
+
+
+        #capaAlbum {
+
+            width: 150px;
+
+            height: 150px;
+
+            object-fit: cover;
+
+            border-radius: 12px;
+
+            display: block;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        #tituloMusicaSelecionada {
+
+            margin: 0;
+
+            color: var(--primary-color);
+
+            font-size: 1.05rem;
+
+            font-weight: bold;
+
+        }
+
+
+        #albumMusicaSelecionada {
+
+            margin: 5px 0 0;
+
+            color: #8b88a0;
+
+            font-size: 0.9rem;
+
+        }
+
+
+        /* ==========================================
+           CAMPO ARTISTA
+        ========================================== */
+
+        #artistaAvaliacao:read-only {
+
+            cursor: default;
+
+            opacity: 0.9;
+
+        }
+
+
+        /* ==========================================
+           RESPONSIVIDADE
+        ========================================== */
+
+        @media (max-width: 600px) {
+
+            .lista-sugestoes {
+
+                max-height: 280px;
+
+            }
+
+
+            .sugestao-musica img {
+
+                width: 48px;
+
+                height: 48px;
+
+            }
+
+
+            #capaAlbum {
+
+                width: 120px;
+
+                height: 120px;
+
+            }
+
         }
     </style>
+
 </head>
+
+
 <body>
 
-    <!-- Cabeçalho de navegação do site -->
+
+    <!-- ==========================================
+         CABEÇALHO
+    ========================================== -->
+
     <header class="cabecalho">
-        <a href="home.html" class="nav-logo">Entre Notas</a>
-        <a href="sobre.html" class="nav-sobre">Sobre</a>
+
+
+        <!-- Logo -->
+
+        <a href="home.html" class="nav-logo">
+            Entre Notas
+        </a>
+
+
+        <!-- Link Sobre -->
+
+        <a href="sobre.html" class="nav-sobre">
+            Sobre
+        </a>
+
+
+        <!-- Menu -->
+
         <nav class="cabecalho-menu">
+
+
+            <!-- Feed -->
+
             <a href="home.html" class="nav-item">
-                <span class="icon">🏠</span> Feed
+
+                <span class="icon">
+                    🏠
+                </span>
+
+                Feed
+
             </a>
+
+
+            <!-- Avaliar -->
+
             <a href="avaliar.html" class="nav-item active">
-                <span class="icon">⭐</span> Avaliar
+
+                <span class="icon">
+                    ⭐
+                </span>
+
+                Avaliar
+
             </a>
+
+
+            <!-- Perfil -->
+
             <a href="perfil.html" class="nav-item">
-                <span class="icon">👤</span> Perfil
+
+                <span class="icon">
+                    👤
+                </span>
+
+                Perfil
+
             </a>
+
+
         </nav>
+
     </header>
 
-    <!-- Conteúdo principal do formulário -->
+
+
+    <!-- ==========================================
+         CONTEÚDO PRINCIPAL
+    ========================================== -->
+
     <main id="home-container">
-        <!-- O formulário agora utiliza a classe card-avaliacao para herdar todo o estilo visual -->
+
+
+        <!-- Card da avaliação -->
+
         <section class="card-avaliacao">
-            <h2 style="color: var(--primary-color); margin-top: 0; font-size: 1.5rem;">Avaliar Música</h2>
-            <p style="margin-bottom: 20px; color: #8b88a0;">Compartilhe sua opinião musical</p>
+
+
+            <!-- Título -->
+
+            <h2 style="
+                    color: var(--primary-color);
+                    margin-top: 0;
+                    font-size: 1.5rem;
+                ">
+                Avaliar Música
+            </h2>
+
+
+            <!-- Descrição -->
+
+            <p style="
+                    margin-bottom: 20px;
+                    color: #8b88a0;
+                ">
+                Compartilhe sua opinião musical
+            </p>
+
+
+
+            <!-- ==================================
+                 FORMULÁRIO
+            ================================== -->
 
             <form id="formAvaliacao">
-                <div class="busca-container" style="margin-bottom: 15px;">
-                    <label for="musicaAvaliacao" style="display: block; margin-bottom: 5px; font-weight: 500;">Música</label>
-                    <input type="text" id="musicaAvaliacao" placeholder="Nome da Música" required>
+
+
+
+                <!-- ==================================
+                     CAMPO MÚSICA
+                ================================== -->
+
+                <div class="busca-container">
+
+
+                    <label for="musicaAvaliacao" style="
+                            display: block;
+                            margin-bottom: 5px;
+                            font-weight: 500;
+                        ">
+                        Música
+                    </label>
+
+
+                    <input type="text" id="musicaAvaliacao" placeholder="Digite o nome da música..." autocomplete="off"
+                        required>
+
+
+                    <!-- ==================================
+                         SUGESTÕES DA DEEZER
+                    ================================== -->
+
+                    <div id="listaSugestoes" class="lista-sugestoes">
+                    </div>
+
+
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <label for="artistaAvaliacao" style="display: block; margin-bottom: 5px; font-weight: 500;">Artista</label>
-                    <input type="text" id="artistaAvaliacao" placeholder="Nome do Artista" required>
+
+
+                <!-- ==================================
+                     CAMPO ARTISTA
+                ================================== -->
+
+                <div style="
+                        margin-bottom: 15px;
+                    ">
+
+
+                    <label for="artistaAvaliacao" style="
+                            display: block;
+                            margin-bottom: 5px;
+                            font-weight: 500;
+                        ">
+                        Artista
+                    </label>
+
+
+                    <input type="text" id="artistaAvaliacao" placeholder="Nome do Artista" autocomplete="off" required
+                        readonly>
+
+
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <label for="comentarioAvaliacao" style="display: block; margin-bottom: 5px; font-weight: 500;">Comentário</label>
-                    <textarea id="comentarioAvaliacao" rows="4" placeholder="Escreva seu comentário..." required></textarea>
+
+
+                <!-- ==================================
+                     MÚSICA SELECIONADA
+                     CAPA + INFORMAÇÕES
+                ================================== -->
+
+                <div id="musicaSelecionada">
+
+
+                    <!-- Capa -->
+
+                    <img id="capaAlbum" src="" alt="Capa do álbum">
+
+
+                    <!-- Nome da música -->
+
+                    <p id="tituloMusicaSelecionada">
+                    </p>
+
+
+                    <!-- Nome do álbum -->
+
+                    <p id="albumMusicaSelecionada">
+                    </p>
+
+
                 </div>
 
-                <!-- Campo nota: estrelas clicáveis -->
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 500;">Nota</label>
+
+
+                <!-- ==================================
+                     COMENTÁRIO
+                ================================== -->
+
+                <div style="
+                        margin-bottom: 15px;
+                    ">
+
+
+                    <label for="comentarioAvaliacao" style="
+                            display: block;
+                            margin-bottom: 5px;
+                            font-weight: 500;
+                        ">
+                        Comentário
+                    </label>
+
+
+                    <textarea id="comentarioAvaliacao" rows="4" placeholder="Escreva seu comentário..."
+                        required></textarea>
+
+
+                </div>
+
+
+
+                <!-- ==================================
+                     NOTA
+                ================================== -->
+
+                <div style="
+                        margin-bottom: 20px;
+                    ">
+
+
+                    <label style="
+                            display: block;
+                            font-weight: 500;
+                        ">
+                        Nota
+                    </label>
+
+
                     <div class="estrelas-container">
+
+
+                        <!-- 5 estrelas -->
+
                         <input type="radio" id="star5" name="nota" value="5">
-                        <label for="star5" title="5 estrelas">★</label>
+
+                        <label for="star5" title="5 estrelas">
+                            ★
+                        </label>
+
+
+
+                        <!-- 4 estrelas -->
 
                         <input type="radio" id="star4" name="nota" value="4">
-                        <label for="star4" title="4 estrelas">★</label>
+
+                        <label for="star4" title="4 estrelas">
+                            ★
+                        </label>
+
+
+
+                        <!-- 3 estrelas -->
 
                         <input type="radio" id="star3" name="nota" value="3">
-                        <label for="star3" title="3 estrelas">★</label>
+
+                        <label for="star3" title="3 estrelas">
+                            ★
+                        </label>
+
+
+
+                        <!-- 2 estrelas -->
 
                         <input type="radio" id="star2" name="nota" value="2">
-                        <label for="star2" title="2 estrelas">★</label>
+
+                        <label for="star2" title="2 estrelas">
+                            ★
+                        </label>
+
+
+
+                        <!-- 1 estrela -->
 
                         <input type="radio" id="star1" name="nota" value="1">
-                        <label for="star1" title="1 estrela">★</label>
+
+                        <label for="star1" title="1 estrela">
+                            ★
+                        </label>
+
+
                     </div>
+
                 </div>
 
-                <button type="submit">Enviar Avaliação</button>
+
+
+                <!-- ==================================
+                     BOTÃO
+                ================================== -->
+
+                <button type="submit">
+                    Enviar Avaliação
+                </button>
+
+
+
             </form>
 
-            <!-- Parágrafo de mensagem de feedback -->
-            <p id="mensagemAvaliacao" style="margin-top: 15px; text-align: center;"></p>
+
+
+            <!-- ==================================
+                 MENSAGEM
+            ================================== -->
+
+            <p id="mensagemAvaliacao" style="
+                    margin-top: 15px;
+                    text-align: center;
+                ">
+            </p>
+
+
         </section>
+
+
     </main>
-</head>
-<body>
+
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script src="../js/avaliar.js"></script>
+
+
+</body>
+
+</html>
