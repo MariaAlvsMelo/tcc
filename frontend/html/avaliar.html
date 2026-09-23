@@ -70,6 +70,13 @@
 
             box-sizing: border-box;
 
+            display: flex;
+            justify-content: center; /* Centraliza na horizontal */
+            align-items: center;     /* Centraliza na vertical */
+            min-height: 100vh;       /* Força o container a ter a altura total da tela */
+            padding: 20px;           /* Evita que o card encoste nas bordas em telas pequenas */
+            box-sizing: border-box;
+
         }
 
 
@@ -383,14 +390,11 @@
         <!-- Logo -->
 
         <a href="home.html" class="nav-logo">
+            <span>
+                <img src="../img/logo.png" alt="Entre Notas" width="55" height="55" >
+            </span>
             Entre Notas
-        </a>
-
-
-        <!-- Link Sobre -->
-
-        <a href="sobre.html" class="nav-sobre">
-            Sobre
+        
         </a>
 
 

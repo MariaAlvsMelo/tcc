@@ -164,7 +164,6 @@ a {
 }
 
 .nav-logo::before {
-    content: "♫";
 
     font-size: 25px;
 
@@ -173,6 +172,7 @@ a {
     text-shadow:
         0 0 12px rgba(139, 77, 255, 0.8);
 }
+    
 
 .nav-logo:hover {
     color: white;
@@ -181,6 +181,47 @@ a {
         0 0 15px rgba(139, 77, 255, 0.7);
 }
 
+.nav-login {
+    position: absolute;
+
+    right: 25px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #a970ff;
+
+    text-decoration: none;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.3px;
+
+    padding: 10px 15px;
+
+    transition: var(--transition);
+}
+
+.nav-login::before {
+    font-size: 25px;
+
+    color: #8b4dff;
+
+    text-shadow:
+        0 0 12px rgba(139, 77, 255, 0.8);
+}
+
+.nav-login:hover {
+    color: white;
+
+    text-shadow:
+        0 0 15px rgba(139, 77, 255, 0.7);
+}
 
 /* =========================================================
    LINK SOBRE
@@ -1154,186 +1195,113 @@ button[type="submit"]:hover,
 /* =========================================================
    LOGIN / CADASTRO
    ========================================================= */
-
+/* Container Principal (Mantém o card centralizado na tela) */
 .login-container,
 .cadastro-container {
     width: 100%;
-
     min-height: 100vh;
-
     display: flex;
-
     justify-content: center;
-
     align-items: center;
-
-    padding: 30px;
+    padding: 20px;
+    background-color: #060919; /* Fundo escuro para contrastar com o card */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-
+/* Card de Login/Cadastro */
 .login-card,
 .cadastro-card {
     width: 100%;
-
-    max-width: 430px;
-
-    padding: 35px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #111733,
-            #0c1025
-        );
-
-    border:
-        1px solid rgba(124, 60, 255, 0.25);
-
+    max-width: 420px;
+    padding: 40px;
+    background: linear-gradient(145deg, #111733, #0c1025);
+    border: 1px solid rgba(124, 60, 255, 0.25);
     border-radius: 16px;
-
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.45),
-        0 0 30px rgba(124, 60, 255, 0.08);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 
+                0 0 30px rgba(124, 60, 255, 0.08);
 }
 
-
+/* Títulos */
 .login-card h1,
 .cadastro-card h1 {
-    margin:
-        0 0 8px;
-
-    color: white;
-
+    margin: 0 0 10px;
+    color: #ffffff;
     text-align: center;
-
-    font-size: 30px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
-
+/* Textos de apoio / Links secundários */
 .login-card p,
 .cadastro-card p {
-    color: #858198;
-
+    color: #94a3b8;
     text-align: center;
-
     font-size: 14px;
+    margin-bottom: 24px;
 }
 
-
+/* Formulário */
 .login-card form,
 .cadastro-card form {
-    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
 }
 
-
-.login-card input,
-.cadastro-card input {
-    margin-bottom: 15px;
+/* Inputs de Texto/Senha (Estilização Moderna) */
+.login-card input[type="text"],
+.login-card input[type="email"],
+.login-card input[type="password"],
+.cadastro-card input[type="text"],
+.cadastro-card input[type="email"],
+.cadastro-card input[type="password"] {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    outline: none;
 }
 
-
-/* =========================================================
-   PERFIL
-   ========================================================= */
-
-.perfil-container {
-    width: calc(100% - 40px);
-
-    max-width: 900px;
-
-    margin:
-        120px auto 50px;
+/* Efeito de Clique/Foco nos Inputs */
+.login-card input:focus,
+.cadastro-card input:focus {
+    border-color: #7c3cff;
+    background: rgba(124, 60, 255, 0.05);
+    box-shadow: 0 0 12px rgba(124, 60, 255, 0.2);
 }
 
-
-.perfil-card {
-    padding: 35px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #111733,
-            #0c1025
-        );
-
-    border:
-        1px solid rgba(124, 60, 255, 0.25);
-
-    border-radius: 16px;
-
-    box-shadow:
-        var(--shadow);
+/* Botão de Enviar (Submit) */
+.login-card button,
+.cadastro-card button {
+    width: 100%;
+    padding: 14px;
+    background: #7c3cff;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    margin-top: 10px;
 }
 
-
-.perfil-card h1,
-.perfil-card h2 {
-    color: white;
+/* Efeito Hover no Botão */
+.login-card button:hover,
+.cadastro-card button:hover {
+    background: #692ee0;
 }
 
-
-.perfil-card p {
-    color: #aaa6bb;
+.login-card button:active,
+.cadastro-card button:active {
+    transform: scale(0.98);
 }
 
-
-/* =========================================================
-   SOBRE
-   ========================================================= */
-
-.sobre-container {
-    width: calc(100% - 40px);
-
-    max-width: 1000px;
-
-    margin:
-        120px auto 50px;
-}
-
-
-.sobre-card {
-    padding: 40px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #111733,
-            #0c1025
-        );
-
-    border:
-        1px solid rgba(124, 60, 255, 0.25);
-
-    border-radius: 16px;
-
-    box-shadow:
-        var(--shadow);
-}
-
-
-.sobre-card h1,
-.sobre-card h2 {
-    color: white;
-}
-
-
-.sobre-card h1 {
-    font-size: 35px;
-}
-
-
-.sobre-card h2 {
-    margin-top: 30px;
-
-    color: #a970ff;
-}
-
-
-.sobre-card p {
-    color: #aaa6bb;
-
-    line-height: 1.8;
-}
 
 
 /* =========================================================
