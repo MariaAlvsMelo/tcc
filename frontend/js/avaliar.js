@@ -322,186 +322,102 @@ document.addEventListener(
 // ==========================================
 // ENVIAR AVALIAÇÃO
 // ==========================================
-
 formAvaliacao.addEventListener(
     "submit",
     async function (event) {
 
         event.preventDefault();
 
+        // Seleciona os elementos da tela de carregamento e o botão
+        const overlay = document.getElementById("loadingOverlay");
+        const botaoSubmit = formAvaliacao.querySelector('button[type="submit"]');
 
-        const musica =
-            campoMusica.value.trim();
-
-
-        const artista =
-            campoArtista.value.trim();
-
-
-        const comentario =
-            document
-                .getElementById(
-                    "comentarioAvaliacao"
-                )
-                .value
-                .trim();
-
-
-        const notaSelecionada =
-            document.querySelector(
-                'input[name="nota"]:checked'
-            );
-
-
-        const nota =
-            notaSelecionada
-                ? notaSelecionada.value
-                : null;
-
+        const musica = campoMusica.value.trim();
+        const artista = campoArtista.value.trim();
+        const comentario = document.getElementById("comentarioAvaliacao").value.trim();
+        const notaSelecionada = document.querySelector('input[name="nota"]:checked');
+        const nota = notaSelecionada ? notaSelecionada.value : null;
 
         // Validação
-        if (
-            !musica ||
-            !artista ||
-            !comentario ||
-            !nota
-        ) {
-
-            mensagemAvaliacao.innerText =
-                !nota
-                    ? "Clique em uma estrela para dar sua nota!"
-                    : "Preencha todos os campos!";
-
-            mensagemAvaliacao.style.color =
-                "red";
-
+        if (!musica || !artista || !comentario || !nota) {
+            mensagemAvaliacao.innerText = !nota
+                ? "Clique em uma estrela para dar sua nota!"
+                : "Preencha todos os campos!";
+            mensagemAvaliacao.style.color = "red";
             return;
         }
 
-
         try {
+            // === ATIVA A TELA ESCURA E A ESTRELA GIRATÓRIA ===
+            if (overlay) {
+                overlay.classList.add("ativo");
+            }
+
+            if (botaoSubmit) {
+                botaoSubmit.disabled = true;
+            }
 
             const resposta = await fetch(
                 "http://localhost:3000/usuarios/avaliacoes",
                 {
                     method: "POST",
-
                     headers: {
-                        "Content-Type":
-                            "application/json"
+                        "Content-Type": "application/json"
                     },
-
                     body: JSON.stringify({
-
-                        musica:
-
-                            musica,
-
-                        artista:
-
-                            artista,
-
-                        comentario:
-
-                            comentario,
-
-                        nota:
-
-                            nota,
-
-
-                        // Dados da Deezer
-                        capa_album:
-
-                            musicaDeezerSelecionada
-                                ?.album
-                                ?.cover_medium ||
-                            null,
-
-
-                        id_deezer:
-
-                            musicaDeezerSelecionada
-                                ?.id ||
-                            null,
-
-
-                        id_album:
-
-                            musicaDeezerSelecionada
-                                ?.album
-                                ?.id ||
-                            null
-
+                        musica: musica,
+                        artista: artista,
+                        comentario: comentario,
+                        nota: nota,
+                        capa_album: musicaDeezerSelecionada?.album?.cover_medium || null,
+                        id_deezer: musicaDeezerSelecionada?.id || null,
+                        id_album: musicaDeezerSelecionada?.album?.id || null
                     })
                 }
             );
 
+            const resultado = await resposta.json();
+            mensagemAvaliacao.innerText = resultado.mensagem;
 
-            const resultado =
-                await resposta.json();
+            if (resultado.sucesso) {
+                mensagemAvaliacao.style.color = "green";
 
-
-            mensagemAvaliacao.innerText =
-                resultado.mensagem;
-
-
-            if (
-                resultado.sucesso
-            ) {
-
-                mensagemAvaliacao.style.color =
-                    "green";
-
-
+                // Limpa os campos do formulário normalmente
                 formAvaliacao.reset();
-
-
-                musicaDeezerSelecionada =
-                    null;
-
-
-                musicaSelecionada.style.display =
-                    "none";
-
-
+                musicaDeezerSelecionada = null;
+                musicaSelecionada.style.display = "none";
                 capaAlbum.src = "";
+                listaSugestoes.innerHTML = "";
+                listaSugestoes.style.display = "none";
 
-
-                listaSugestoes.innerHTML =
-                    "";
-
-
-                listaSugestoes.style.display =
-                    "none";
+                // === ESPERA OS 2 SEGUNDOS COM A ESTRELA GIRANDO E DEPOIS DIRECIONA ===
+                setTimeout(function () {
+                    window.location.href = "home.html"; 
+                }, 2000);
 
             } else {
-
-                mensagemAvaliacao.style.color =
-                    "red";
-
+                mensagemAvaliacao.style.color = "red";
+                // Desativa a tela de carregamento caso dê erro nas regras do backend
+                if (overlay) overlay.classList.remove("ativo");
+                if (botaoSubmit) {
+                    botaoSubmit.disabled = false;
+                }
             }
 
-
         } catch (erro) {
-
-            console.error(
-                "Erro ao enviar avaliação:",
-                erro
-            );
-
-
-            mensagemAvaliacao.innerText =
-                "Erro de conexão com o servidor.";
-
-
-            mensagemAvaliacao.style.color =
-                "red";
-
+            console.error("Erro ao enviar avaliação:", erro);
+            mensagemAvaliacao.innerText = "Erro de conexão com o servidor.";
+            mensagemAvaliacao.style.color = "red";
+            
+            // Desativa a tela de carregamento caso caia no erro de rede
+            if (overlay) overlay.classList.remove("ativo");
+            if (botaoSubmit) {
+                botaoSubmit.disabled = false;
+            }
         }
-
     }
 );
+
 
 
 // ==========================================

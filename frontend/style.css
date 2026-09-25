@@ -1170,13 +1170,7 @@ button[type="submit"],
 }
 
 
-button[type="submit"]:hover,
-.btn-primary:hover {
-    transform: translateY(-2px);
 
-    box-shadow:
-        0 8px 28px rgba(113, 60, 255, 0.45);
-}
 
 
 /* =========================================================
@@ -1196,65 +1190,79 @@ button[type="submit"]:hover,
    LOGIN / CADASTRO
    ========================================================= */
 /* Container Principal (Mantém o card centralizado na tela) */
-.login-container,
-.cadastro-container {
+/* ==========================================================================
+   1. RESET E DEFINIÇÕES BASE (Fundo Estático)
+   ========================================================================== */
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Novo container específico: Fundo 100% travado e sem animações */
+.card-login {
     width: 100%;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
-    background-color: #060919; /* Fundo escuro para contrastar com o card */
+    background-color: #060919;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow: hidden; /* Evita barras de rolagem indesejadas */
+    transition: none !important; /* Garante que o fundo nunca se mova */
 }
 
-/* Card de Login/Cadastro */
-.login-card,
-.cadastro-card {
+
+/* Card de Login / Cadastro com a animação aplicada */
+.autenticacao-card {
     width: 100%;
     max-width: 420px;
-    padding: 40px;
+    padding: 35px 40px;
     background: linear-gradient(145deg, #111733, #0c1025);
     border: 1px solid rgba(124, 60, 255, 0.25);
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 
                 0 0 30px rgba(124, 60, 255, 0.08);
+    
+    /* Executa a animação ao carregar o card */
+    animation: surgirCard 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Títulos */
-.login-card h1,
-.cadastro-card h1 {
-    margin: 0 0 10px;
+/* ==========================================================================
+   3. ELEMENTOS INTERNOS E INTERAÇÕES (Animações locais)
+   ========================================================================== */
+
+/* Logo e Título */
+.autenticacao-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     color: #ffffff;
-    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+.autenticacao-card h1 {
+    margin: 0 0 20px;
+    color: #ffffff;
+    text-align: left;
     font-size: 28px;
     font-weight: 700;
     letter-spacing: -0.5px;
 }
 
-/* Textos de apoio / Links secundários */
-.login-card p,
-.cadastro-card p {
-    color: #94a3b8;
-    text-align: center;
-    font-size: 14px;
-    margin-bottom: 24px;
-}
-
-/* Formulário */
-.login-card form,
-.cadastro-card form {
+.autenticacao-card form {
     display: flex;
     flex-direction: column;
 }
 
-/* Inputs de Texto/Senha (Estilização Moderna) */
-.login-card input[type="text"],
-.login-card input[type="email"],
-.login-card input[type="password"],
-.cadastro-card input[type="text"],
-.cadastro-card input[type="email"],
-.cadastro-card input[type="password"] {
+/* Inputs (Animação restrita ao campo focado) */
+.autenticacao-card input[type="text"],
+.autenticacao-card input[type="email"],
+.autenticacao-card input[type="password"] {
     width: 100%;
     padding: 14px 16px;
     margin-bottom: 16px;
@@ -1263,21 +1271,19 @@ button[type="submit"]:hover,
     border-radius: 8px;
     color: #ffffff;
     font-size: 15px;
-    transition: all 0.3s ease;
     outline: none;
+    /* Transição suave apenas nas propriedades do input */
+    transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* Efeito de Clique/Foco nos Inputs */
-.login-card input:focus,
-.cadastro-card input:focus {
+.autenticacao-card input:focus {
     border-color: #7c3cff;
-    background: rgba(124, 60, 255, 0.05);
+    background-color: rgba(124, 60, 255, 0.05);
     box-shadow: 0 0 12px rgba(124, 60, 255, 0.2);
 }
 
-/* Botão de Enviar (Submit) */
-.login-card button,
-.cadastro-card button {
+/* Botões com efeito hover e clique */
+.autenticacao-card button {
     width: 100%;
     padding: 14px;
     background: #7c3cff;
@@ -1287,19 +1293,38 @@ button[type="submit"]:hover,
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
-    margin-top: 10px;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-/* Efeito Hover no Botão */
-.login-card button:hover,
-.cadastro-card button:hover {
-    background: #692ee0;
+
+/* Links Inferiores Centralizados */
+.autenticacao-alternativa {
+    color: #94a3b8;
+    text-align: center;
+    font-size: 14px;
+    width: 100%;
+    margin-top: 15px;
 }
 
-.login-card button:active,
-.cadastro-card button:active {
-    transform: scale(0.98);
+.autenticacao-alternativa a {
+    color: #7c3cff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.autenticacao-alternativa a:hover {
+    color: #9d6eff;
+    text-decoration: underline;
+}
+
+.mensagem-alerta {
+    color: #ef4444;
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 
@@ -1531,4 +1556,66 @@ button[type="submit"]:hover,
     .cadastro-card {
         padding: 25px;
     }
+}
+
+/* ==========================================================================
+   TELA DE CARREGAMENTO (Fundo escuro e Estrela Girando)
+   ========================================================================== */
+
+/* O fundo escuro que cobre toda a tela */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(6, 9, 25, 0.9); /* Fundo super escuro semi-transparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Garante que fica por cima de absolutamente tudo */
+    opacity: 0;
+    pointer-events: none; /* Impede cliques no formulário enquanto carrega */
+    transition: opacity 0.3s ease; /* Transição suave ao aparecer */
+}
+
+/* Classe que o JavaScript usará para mostrar a tela */
+.loading-overlay.ativo {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Alinhamento do conteúdo interno */
+.loading-conteudo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Mensagem abaixo da estrela */
+.loading-conteudo p {
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* Animação que faz girar 360 graus */
+@keyframes girarEstrela {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Aplica a animação diretamente na imagem da estrela */
+.estrela-giratoria {
+    width: 100px; /* Tamanho controlado da estrela */
+    height: 100px;
+    object-fit: contain;
+    /* Gira infinitamente a cada 1.2 segundos de forma linear e suave */
+    animation: girarEstrela 1.2s linear infinite;
 }
