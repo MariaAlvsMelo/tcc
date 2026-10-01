@@ -1,33 +1,338 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil </title>
-    <link rel="stylesheet" href="../style.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Perfil - Entre Notas</title>
+
+    <link
+        rel="stylesheet"
+        href="../style.css"
+    >
 
 </head>
+
+
 <body>
-  
-    <!-- Cabeçalho de navegação do site -->
-  <header class="cabecalho">
-    <a href="home.html" class="nav-logo"> 
-      <span>
-        <img src="../img/logo.png" alt="Entre Notas" width="55" height="55" >
-    </span>
-      Entre Notas</a>
-    <nav class="cabecalho-menu">
-      <a href="home.html" class="nav-item">
-        <span class="icon">🏠</span>
-        Feed
-      </a>
-      <a href="avaliar.html" class="nav-item">
-        <span class="icon">⭐</span>
-        Avaliar
-      </a>
-      <a href="perfil.html" class="nav-item active">
-        <span class="icon">👤</span>
-        Perfil
-      </a>
-    </nav>
-  </header>
+
+
+    <!-- =====================================================
+         CABEÇALHO
+         ===================================================== -->
+
+    <header class="cabecalho">
+
+        <a
+            href="home.html"
+            class="nav-logo"
+        >
+
+            <span>
+
+                <img
+                    src="../img/logo.png"
+                    alt="Entre Notas"
+                    width="55"
+                    height="55"
+                >
+
+            </span>
+
+            Entre Notas
+
+        </a>
+
+
+        <nav class="cabecalho-menu">
+
+            <a
+                href="home.html"
+                class="nav-item"
+            >
+                <span class="icon">🏠</span>
+                Feed
+            </a>
+
+
+            <a
+                href="avaliar.html"
+                class="nav-item"
+            >
+                <span class="icon">⭐</span>
+                Avaliar
+            </a>
+
+
+            <a
+                href="perfil.html"
+                class="nav-item active"
+            >
+                <span class="icon">👤</span>
+                Perfil
+            </a>
+
+        </nav>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         PERFIL
+         ===================================================== -->
+
+    <main class="perfil-container">
+
+
+        <section class="perfil-card">
+
+
+            <div class="perfil-topo">
+
+
+                <!-- =================================================
+                     FOTO
+                     ================================================= -->
+
+                <div class="perfil-foto-area">
+
+                    <img
+                        id="fotoPerfil"
+                        class="perfil-foto"
+                        src="../img/logo.png"
+                        alt="Foto de perfil"
+                    >
+
+
+                    <!-- =================================================
+                         ADICIONADO:
+                         BOTÃO DA FOTO FICA DISPONÍVEL SOMENTE
+                         QUANDO O MODO DE EDIÇÃO É ABERTO.
+                         ================================================= -->
+
+                    <label
+                        for="inputFoto"
+                        id="botaoAlterarFoto"
+                        class="botao-foto"
+                        style="display:none;"
+                    >
+                        📷 Alterar foto
+                    </label>
+
+
+                    <input
+                        type="file"
+                        id="inputFoto"
+                        accept="image/*"
+                        hidden
+                    >
+
+                </div>
+
+
+
+                <!-- =================================================
+                     INFORMAÇÕES
+                     ================================================= -->
+
+                <div class="perfil-resumo">
+
+                    <h1 id="nomePerfil">
+                        Carregando...
+                    </h1>
+
+
+                    <p id="emailPerfil">
+                    </p>
+
+
+                    <p
+                        id="biografiaPerfil"
+                        class="perfil-biografia"
+                    >
+                        Adicione uma biografia ao seu perfil.
+                    </p>
+
+
+                    <!-- =================================================
+                         ADICIONADO:
+                         BOTÃO ESPECÍFICO PARA EDITAR
+                         ================================================= -->
+
+                    <button
+                        type="button"
+                        id="btnEditarPerfil"
+                        class="botao-editar-perfil"
+                    >
+                        ✏️ Editar perfil
+                    </button>
+
+
+                    <!-- =================================================
+                         ADICIONADO:
+                         SAIR DA CONTA
+                         ================================================= -->
+
+                    <button
+                        type="button"
+                        id="btnSairConta"
+                        class="botao-sair-conta"
+                    >
+                        Sair da conta
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 ÁREA DE EDIÇÃO
+                 ================================================= -->
+
+            <section
+                id="areaEdicaoPerfil"
+                class="perfil-edicao"
+                style="display:none;"
+            >
+
+                <div class="perfil-separador"></div>
+
+
+                <h2>
+                    Editar perfil
+                </h2>
+
+
+                <form
+                    id="formPerfil"
+                >
+
+                    <label
+                        for="nomePerfilInput"
+                    >
+                        Nome
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nomePerfilInput"
+                        required
+                    >
+
+
+                    <label
+                        for="emailPerfilInput"
+                    >
+                        E-mail
+                    </label>
+
+                    <input
+                        type="email"
+                        id="emailPerfilInput"
+                        required
+                    >
+
+
+                    <label
+                        for="senhaPerfilInput"
+                    >
+                        Nova senha
+                    </label>
+
+                    <input
+                        type="password"
+                        id="senhaPerfilInput"
+                        placeholder="Deixe vazio para manter a senha atual"
+                    >
+
+
+                    <label
+                        for="biografiaInput"
+                    >
+                        Biografia
+                    </label>
+
+                    <textarea
+                        id="biografiaInput"
+                        rows="4"
+                        maxlength="500"
+                        placeholder="Conte um pouco sobre você..."
+                    ></textarea>
+
+
+                    <div class="botoes-edicao-perfil">
+
+                        <button
+                            type="submit"
+                            class="botao-perfil"
+                        >
+                            Salvar alterações
+                        </button>
+
+
+                        <button
+                            type="button"
+                            id="btnCancelarEdicao"
+                            class="botao-cancelar-perfil"
+                        >
+                            Cancelar
+                        </button>
+
+                    </div>
+
+
+                    <p
+                        id="mensagemPerfil"
+                        class="mensagem-alerta"
+                    ></p>
+
+                </form>
+
+            </section>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             AVALIAÇÕES
+             ===================================================== -->
+
+        <section class="minhas-avaliacoes">
+
+            <div class="titulo-minhas-avaliacoes">
+
+                <h2>
+                    Minhas avaliações
+                </h2>
+
+                <span id="contadorAvaliacoes">
+                    0 avaliações
+                </span>
+
+            </div>
+
+
+            <div
+                id="listaMinhasAvaliacoes"
+            ></div>
+
+        </section>
+
+    </main>
+
+
+    <script src="../js/perfil.js"></script>
+
+</body>
+
+</html>

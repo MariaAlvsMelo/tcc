@@ -7,19 +7,63 @@ const deezerRoutes = require("./routes/deezerRoutes");
 
 const app = express();
 
+
+// =========================================================
+// MANTIDO:
+// Permite requisições do frontend.
+// =========================================================
+
 app.use(cors());
-app.use(express.json());
 
 
-// Disponibiliza os arquivos do frontend
+// =========================================================
+// MODIFICADO:
+// Aumentado o limite do JSON.
+//
+// A foto de perfil é enviada em Base64 e pode ultrapassar
+// o limite padrão de aproximadamente 100 KB do Express.
+// =========================================================
+
+app.use(
+    express.json({
+        limit: "10mb"
+    })
+);
+
+
+// =========================================================
+// ADICIONADO:
+// Também permite dados maiores enviados por formulário.
+// =========================================================
+
+app.use(
+    express.urlencoded({
+        extended: true,
+        limit: "10mb"
+    })
+);
+
+
+// =========================================================
+// MANTIDO:
+// Disponibiliza os arquivos do frontend.
+// =========================================================
+
 app.use(
     express.static(
-        path.join(__dirname, "../frontend")
+        path.join(
+            __dirname,
+            "../frontend"
+        )
     )
 );
 
 
-// Página inicial
+// =========================================================
+// MANTIDO:
+// Página inicial.
+// =========================================================
+
 app.get("/", (req, res) => {
 
     res.sendFile(
@@ -32,19 +76,32 @@ app.get("/", (req, res) => {
 });
 
 
-// Rotas dos usuários
+// =========================================================
+// MANTIDO:
+// Rotas dos usuários.
+// =========================================================
+
 app.use(
     "/usuarios",
     usuarioRoutes
 );
 
 
-// Rotas da Deezer
+// =========================================================
+// MANTIDO:
+// Rotas da Deezer.
+// =========================================================
+
 app.use(
     "/deezer",
     deezerRoutes
 );
 
+
+// =========================================================
+// MANTIDO:
+// Inicialização do servidor.
+// =========================================================
 
 app.listen(3000, () => {
 
