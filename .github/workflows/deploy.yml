@@ -18,13 +18,13 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps: deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Renomeia home.html para index.html antes do deploy para o GitHub Pages reconhecer
+      # Renomeia home.html para index.html incluindo a pasta TCC no caminho
       - name: Ajustar pagina inicial
         run: cp frontend/html/home.html frontend/html/index.html
 
@@ -34,7 +34,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Define a pasta exata que será enviada para o site
+          # Caminho ajustado para a estrutura interna do Git
           path: 'frontend/html/'
 
       - name: Deploy to GitHub Pages
