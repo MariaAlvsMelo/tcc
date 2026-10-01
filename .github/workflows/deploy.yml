@@ -22,20 +22,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/uses/checkout@v4
 
-      # Como o GitHub Pages exige um arquivo index.html na raiz do site,
-      # criamos uma cópia do seu home.html diretamente na raiz da pasta frontend.
-      - name: Criar index na raiz do frontend
-        run: cp frontend/html/home.html frontend/index.html
+      # Cria um arquivo index.html na raiz do frontend que apenas redireciona para html/home.html
+      - name: Criar redirecionamento index.html
+        run: |
+          echo '<meta http-equiv="refresh" content="0; URL='\''html/home.html'\''">' > frontend/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      # Envia a pasta frontend inteira para o GitHub
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Envia a pasta frontend inteira com todas as subpastas (html, img, js e o style.css)
           path: 'frontend/'
 
       - name: Deploy to GitHub Pages
