@@ -24,18 +24,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Renomeia home.html para index.html incluindo a pasta TCC no caminho
-      - name: Ajustar pagina inicial
-        run: cp frontend/html/home.html frontend/html/index.html
+      # 1. Cria uma pasta temporária para juntar tudo o que o site precisa
+      - name: Criar pasta de build
+        run: mkdir public_dist
 
+      # 2. Copia todo o conteúdo de frontend para essa pasta temporária
+      - name: Copiar arquivos do frontend
+        run: cp -r frontend/* public_dist/
+
+      # 3. Move os arquivos HTML para a raiz do site e renomeia home.html para index.html
+      - name: Ajustar paginas e links
+        run: |
+          cp -r public_dist/html/* public_dist/
+          mv public_dist/home.html public_dist/index.html
+          rm -rf public_dist/html
+
+      # 4. Configura e envia a pasta completa para o GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Caminho ajustado para a estrutura interna do Git
-          path: 'frontend/html/'
+          path: 'public_dist/'
 
       - name: Deploy to GitHub Pages
         id: deployment
