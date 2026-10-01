@@ -22,22 +22,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/uses/checkout@v4
+        uses: actions/checkout@v4
 
-      # Cria um arquivo index.html na raiz do frontend que apenas redireciona para html/home.html
-      - name: Criar redirecionamento index.html
+      # Cria um arquivo index.html na raiz que redireciona o navegador para frontend/html/home.html
+      # Isso preserva todas as distâncias de pastas (../style.css continuará funcionando!)
+      - name: Criar Redirecionamento de Entrada
         run: |
-          echo '<meta http-equiv="refresh" content="0; URL='\''html/home.html'\''">' > frontend/index.html
+          echo '<meta http-equiv="refresh" content="0; URL='\''frontend/html/home.html'\''">' > index.html
 
+      # Configura o ambiente do Pages
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
-      # Envia a pasta frontend inteira para o GitHub
+      # Envia o repositório inteiro (preservando as pastas frontend, html, img e css intactas)
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'frontend/style.css'
+          path: '.'
 
+      # Realiza o deploy na internet
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
