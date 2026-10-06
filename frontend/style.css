@@ -2441,3 +2441,193 @@ button[type="submit"],
     color: #77738e;
     font-size: 14px;
 }
+
+
+
+.curtida-canto-superior {
+    position: absolute;
+
+    top: 22px;
+    right: 25px;
+
+    z-index: 5;
+}
+
+
+.curtida-canto-superior .btn-curtir {
+    margin: 0;
+}
+
+
+/* =========================================================
+   ADICIONADO:
+   PLAYER DE PRÉVIA DA MÚSICA
+========================================================= */
+
+#areaPreviewMusica {
+    width: 100%;
+    margin-top: 15px;
+}
+
+
+#previewMusica {
+    width: 100%;
+    max-width: 400px;
+    height: 40px;
+}
+
+
+.preview-avaliacao {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    width: 100%;
+    max-width: 400px;
+
+    margin-top: 12px;
+    margin-bottom: 15px;
+}
+
+
+.preview-avaliacao span {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+
+.preview-avaliacao audio {
+    display: block;
+
+    width: 100%;
+    min-width: 420px;
+    height: 45px;
+
+    border: none;
+    border-radius: 25px;
+
+    /* MODIFICADO */
+    background-color: #c9c4d6;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.20);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+
+.preview-avaliacao audio::-webkit-media-controls-panel {
+    background-color: #b8b4ca;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+/* =========================================================
+   ADICIONADO:
+   PRÉVIA DA MÚSICA NAS AVALIAÇÕES DO FEED
+========================================================= */
+
+.preview-avaliacao {
+    width: 100%;
+    margin: 14px 0;
+    padding: 12px;
+
+    background: rgba(124, 60, 255, 0.08);
+
+    border: 1px solid
+        rgba(124, 60, 255, 0.20);
+
+    border-radius: 12px;
+
+    box-sizing: border-box;
+}
+
+
+.preview-titulo {
+    margin: 0 0 8px 0;
+
+    color: var(--text-secondary);
+
+    font-size: 0.85rem;
+
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   PRÉVIA DA MÚSICA NO FEED
+========================================================= */
+
+/* =========================================================
+   PRÉVIA DA MÚSICA
+========================================================= */
+
+.preview-avaliacao {
+    width: 100%;
+    max-width: 520px;
+
+    margin-top: 18px;
+
+    padding: 0;
+
+    background: transparent;
+    border: none;
+}
+
+
+/* Remove o texto "Prévia da música" */
+.preview-titulo {
+    display: none;
+}
+
+
+/* Player branco */
+.preview-avaliacao audio {
+    display: block;
+
+    width: 100%;
+    min-width: 420px;
+    height: 45px;
+
+    border: none;
+    border-radius: 25px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.20);
+}
+
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .preview-avaliacao {
+        max-width: 100%;
+    }
+
+    .preview-avaliacao audio {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.card-avaliacao {
+    position: relative;
+}
+
+
+/* =========================================================
+   PRÉVIA NA PARTE INFERIOR
+========================================================= */
+
+.area-preview-feed {
+    width: 100%;
+    margin-top: 16px;
+}

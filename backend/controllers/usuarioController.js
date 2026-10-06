@@ -511,15 +511,15 @@ listarAvaliacoesUsuario: (req, res) => {
     },
 
 
-    // =========================================================
-    // MODIFICADO:
-    // SALVAR AVALIAÇÃO
-    // =========================================================
-
     avaliar: (
         req,
         res
     ) => {
+
+        console.log(
+            "DADOS RECEBIDOS NA AVALIAÇÃO:",
+            req.body
+        );
 
         const {
             id_usuario,
@@ -529,7 +529,8 @@ listarAvaliacoesUsuario: (req, res) => {
             nota,
             capa_album,
             id_deezer,
-            id_album
+            id_album,
+            preview
         } = req.body;
 
 
@@ -559,6 +560,7 @@ listarAvaliacoesUsuario: (req, res) => {
             capa_album,
             id_deezer,
             id_album,
+            preview,
 
             (erro) => {
 

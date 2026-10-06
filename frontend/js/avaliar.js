@@ -38,10 +38,16 @@ const mensagemAvaliacao =
         "mensagemAvaliacao"
     );
 
-// =========================================================
-// MODIFICADO:
-// Cada campo possui sua própria lista de sugestões.
-// =========================================================
+
+const previewMusica =
+    document.getElementById(
+        "previewMusica"
+    );
+
+const areaPreviewMusica =
+    document.getElementById(
+        "areaPreviewMusica"
+    );
 
 const listaSugestoesMusica =
     document.getElementById(
@@ -346,9 +352,6 @@ function mostrarSugestoes(
 }
 
 
-// =========================================================
-// SELECIONAR MÚSICA
-// =========================================================
 
 function selecionarMusica(
     musica
@@ -396,10 +399,30 @@ function selecionarMusica(
             ? `Álbum: ${musica.album.title}`
             : "";
 
-    // =====================================================
-    // MODIFICADO:
-    // Fecha as duas listas depois de selecionar.
-    // =====================================================
+
+    if (
+        musica.preview
+    ) {
+
+        previewMusica.src =
+            musica.preview;
+
+        areaPreviewMusica.style.display =
+            "block";
+
+    } else {
+
+        previewMusica.pause();
+
+        previewMusica.removeAttribute(
+            "src"
+        );
+
+        previewMusica.load();
+
+        areaPreviewMusica.style.display =
+            "none";
+    }
 
     listaSugestoesMusica.innerHTML =
         "";
@@ -640,6 +663,11 @@ formAvaliacao.addEventListener(
                                 musicaDeezerSelecionada
                                     ?.album
                                     ?.id ||
+                                null,
+
+                            preview:
+                                musicaDeezerSelecionada
+                                    ?.preview ||
                                 null
 
                         })
@@ -682,6 +710,16 @@ formAvaliacao.addEventListener(
                 capaAlbum.src =
                     "";
 
+                previewMusica.pause();
+
+                previewMusica.removeAttribute(
+                    "src"
+                );
+
+                previewMusica.load();
+
+                areaPreviewMusica.style.display =
+                    "none";
 
                 // =================================================
                 // MODIFICADO:

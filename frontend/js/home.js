@@ -9,7 +9,7 @@ const avaliacoesContainer =
 
 
 // =========================================================
-// ESTRELAS
+// GERAR ESTRELAS
 // =========================================================
 
 function gerarEstrelas(
@@ -62,7 +62,7 @@ async function carregarAvaliacoes() {
 
 
         // =================================================
-        // ADICIONADO:
+        // MANTIDO:
         // Verifica qual usuário está logado.
         // =================================================
 
@@ -84,10 +84,18 @@ async function carregarAvaliacoes() {
             (avaliacao) => {
 
 
+                // =================================================
+                // DATA DA AVALIAÇÃO
+                // =================================================
+
                 const dataFormatada =
                     avaliacao.data_avaliacao ||
                     "Sem data";
 
+
+                // =================================================
+                // CAPA DO ÁLBUM
+                // =================================================
 
                 const capaHTML =
                     avaliacao.capa_album
@@ -113,7 +121,37 @@ async function carregarAvaliacoes() {
 
                 // =================================================
                 // ADICIONADO:
-                // Exibe a foto do usuário que fez a avaliação.
+                // PRÉVIA DA MÚSICA NO FEED
+                // =================================================
+
+                const previewHTML =
+                    avaliacao.preview
+
+                        ? `
+                            <div class="preview-avaliacao">
+
+                                <p class="preview-titulo">
+                                    ▶ Prévia da música
+                                </p>
+
+                                <audio
+                                    controls
+                                    preload="none"
+                                    src="${escaparHTML(
+                                        avaliacao.preview
+                                    )}"
+                                >
+                                    Seu navegador não suporta áudio.
+                                </audio>
+
+                            </div>
+                        `
+
+                        : "";
+
+
+                // =================================================
+                // FOTO DO AUTOR
                 // =================================================
 
                 const fotoHTML =
@@ -141,11 +179,6 @@ async function carregarAvaliacoes() {
                         `;
 
 
-                // =================================================
-                // ADICIONADO:
-                // Nome e e-mail do usuário.
-                // =================================================
-
                 const nomeAutor =
                     avaliacao.nome_usuario ||
                     "Usuário";
@@ -157,8 +190,7 @@ async function carregarAvaliacoes() {
 
 
                 // =================================================
-                // ADICIONADO:
-                // Quantidade de curtidas da avaliação.
+                // CURTIDAS
                 // =================================================
 
                 const totalCurtidas =
@@ -167,12 +199,8 @@ async function carregarAvaliacoes() {
                     );
 
 
-                // =================================================
-                // ADICIONADO:
-                // Botão de curtida.
-                // =================================================
-
-                let botaoCurtida = "";
+                let botaoCurtida =
+                    "";
 
 
                 if (idUsuario) {
@@ -204,19 +232,12 @@ async function carregarAvaliacoes() {
                         <div class="curtidas-sem-login">
 
                             ♡
+
                             ${totalCurtidas}
 
                         </div>
                     `;
-
                 }
-
-
-                // =================================================
-                // MODIFICADO:
-                // Card da avaliação.
-                // Foi mantida a estrutura original.
-                // =================================================
 
                 avaliacoesContainer.innerHTML += `
 
@@ -225,6 +246,11 @@ async function carregarAvaliacoes() {
                         data-avaliacao-id="${avaliacao.id}"
                     >
 
+                    <div class="curtida-canto-superior">
+
+                        ${botaoCurtida}
+
+                    </div>
 
                         <div class="autor-avaliacao">
 
@@ -248,6 +274,10 @@ async function carregarAvaliacoes() {
 
                         </div>
 
+
+                        <!-- =====================================
+                             CONTEÚDO DA AVALIAÇÃO
+                        ====================================== -->
 
                         <div style="
                             display:flex;
@@ -280,7 +310,6 @@ async function carregarAvaliacoes() {
 
                                 </p>
 
-
                                 <p>
 
                                     ${escaparHTML(
@@ -290,6 +319,10 @@ async function carregarAvaliacoes() {
                                 </p>
 
 
+                                <!-- =====================================
+                                     NOTA
+                                ====================================== -->
+
                                 <p>
 
                                     ${gerarEstrelas(
@@ -298,6 +331,10 @@ async function carregarAvaliacoes() {
 
                                 </p>
 
+
+                                <!-- =====================================
+                                     DATA
+                                ====================================== -->
 
                                 <p
                                     class="data-postagem"
@@ -319,14 +356,9 @@ async function carregarAvaliacoes() {
                                 </p>
 
 
-                                <!-- =====================================
-                                     ADICIONADO:
-                                     Área de curtida
-                                     ===================================== -->
+                                <div class="area-preview-feed">
 
-                                <div class="area-curtida">
-
-                                    ${botaoCurtida}
+                                    ${previewHTML}
 
                                 </div>
 
@@ -341,7 +373,7 @@ async function carregarAvaliacoes() {
 
 
                 // =================================================
-                // ADICIONADO:
+                // MANTIDO:
                 // Depois que o card foi criado,
                 // verifica se o usuário já curtiu.
                 // =================================================
@@ -368,11 +400,8 @@ async function carregarAvaliacoes() {
                                 avaliacao.id,
                                 botao
                             );
-
                         }
-
                     }
-
                 }
 
             }
@@ -394,7 +423,6 @@ async function carregarAvaliacoes() {
 
 
 // =========================================================
-// ADICIONADO:
 // CURTIR / DESCURTIR AVALIAÇÃO
 // =========================================================
 
@@ -438,7 +466,6 @@ async function curtirAvaliacao(
 
 
         // =================================================
-        // ADICIONADO:
         // Se já curtiu, remove a curtida.
         // =================================================
 
@@ -457,8 +484,10 @@ async function curtirAvaliacao(
                         },
 
                         body: JSON.stringify({
+
                             id_usuario:
                                 idUsuario
+
                         })
 
                     }
@@ -468,7 +497,6 @@ async function curtirAvaliacao(
 
 
         // =================================================
-        // ADICIONADO:
         // Se ainda não curtiu, adiciona a curtida.
         // =================================================
 
@@ -487,8 +515,10 @@ async function curtirAvaliacao(
                         },
 
                         body: JSON.stringify({
+
                             id_usuario:
                                 idUsuario
+
                         })
 
                     }
@@ -513,7 +543,6 @@ async function curtirAvaliacao(
 
 
         // =================================================
-        // ADICIONADO:
         // Atualiza o coração e o número sem
         // precisar recarregar a página.
         // =================================================
@@ -599,7 +628,6 @@ async function curtirAvaliacao(
 
 
 // =========================================================
-// ADICIONADO:
 // VERIFICAR SE O USUÁRIO JÁ CURTIU
 // =========================================================
 
@@ -696,6 +724,7 @@ function escaparHTML(
 
 
     return div.innerHTML;
+
 }
 
 
