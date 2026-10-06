@@ -1,75 +1,197 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login e Cadastro</title>
+    <title>Entre Notas | Login</title>
     <link rel="stylesheet" href="../style.css">
-    <style>
-        #caixaCadastro {
-            display: none;
-        }
-    </style>
-</head> 
-<body>
+</head>
 
-    <!-- Container principal que centraliza as caixas na tela -->
-    <div class="card-login">
-        
-        <!-- Bloco do formulário de acesso (Login) -->
-        <div id="caixaLogin" class="autenticacao-card">
-            <h2 class="autenticacao-logo">
-                 <span>
-                <img src="../img/logo.png" alt="Entre Notas" width="55" height="55" >
-            </span>
-                Entre Notas</h2>
-            <h1>Login</h1>
-            <form id="formLogin">
-                <input type="email" id="emailLogin" placeholder="Email" required>
-                <input type="password" id="senhaLogin" placeholder="Senha" required>
-                <button type="submit">Entrar</button>
-            </form>
-            <p id="mensagemLogin" class="mensagem-alerta"></p>
-            <p class="autenticacao-alternativa">
-                Não tem uma conta? <a href="#" id="linkIrCadastro">Cadastre-se aqui</a>
-            </p>
-        </div>
-     
-        <!-- Bloco de criação de conta (Cadastro) -->
-        <div id="caixaCadastro" class="autenticacao-card">
-            <h2 class="autenticacao-logo">Entre Notas</h2>
-            <h1>Cadastrar novo usuário</h1>
-            <form id="formCadastro">
-                <input type="text" id="nomeCadastro" placeholder="Nome" required>
-                <input type="email" id="emailCadastro" placeholder="Email" required>
-                <input type="password" id="senhaCadastro" placeholder="Senha" required>
-                <button type="submit">Cadastrar</button>
-            </form>
-            <p id="mensagemCadastro" class="mensagem-alerta"></p>
-            <p class="autenticacao-alternativa">
-                <a href="#" id="linkIrLogin">Clique aqui para fazer login</a>
-            </p>        </div>
+<body class="pagina-login">
 
-    </div>
-    
-<div id="loadingOverlay" class="loading-overlay">
+    <main class="card-login">
 
-    <div class="loading-conteudo">
+        <!-- LADO ESQUERDO -->
+<!-- LADO ESQUERDO DO CARD -->
+<section class="login-apresentacao">
+
+    <div class="login-marca">
 
         <img
             src="../img/logo.png"
-            alt="Carregando..."
-            class="estrela-giratoria"
+            alt="Logo Entre Notas"
+            class="login-logo"
         >
 
-        <p>Entrando...</p>
+        <div>
+            <h1>Entre <span>Notas</span></h1>
+            <p>MÚSICA CONECTA PESSOAS</p>
+        </div>
 
     </div>
 
-</div>
+    <!-- ARTE DAS ESTRELINHAS -->
+    <div class="login-mascotes">
+        <img
+            src="../img/mascotes-login.png"
+            alt="Mascotes do Entre Notas"
+        >
+    </div>
 
-    <!-- Script da página (linkado corretamente) -->
+    <div class="login-destaque">
+
+        <h2>
+            Descubra, avalie e
+            <span>compartilhe</span>
+            <small>o que você está ouvindo.</small>
+        </h2>
+
+        <p>
+            Encontre músicas, compartilhe suas avaliações
+            e descubra novas opiniões.
+        </p>
+
+    </div>
+
+</section>
+
+        <!-- LADO DIREITO -->
+        <section class="login-formularios">
+
+            <!-- LOGIN -->
+            <div id="caixaLogin" class="autenticacao-card">
+
+                <div class="autenticacao-titulo">
+                    <h2>Bem-vindo de volta</h2>
+                    <p>Entre na sua conta para continuar.</p>
+                </div>
+
+                <form id="formLogin">
+
+                    <div class="campo-autenticacao">
+                        <label for="emailLogin">Email</label>
+
+                        <input
+                            type="email"
+                            id="emailLogin"
+                            placeholder="Digite seu email"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo-autenticacao">
+                        <label for="senhaLogin">Senha</label>
+
+                        <input
+                            type="password"
+                            id="senhaLogin"
+                            placeholder="Digite sua senha"
+                            autocomplete="current-password"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-autenticacao">
+                        Entrar
+                    </button>
+
+                </form>
+
+                <p id="mensagemLogin" class="mensagem-alerta"></p>
+
+                <p class="autenticacao-alternativa">
+                    Não tem uma conta?
+                    <a href="#" id="linkIrCadastro">Cadastre-se</a>
+                </p>
+
+            </div>
+
+            <!-- CADASTRO -->
+            <div id="caixaCadastro" class="autenticacao-card">
+
+                <div class="autenticacao-titulo">
+                    <h2>Crie sua conta</h2>
+                    <p>Faça parte do Entre Notas.</p>
+                </div>
+
+                <form id="formCadastro">
+
+                    <div class="campo-autenticacao">
+                        <label for="nomeCadastro">Nome</label>
+
+                        <input
+                            type="text"
+                            id="nomeCadastro"
+                            placeholder="Digite seu nome"
+                            autocomplete="name"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo-autenticacao">
+                        <label for="emailCadastro">Email</label>
+
+                        <input
+                            type="email"
+                            id="emailCadastro"
+                            placeholder="Digite seu email"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo-autenticacao">
+                        <label for="senhaCadastro">Senha</label>
+
+                        <input
+                            type="password"
+                            id="senhaCadastro"
+                            placeholder="Crie uma senha"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-autenticacao">
+                        Cadastrar
+                    </button>
+
+                </form>
+
+                <p id="mensagemCadastro" class="mensagem-alerta"></p>
+
+                <p class="autenticacao-alternativa">
+                    Já possui uma conta?
+                    <a href="#" id="linkIrLogin">Fazer login</a>
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- CARREGAMENTO -->
+    <div id="loadingOverlay" class="loading-overlay">
+
+        <div class="loading-conteudo">
+
+            <img
+                src="../img/logo.png"
+                alt="Carregando"
+                class="estrela-giratoria"
+            >
+
+            <p>Entrando...</p>
+
+        </div>
+
+    </div>
+
     <script src="../js/login.js"></script>
 
 </body>
+
 </html>

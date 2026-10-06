@@ -7,10 +7,40 @@ const avaliacoesContainer =
         "home-container"
     );
 
+// =========================================================
+// ADICIONADO:
+// MOSTRAR LOGIN SOMENTE QUANDO NÃO ESTIVER LOGADO
+// =========================================================
 
-// =========================================================
-// GERAR ESTRELAS
-// =========================================================
+const btnLoginCabecalho =
+    document.getElementById(
+        "btnLoginCabecalho"
+    );
+
+
+const usuarioCabecalho =
+    localStorage.getItem(
+        "usuarioLogado"
+    );
+
+
+if (btnLoginCabecalho) {
+
+    if (usuarioCabecalho) {
+
+        // Usuário logado:
+        // esconde Login.
+        btnLoginCabecalho.style.display =
+            "none";
+
+    } else {
+
+        // Usuário não logado:
+        // mostra Login.
+        btnLoginCabecalho.style.display =
+            "inline-flex";
+    }
+}
 
 function gerarEstrelas(
     nota

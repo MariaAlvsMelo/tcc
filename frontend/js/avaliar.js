@@ -59,26 +59,52 @@ const listaSugestoesArtista =
         "listaSugestoesArtista"
     );
 
+// =========================================================
+// ADICIONADO:
+// PROTEGER PÁGINA DE AVALIAÇÃO
+// =========================================================
 
-// =========================================================
-// MANTIDO:
-// Música selecionada da Deezer.
-// =========================================================
+const usuarioPagina =
+    JSON.parse(
+        localStorage.getItem("usuarioLogado")
+    );
+
+const avaliarSemLogin =
+    document.getElementById("avaliarSemLogin");
+
+
+if (!usuarioPagina) {
+
+    // Esconde somente o formulário.
+    formAvaliacao.style.display =
+        "none";
+
+    // Mostra a interface exclusiva.
+    if (avaliarSemLogin) {
+
+        avaliarSemLogin.style.display =
+            "flex";
+    }
+
+} else {
+
+    formAvaliacao.style.display =
+        "";
+
+    if (avaliarSemLogin) {
+
+        avaliarSemLogin.style.display =
+            "none";
+    }
+}
+
 
 let musicaDeezerSelecionada =
     null;
 
 
-// =========================================================
-// PESQUISA
-// =========================================================
-
 let tempoBusca;
 
-
-// =========================================================
-// PESQUISAR MÚSICA
-// =========================================================
 
 campoMusica.addEventListener(
     "input",

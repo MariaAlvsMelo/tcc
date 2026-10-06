@@ -25,7 +25,7 @@
 
     <!-- =====================================================
          CABEÇALHO
-         ===================================================== -->
+    ====================================================== -->
 
     <header class="cabecalho">
 
@@ -78,6 +78,21 @@
                 Perfil
             </a>
 
+
+            <!-- =================================================
+                 ADICIONADO:
+                 LOGIN APARECE SOMENTE QUANDO NÃO ESTIVER LOGADO
+            ================================================== -->
+
+            <a
+                href="login.html"
+                id="btnLoginCabecalho"
+                class="btn-login-cabecalho"
+                style="display: none;"
+            >
+                Login
+            </a>
+
         </nav>
 
     </header>
@@ -85,11 +100,62 @@
 
 
     <!-- =====================================================
-         PERFIL
-         ===================================================== -->
+         ADICIONADO:
+         INTERFACE EXCLUSIVA PARA QUEM NÃO ESTÁ LOGADO
+    ====================================================== -->
 
-    <main class="perfil-container">
+    <section
+        id="perfilSemLogin"
+        class="acesso-sem-login"
+        style="display: none;"
+    >
 
+        <div class="acesso-sem-login-icone">
+            ♫
+        </div>
+
+
+        <h2>
+            Seu perfil começa aqui
+        </h2>
+
+
+        <p>
+            Faça login para acessar seu perfil,
+            editar suas informações e visualizar
+            todas as suas avaliações.
+        </p>
+
+
+        <a
+            href="login.html"
+            class="btn-acesso-login"
+        >
+            Fazer login
+        </a>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         PERFIL NORMAL
+
+         MODIFICADO:
+         Começa escondido.
+         O perfil.js mostra somente se existir usuário logado.
+    ====================================================== -->
+
+    <main
+        id="perfil-container"
+        class="perfil-container"
+        style="display: none;"
+    >
+
+
+        <!-- =================================================
+             CARD DO PERFIL
+        ================================================== -->
 
         <section class="perfil-card">
 
@@ -99,7 +165,7 @@
 
                 <!-- =================================================
                      FOTO
-                     ================================================= -->
+                ================================================== -->
 
                 <div class="perfil-foto-area">
 
@@ -112,16 +178,14 @@
 
 
                     <!-- =================================================
-                         ADICIONADO:
-                         BOTÃO DA FOTO FICA DISPONÍVEL SOMENTE
-                         QUANDO O MODO DE EDIÇÃO É ABERTO.
-                         ================================================= -->
+                         ALTERAR FOTO
+                    ================================================== -->
 
                     <label
                         for="inputFoto"
                         id="botaoAlterarFoto"
                         class="botao-foto"
-                        style="display:none;"
+                        style="display: none;"
                     >
                         📷 Alterar foto
                     </label>
@@ -139,8 +203,8 @@
 
 
                 <!-- =================================================
-                     INFORMAÇÕES
-                     ================================================= -->
+                     INFORMAÇÕES DO PERFIL
+                ================================================== -->
 
                 <div class="perfil-resumo">
 
@@ -161,10 +225,10 @@
                     </p>
 
 
+
                     <!-- =================================================
-                         ADICIONADO:
-                         BOTÃO ESPECÍFICO PARA EDITAR
-                         ================================================= -->
+                         EDITAR PERFIL
+                    ================================================== -->
 
                     <button
                         type="button"
@@ -175,10 +239,10 @@
                     </button>
 
 
+
                     <!-- =================================================
-                         ADICIONADO:
                          SAIR DA CONTA
-                         ================================================= -->
+                    ================================================== -->
 
                     <button
                         type="button"
@@ -196,15 +260,16 @@
 
             <!-- =================================================
                  ÁREA DE EDIÇÃO
-                 ================================================= -->
+            ================================================== -->
 
             <section
                 id="areaEdicaoPerfil"
                 class="perfil-edicao"
-                style="display:none;"
+                style="display: none;"
             >
 
-                <div class="perfil-separador"></div>
+                <div class="perfil-separador">
+                </div>
 
 
                 <h2>
@@ -212,9 +277,10 @@
                 </h2>
 
 
-                <form
-                    id="formPerfil"
-                >
+                <form id="formPerfil">
+
+
+                    <!-- NOME -->
 
                     <label
                         for="nomePerfilInput"
@@ -229,6 +295,9 @@
                     >
 
 
+
+                    <!-- E-MAIL -->
+
                     <label
                         for="emailPerfilInput"
                     >
@@ -241,6 +310,9 @@
                         required
                     >
 
+
+
+                    <!-- SENHA -->
 
                     <label
                         for="senhaPerfilInput"
@@ -255,6 +327,9 @@
                     >
 
 
+
+                    <!-- BIOGRAFIA -->
+
                     <label
                         for="biografiaInput"
                     >
@@ -268,6 +343,9 @@
                         placeholder="Conte um pouco sobre você..."
                     ></textarea>
 
+
+
+                    <!-- BOTÕES -->
 
                     <div class="botoes-edicao-perfil">
 
@@ -293,7 +371,8 @@
                     <p
                         id="mensagemPerfil"
                         class="mensagem-alerta"
-                    ></p>
+                    >
+                    </p>
 
                 </form>
 
@@ -304,8 +383,8 @@
 
 
         <!-- =====================================================
-             AVALIAÇÕES
-             ===================================================== -->
+             MINHAS AVALIAÇÕES
+        ====================================================== -->
 
         <section class="minhas-avaliacoes">
 
@@ -314,6 +393,7 @@
                 <h2>
                     Minhas avaliações
                 </h2>
+
 
                 <span id="contadorAvaliacoes">
                     0 avaliações
@@ -324,14 +404,21 @@
 
             <div
                 id="listaMinhasAvaliacoes"
-            ></div>
+            >
+            </div>
 
         </section>
 
     </main>
 
 
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
     <script src="../js/perfil.js"></script>
+
 
 </body>
 
