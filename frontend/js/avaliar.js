@@ -3,52 +3,54 @@ const formAvaliacao =
         "formAvaliacao"
     );
 
-
 const campoMusica =
     document.getElementById(
         "musicaAvaliacao"
     );
-
 
 const campoArtista =
     document.getElementById(
         "artistaAvaliacao"
     );
 
-
-const listaSugestoes =
-    document.getElementById(
-        "listaSugestoes"
-    );
-
-
 const musicaSelecionada =
     document.getElementById(
         "musicaSelecionada"
     );
-
 
 const capaAlbum =
     document.getElementById(
         "capaAlbum"
     );
 
-
 const tituloMusicaSelecionada =
     document.getElementById(
         "tituloMusicaSelecionada"
     );
-
 
 const albumMusicaSelecionada =
     document.getElementById(
         "albumMusicaSelecionada"
     );
 
-
 const mensagemAvaliacao =
     document.getElementById(
         "mensagemAvaliacao"
+    );
+
+// =========================================================
+// MODIFICADO:
+// Cada campo possui sua própria lista de sugestões.
+// =========================================================
+
+const listaSugestoesMusica =
+    document.getElementById(
+        "listaSugestoesMusica"
+    );
+
+const listaSugestoesArtista =
+    document.getElementById(
+        "listaSugestoesArtista"
     );
 
 
@@ -68,6 +70,10 @@ let musicaDeezerSelecionada =
 let tempoBusca;
 
 
+// =========================================================
+// PESQUISAR MÚSICA
+// =========================================================
+
 campoMusica.addEventListener(
     "input",
     function() {
@@ -75,61 +81,113 @@ campoMusica.addEventListener(
         musicaDeezerSelecionada =
             null;
 
-
-        campoArtista.value =
-            "";
-
-
         musicaSelecionada.style.display =
             "none";
 
+        // Fecha a lista do artista caso esteja aberta.
+        listaSugestoesArtista.innerHTML =
+            "";
 
-        const busca =
-            campoMusica.value.trim();
+        listaSugestoesArtista.style.display =
+            "none";
 
-
-        clearTimeout(
-            tempoBusca
+        pesquisarDeezer(
+            campoMusica.value.trim(),
+            "musica"
         );
-
-
-        if (
-            busca.length < 2
-        ) {
-
-            listaSugestoes.innerHTML =
-                "";
-
-            listaSugestoes.style.display =
-                "none";
-
-            return;
-        }
-
-
-        tempoBusca =
-            setTimeout(
-                () => {
-
-                    buscarMusicas(
-                        busca
-                    );
-
-                },
-                400
-            );
-
     }
 );
 
 
 // =========================================================
-// BUSCAR NA DEEZER
+// PESQUISAR ARTISTA
+// =========================================================
+
+campoArtista.addEventListener(
+    "input",
+    function() {
+
+        musicaDeezerSelecionada =
+            null;
+
+        musicaSelecionada.style.display =
+            "none";
+
+        // Fecha a lista de música caso esteja aberta.
+        listaSugestoesMusica.innerHTML =
+            "";
+
+        listaSugestoesMusica.style.display =
+            "none";
+
+        pesquisarDeezer(
+            campoArtista.value.trim(),
+            "artista"
+        );
+    }
+);
+
+
+// =========================================================
+// PESQUISA NOS DOIS CAMPOS
+// =========================================================
+
+function pesquisarDeezer(
+    busca,
+    tipoBusca
+) {
+
+    clearTimeout(
+        tempoBusca
+    );
+
+    const listaAtual =
+        tipoBusca === "artista"
+            ? listaSugestoesArtista
+            : listaSugestoesMusica;
+
+    if (
+        busca.length < 2
+    ) {
+
+        listaAtual.innerHTML =
+            "";
+
+        listaAtual.style.display =
+            "none";
+
+        return;
+    }
+
+    tempoBusca =
+        setTimeout(
+            () => {
+
+                buscarMusicas(
+                    busca,
+                    tipoBusca
+                );
+
+            },
+            400
+        );
+}
+
+
+// =========================================================
+// ADICIONADO:
+// BUSCAR MÚSICAS / ARTISTAS NA API DO DEEZER
 // =========================================================
 
 async function buscarMusicas(
-    busca
+    busca,
+    tipoBusca = "musica"
 ) {
+
+    const listaAtual =
+        tipoBusca === "artista"
+            ? listaSugestoesArtista
+            : listaSugestoesMusica;
 
     try {
 
@@ -140,7 +198,6 @@ async function buscarMusicas(
                 )}`
             );
 
-
         if (!resposta.ok) {
 
             throw new Error(
@@ -148,73 +205,76 @@ async function buscarMusicas(
             );
         }
 
-
         const dados =
             await resposta.json();
 
-
         mostrarSugestoes(
-            dados.data || []
+            dados.data || [],
+            tipoBusca
         );
-
 
     } catch (erro) {
 
         console.error(
-            "Erro ao buscar músicas:",
+            "Erro ao buscar músicas/artistas:",
             erro
         );
 
-
-        listaSugestoes.innerHTML = `
+        listaAtual.innerHTML = `
             <div style="
-                padding:12px;
-                color:#ff7777;
+                padding: 12px;
+                color: #ff7777;
             ">
-                Não foi possível buscar músicas.
+                Não foi possível realizar a busca.
             </div>
         `;
 
-
-        listaSugestoes.style.display =
+        listaAtual.style.display =
             "block";
     }
 }
 
 
 // =========================================================
+// MODIFICADO:
 // SUGESTÕES
+//
+// Agora recebe o tipo da pesquisa para saber em qual lista
+// mostrar os resultados.
 // =========================================================
 
 function mostrarSugestoes(
-    musicas
+    musicas,
+    tipoBusca
 ) {
 
-    listaSugestoes.innerHTML =
-        "";
+    const listaAtual =
+        tipoBusca === "artista"
+            ? listaSugestoesArtista
+            : listaSugestoesMusica;
 
+    listaAtual.innerHTML =
+        "";
 
     if (
         !musicas ||
         musicas.length === 0
     ) {
 
-        listaSugestoes.innerHTML = `
+        listaAtual.innerHTML = `
             <div style="
-                padding:12px;
-                color:#aaa;
+                padding: 12px;
+                color: #aaa;
             ">
                 Nenhuma música encontrada.
             </div>
         `;
 
-
-        listaSugestoes.style.display =
+        listaAtual.style.display =
             "block";
 
         return;
     }
-
 
     musicas
         .slice(0, 5)
@@ -226,29 +286,23 @@ function mostrarSugestoes(
                         "div"
                     );
 
-
                 sugestao.classList.add(
                     "sugestao-musica"
                 );
-
 
                 const capa =
                     musica.album?.cover_medium ||
                     "";
 
-
                 const titulo =
                     musica.title ||
                     "Música sem nome";
-
 
                 const artista =
                     musica.artist?.name ||
                     "Artista desconhecido";
 
-
                 sugestao.innerHTML = `
-
                     <img
                         src="${capa}"
                         alt="Capa do álbum"
@@ -269,9 +323,7 @@ function mostrarSugestoes(
                         </span>
 
                     </div>
-
                 `;
-
 
                 sugestao.addEventListener(
                     "click",
@@ -280,20 +332,16 @@ function mostrarSugestoes(
                         selecionarMusica(
                             musica
                         );
-
                     }
                 );
 
-
-                listaSugestoes.appendChild(
+                listaAtual.appendChild(
                     sugestao
                 );
-
             }
         );
 
-
-    listaSugestoes.style.display =
+    listaAtual.style.display =
         "block";
 }
 
@@ -309,15 +357,12 @@ function selecionarMusica(
     musicaDeezerSelecionada =
         musica;
 
-
     campoMusica.value =
         musica.title;
-
 
     campoArtista.value =
         musica.artist?.name ||
         "";
-
 
     if (
         musica.album?.cover_medium
@@ -326,38 +371,52 @@ function selecionarMusica(
         capaAlbum.src =
             musica.album.cover_medium;
 
-
         capaAlbum.alt =
             `Capa do álbum ${
                 musica.album.title || ""
             }`;
 
+        musicaSelecionada.style.display =
+            "block";
+
+    } else {
+
+        capaAlbum.src =
+            "";
 
         musicaSelecionada.style.display =
             "block";
     }
 
-
     tituloMusicaSelecionada.textContent =
         musica.title;
-
 
     albumMusicaSelecionada.textContent =
         musica.album?.title
             ? `Álbum: ${musica.album.title}`
             : "";
 
+    // =====================================================
+    // MODIFICADO:
+    // Fecha as duas listas depois de selecionar.
+    // =====================================================
 
-    listaSugestoes.innerHTML =
+    listaSugestoesMusica.innerHTML =
         "";
 
+    listaSugestoesMusica.style.display =
+        "none";
 
-    listaSugestoes.style.display =
+    listaSugestoesArtista.innerHTML =
+        "";
+
+    listaSugestoesArtista.style.display =
         "none";
 }
 
 
 // =========================================================
+// MODIFICADO:
 // FECHAR SUGESTÕES
 // =========================================================
 
@@ -365,25 +424,44 @@ document.addEventListener(
     "click",
     function(event) {
 
+        const clicouMusica =
+            campoMusica.contains(
+                event.target
+            );
+
+        const clicouArtista =
+            campoArtista.contains(
+                event.target
+            );
+
+        const clicouListaMusica =
+            listaSugestoesMusica.contains(
+                event.target
+            );
+
+        const clicouListaArtista =
+            listaSugestoesArtista.contains(
+                event.target
+            );
+
         if (
-            !campoMusica.contains(
-                event.target
-            ) &&
-            !listaSugestoes.contains(
-                event.target
-            )
+            !clicouMusica &&
+            !clicouArtista &&
+            !clicouListaMusica &&
+            !clicouListaArtista
         ) {
 
-            listaSugestoes.style.display =
+            listaSugestoesMusica.style.display =
+                "none";
+
+            listaSugestoesArtista.style.display =
                 "none";
         }
-
     }
 );
 
 
 // =========================================================
-// MODIFICADO:
 // ENVIAR AVALIAÇÃO
 // =========================================================
 
@@ -519,8 +597,8 @@ formAvaliacao.addEventListener(
 
 
             // =================================================
-            // MODIFICADO:
-            // Agora envia id_usuario.
+            // MANTIDO:
+            // Envia id_usuario.
             // =================================================
 
             const resposta =
@@ -605,11 +683,22 @@ formAvaliacao.addEventListener(
                     "";
 
 
-                listaSugestoes.innerHTML =
+                // =================================================
+                // MODIFICADO:
+                // Limpa as duas listas de sugestões.
+                // =================================================
+
+                listaSugestoesMusica.innerHTML =
                     "";
 
+                listaSugestoesMusica.style.display =
+                    "none";
 
-                listaSugestoes.style.display =
+
+                listaSugestoesArtista.innerHTML =
+                    "";
+
+                listaSugestoesArtista.style.display =
                     "none";
 
 
