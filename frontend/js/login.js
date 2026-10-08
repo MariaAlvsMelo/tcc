@@ -18,6 +18,15 @@ const linkIrLogin =
 
 
 // =========================================================
+// ADICIONADO:
+// TELA DE CARREGAMENTO
+// =========================================================
+
+const loadingOverlay =
+    document.getElementById("loadingOverlay");
+
+
+// =========================================================
 // CADASTRO
 // =========================================================
 
@@ -138,6 +147,36 @@ formLogin.addEventListener(
                 "mensagemLogin"
             );
 
+        const botaoLogin =
+            formLogin.querySelector(
+                'button[type="submit"]'
+            );
+
+
+        // =================================================
+        // ADICIONADO:
+        // MOSTRA A TELA DE CARREGAMENTO
+        // =================================================
+
+        if (loadingOverlay) {
+
+            loadingOverlay.classList.add(
+                "ativo"
+            );
+        }
+
+
+        // =================================================
+        // ADICIONADO:
+        // DESATIVA O BOTÃO DURANTE O LOGIN
+        // =================================================
+
+        if (botaoLogin) {
+
+            botaoLogin.disabled =
+                true;
+        }
+
 
         try {
 
@@ -173,15 +212,6 @@ formLogin.addEventListener(
                 mensagemLogin.style.color =
                     "green";
 
-
-                // =================================================
-                // ADICIONADO:
-                // Salva os dados do usuário logado.
-                //
-                // Isso permite que o perfil e as avaliações saibam
-                // qual usuário está conectado.
-                // =================================================
-
                 localStorage.setItem(
                     "usuarioLogado",
                     JSON.stringify(
@@ -190,13 +220,45 @@ formLogin.addEventListener(
                 );
 
 
-                window.location.href =
-                    "home.html";
+                // =================================================
+                // ADICIONADO:
+                // PEQUENO TEMPO PARA EXIBIR O CARREGAMENTO
+                // ANTES DE ENTRAR NO SITE
+                // =================================================
 
+                setTimeout(
+                    function() {
+
+                        window.location.href =
+                            "home.html";
+
+                    },
+                    2000
+                );
             } else {
 
                 mensagemLogin.style.color =
                     "red";
+
+
+                // =================================================
+                // ADICIONADO:
+                // LOGIN INCORRETO -> REMOVE O CARREGAMENTO
+                // =================================================
+
+                if (loadingOverlay) {
+
+                    loadingOverlay.classList.remove(
+                        "ativo"
+                    );
+                }
+
+
+                if (botaoLogin) {
+
+                    botaoLogin.disabled =
+                        false;
+                }
             }
 
 
@@ -212,6 +274,26 @@ formLogin.addEventListener(
 
             mensagemLogin.style.color =
                 "red";
+
+
+            // =================================================
+            // ADICIONADO:
+            // ERRO DE CONEXÃO -> REMOVE O CARREGAMENTO
+            // =================================================
+
+            if (loadingOverlay) {
+
+                loadingOverlay.classList.remove(
+                    "ativo"
+                );
+            }
+
+
+            if (botaoLogin) {
+
+                botaoLogin.disabled =
+                    false;
+            }
         }
 
     }

@@ -126,6 +126,43 @@ a {
     transform: translateY(-100%);
 }
 
+/* =========================================================
+   BOTÃO LOGIN DO CABEÇALHO
+========================================================= */
+
+.btn-login-cabecalho {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px 18px;
+
+    border: 1px solid var(--purple);
+    border-radius: 9px;
+
+    color: var(--purple-light);
+
+    background: transparent;
+
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.btn-login-cabecalho:hover {
+    background: var(--purple);
+    color: #fff;
+
+    transform: translateY(-1px);
+}
+
+
 
 /* =========================================================
    LOGO
@@ -892,35 +929,35 @@ textarea {
 
 
 /* =========================================================
-   BUSCA DE MÚSICA
+   BUSCA DE MÚSICA E ARTISTA
    ========================================================= */
 
 .busca-container {
     position: relative;
-
     display: flex;
-
     flex-direction: column;
-
     width: 100%;
 }
 
+/* =========================================================
+   MODIFICADO:
+   Lista de sugestões da música e do artista
+   ========================================================= */
 
-#listaSugestoes {
+#listaSugestoesMusica,
+#listaSugestoesArtista {
     position: absolute;
 
-    top: calc(100% + 5px);
+    /* Faz a lista aparecer logo abaixo do input */
+    top: 100%;
 
     left: 0;
-
     width: 100%;
 
     max-height: 300px;
-
     overflow-y: auto;
 
-    background:
-        #11152d;
+    background: #11152d;
 
     border:
         1px solid rgba(124, 60, 255, 0.35);
@@ -930,15 +967,17 @@ textarea {
     box-shadow:
         0 15px 35px rgba(0, 0, 0, 0.5);
 
-    z-index: 50;
+    z-index: 1000;
+
+    display: none;
 }
 
-
-/* Sugestão */
+/* =========================================================
+   SUGESTÃO
+   ========================================================= */
 
 .sugestao-musica {
     display: flex;
-
     align-items: center;
 
     gap: 13px;
@@ -951,39 +990,38 @@ textarea {
         1px solid rgba(255, 255, 255, 0.05);
 
     transition: var(--transition);
-}
 
+    background: #11152d;
+}
 
 .sugestao-musica:last-child {
     border-bottom: none;
 }
-
 
 .sugestao-musica:hover {
     background:
         rgba(124, 60, 255, 0.15);
 }
 
-
 .sugestao-musica img {
     width: 50px;
-
     height: 50px;
 
     object-fit: cover;
 
     border-radius: 7px;
-}
 
+    flex-shrink: 0;
+}
 
 .sugestao-info {
     display: flex;
-
     flex-direction: column;
 
     min-width: 0;
-}
 
+    gap: 4px;
+}
 
 .sugestao-info strong {
     color: white;
@@ -997,70 +1035,17 @@ textarea {
     text-overflow: ellipsis;
 }
 
-
 .sugestao-info span {
     color: #89859e;
 
     font-size: 13px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
 }
-
-
-/* =========================================================
-   MÚSICA SELECIONADA
-   ========================================================= */
-
-#musicaSelecionada {
-    display: none;
-
-    margin:
-        20px 0;
-
-    padding: 15px;
-
-    background:
-        rgba(124, 60, 255, 0.07);
-
-    border:
-        1px solid rgba(124, 60, 255, 0.2);
-
-    border-radius: 12px;
-}
-
-
-#musicaSelecionada img {
-    width: 110px;
-
-    height: 110px;
-
-    object-fit: cover;
-
-    border-radius: 10px;
-
-    box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.4);
-}
-
-
-#tituloMusicaSelecionada {
-    margin:
-        12px 0 3px;
-
-    color: white;
-
-    font-size: 18px;
-
-    font-weight: bold;
-}
-
-
-#albumMusicaSelecionada {
-    margin: 0;
-
-    color: #928da8;
-
-    font-size: 14px;
-}
-
 
 /* =========================================================
    ESTRELAS
@@ -1183,87 +1168,182 @@ button[type="submit"],
 /* =========================================================
    LOGIN / CADASTRO
    ========================================================= */
-/* Container Principal (Mantém o card centralizado na tela) */
-/* ==========================================================================
-   1. RESET E DEFINIÇÕES BASE (Fundo Estático)
-   ========================================================================== */
-   * {
+
+.pagina-login {
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    min-height: 100vh;
+    background: #070612;
+    color: var(--text-color);
 }
 
-/* Novo container específico: Fundo 100% travado e sem animações */
 .card-login {
     width: 100%;
     min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    background: #080613;
+}
+
+/* LADO ESQUERDO */
+.login-apresentacao {
+    position: relative;
+    min-height: 100vh;
+    padding: 55px 70px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 25% 35%, rgba(124, 60, 255, 0.28), transparent 35%),
+        radial-gradient(circle at 80% 75%, rgba(39, 54, 109, 0.35), transparent 35%),
+        linear-gradient(145deg, #0d0a1b, #10152d);
+}
+
+.login-apresentacao::after {
+    content: "";
+    position: absolute;
+    width: 430px;
+    height: 430px;
+    right: -180px;
+    bottom: -180px;
+    border: 1px solid rgba(155, 99, 255, 0.15);
+    border-radius: 50%;
+}
+
+.login-marca {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.login-logo {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+}
+
+.login-marca h1 {
+    margin: 0;
+    color: #fff;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.login-marca p {
+    margin: 3px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.login-destaque {
+    position: relative;
+    z-index: 2;
+    max-width: 540px;
+    margin: auto 0;
+}
+
+.login-nota-musical {
+    display: block;
+    margin-bottom: 20px;
+    color: var(--purple-light);
+    font-size: 55px;
+    text-shadow: 0 0 25px rgba(124, 60, 255, 0.45);
+}
+
+.login-destaque h2 {
+    margin: 0 0 20px;
+    color: #fff;
+    font-size: clamp(36px, 4vw, 58px);
+    line-height: 1.08;
+    letter-spacing: -1.5px;
+}
+
+.login-destaque h2 span {
+    color: var(--purple-light);
+}
+
+.login-destaque p {
+    max-width: 470px;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.login-decoracao span {
+    position: absolute;
+    color: rgba(155, 99, 255, 0.13);
+    user-select: none;
+}
+
+.login-decoracao span:nth-child(1) {
+    top: 19%;
+    right: 13%;
+    font-size: 70px;
+    transform: rotate(15deg);
+}
+
+.login-decoracao span:nth-child(2) {
+    bottom: 15%;
+    left: 10%;
+    font-size: 55px;
+    transform: rotate(-20deg);
+}
+
+.login-decoracao span:nth-child(3) {
+    right: 20%;
+    bottom: 27%;
+    font-size: 90px;
+    transform: rotate(12deg);
+}
+
+/* LADO DIREITO */
+.login-formularios {
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
-    background-color: #060919;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    overflow: hidden; /* Evita barras de rolagem indesejadas */
-    transition: none !important; 
-    margin: 0;
-    min-height: 100vh;
-
-    background:
-        linear-gradient(
-            rgba(8, 6, 19, 0.35),
-            rgba(8, 6, 19, 0.35)
-        ),
-        url("../frontend/img/fundo.png");
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-
-    color: var(--text-color);
-    
+    padding: 50px;
+    background: linear-gradient(145deg, #080613, #0b0918);
 }
 
-
-/* Card de Login / Cadastro com a animação aplicada */
 .autenticacao-card {
     width: 100%;
-    max-width: 420px;
-    padding: 35px 40px;
-    background: linear-gradient(145deg, #111733, #0c1025);
-    border: 1px solid rgba(124, 60, 255, 0.25);
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 
-                0 0 30px rgba(124, 60, 255, 0.08);
-    
-    /* Executa a animação ao carregar o card */
-    animation: surgirCard 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    
+    max-width: 430px;
+    animation: surgirCard 0.45s ease;
 }
 
-/* ==========================================================================
-   3. ELEMENTOS INTERNOS E INTERAÇÕES (Animações locais)
-   ========================================================================== */
-
-/* Logo e Título */
-.autenticacao-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    color: #ffffff;
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 25px;
+#caixaCadastro {
+    display: none;
 }
 
-.autenticacao-card h1 {
-    margin: 0 0 20px;
-    color: #ffffff;
-    text-align: left;
-    font-size: 28px;
+@keyframes surgirCard {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.autenticacao-titulo {
+    margin-bottom: 35px;
+}
+
+.autenticacao-titulo h2 {
+    margin: 0 0 8px;
+    color: #fff;
+    font-size: 32px;
     font-weight: 700;
-    letter-spacing: -0.5px;
+}
+
+.autenticacao-titulo p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .autenticacao-card form {
@@ -1271,75 +1351,399 @@ button[type="submit"],
     flex-direction: column;
 }
 
-/* Inputs (Animação restrita ao campo focado) */
-.autenticacao-card input[type="text"],
-.autenticacao-card input[type="email"],
-.autenticacao-card input[type="password"] {
+.campo-autenticacao {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.campo-autenticacao label {
+    margin-bottom: 8px;
+    color: #d8d4e6;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.campo-autenticacao input {
     width: 100%;
     padding: 14px 16px;
-    margin-bottom: 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: #ffffff;
-    font-size: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 9px;
     outline: none;
-    /* Transição suave apenas nas propriedades do input */
-    transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.autenticacao-card input:focus {
-    border-color: #7c3cff;
-    background-color: rgba(124, 60, 255, 0.05);
-    box-shadow: 0 0 12px rgba(124, 60, 255, 0.2);
-}
-
-/* Botões com efeito hover e clique */
-.autenticacao-card button {
-    width: 100%;
-    padding: 14px;
-    background: #7c3cff;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-    margin-bottom: 20px;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-
-/* Links Inferiores Centralizados */
-.autenticacao-alternativa {
-    color: #94a3b8;
-    text-align: center;
+    background: rgba(255, 255, 255, 0.035);
+    color: #fff;
+    font-family: inherit;
     font-size: 14px;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.campo-autenticacao input::placeholder {
+    color: #686579;
+}
+
+.campo-autenticacao input:focus {
+    border-color: var(--purple);
+    background: rgba(124, 60, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(124, 60, 255, 0.09);
+}
+
+.btn-autenticacao {
     width: 100%;
-    margin-top: 15px;
+    margin-top: 5px;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(124, 60, 255, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.autenticacao-alternativa a {
-    color: #7c3cff;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
+.btn-autenticacao:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(124, 60, 255, 0.35);
 }
 
-.autenticacao-alternativa a:hover {
-    color: #9d6eff;
-    text-decoration: underline;
+.btn-autenticacao:active {
+    transform: translateY(0);
+}
+
+.btn-autenticacao:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
 }
 
 .mensagem-alerta {
-    color: #ef4444;
-    font-size: 14px;
-    margin-bottom: 10px;
+    min-height: 18px;
+    margin: 12px 0 0;
+    color: var(--error);
     text-align: center;
+    font-size: 13px;
+}
+
+.autenticacao-alternativa {
+    margin: 22px 0 0;
+    color: var(--text-secondary);
+    text-align: center;
+    font-size: 13px;
+}
+
+.autenticacao-alternativa a {
+    color: var(--purple-light);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.autenticacao-alternativa a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+    .card-login {
+        grid-template-columns: 1fr;
+    }
+
+    .login-apresentacao {
+        min-height: auto;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .login-marca {
+        justify-content: center;
+    }
+
+    .login-destaque {
+        margin: 50px auto;
+    }
+
+    .login-destaque h2 {
+        font-size: 38px;
+    }
+
+    .login-decoracao {
+        display: none;
+    }
+
+    .login-formularios {
+        min-height: auto;
+        padding: 55px 25px 70px;
+    }
+}
+
+@media (max-width: 500px) {
+    .login-apresentacao {
+        padding: 25px 20px;
+    }
+
+    .login-logo {
+        width: 52px;
+        height: 52px;
+    }
+
+    .login-destaque {
+        margin: 35px auto;
+    }
+
+    .login-destaque h2 {
+        font-size: 30px;
+    }
+
+    .login-destaque p {
+        font-size: 14px;
+    }
+
+    .login-nota-musical {
+        font-size: 42px;
+    }
+
+    .login-formularios {
+        padding: 45px 22px;
+    }
+
+    .autenticacao-titulo h2 {
+        font-size: 27px;
+    }
+}
+
+/* =========================================================
+   LADO ESQUERDO DO LOGIN
+========================================================= */
+
+.login-apresentacao {
+    position: relative;
+
+    min-height: 650px;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 40px 50px;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 50% 40%,
+            rgba(124, 60, 255, 0.20),
+            transparent 45%
+        ),
+        linear-gradient(
+            145deg,
+            #10152d,
+            #0d0a1b
+        );
+
+    border-right:
+        1px solid rgba(124, 60, 255, 0.16);
 }
 
 
+/* =========================================================
+   LOGO / NOME
+========================================================= */
+
+.login-marca {
+    position: relative;
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+}
+
+.login-logo {
+    width: 65px;
+    height: 65px;
+
+    object-fit: contain;
+
+    filter:
+        drop-shadow(
+            0 0 14px rgba(124, 60, 255, 0.35)
+        );
+}
+
+.login-marca h1 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 27px;
+    font-weight: 700;
+}
+
+.login-marca h1 span {
+    color: var(--purple-light);
+}
+
+.login-marca p {
+    margin: 4px 0 0;
+
+    color: var(--text-secondary);
+
+    font-size: 10px;
+    font-weight: 600;
+
+    letter-spacing: 2px;
+}
+
+
+/* =========================================================
+   ARTE DOS MASCOTES
+========================================================= */
+
+.login-mascotes {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+    height: 315px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin: 15px 0 5px;
+
+    overflow: hidden;
+}
+
+.login-mascotes img {
+    width: 100%;
+    max-width: 500px;
+    height: 100%;
+
+    object-fit: contain;
+
+    filter:
+        drop-shadow(
+            0 0 22px rgba(124, 60, 255, 0.28)
+        );
+}
+
+
+/* =========================================================
+   TEXTO
+========================================================= */
+
+.login-destaque {
+    position: relative;
+    z-index: 2;
+
+    max-width: 480px;
+
+    margin-top: auto;
+}
+
+.login-destaque h2 {
+    margin: 0 0 13px;
+
+    color: #ffffff;
+
+    font-size: 36px;
+    line-height: 1.05;
+
+    letter-spacing: -0.8px;
+}
+
+.login-destaque h2 span {
+    color: var(--purple-light);
+}
+
+.login-destaque h2 small {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #e1dcef;
+
+    font-size: 24px;
+    font-weight: 500;
+
+    letter-spacing: 0;
+}
+
+.login-destaque p {
+    max-width: 430px;
+
+    margin: 0;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .login-apresentacao {
+        min-height: auto;
+
+        padding: 30px;
+    }
+
+    .login-mascotes {
+        height: 280px;
+
+        margin: 15px auto;
+    }
+
+    .login-mascotes img {
+        max-width: 450px;
+    }
+
+    .login-destaque {
+        margin-top: 0;
+    }
+
+}
+
+
+@media (max-width: 500px) {
+
+    .login-apresentacao {
+        padding: 25px 22px;
+    }
+
+    .login-logo {
+        width: 52px;
+        height: 52px;
+    }
+
+    .login-marca h1 {
+        font-size: 21px;
+    }
+
+    .login-mascotes {
+        height: 220px;
+
+        margin: 10px 0;
+    }
+
+    .login-destaque h2 {
+        font-size: 29px;
+    }
+
+    .login-destaque h2 small {
+        font-size: 19px;
+    }
+
+    .login-destaque p {
+        font-size: 13px;
+    }
+
+}
 
 /* =========================================================
    SCROLLBAR
@@ -1564,10 +1968,6 @@ button[type="submit"],
     }
 
 
-    .login-card,
-    .cadastro-card {
-        padding: 25px;
-    }
 }
 
 /* ==========================================================================
@@ -2492,4 +2892,297 @@ button[type="submit"],
 .curtidas-sem-login {
     color: #77738e;
     font-size: 14px;
+}
+
+
+
+.curtida-canto-superior {
+    position: absolute;
+
+    top: 22px;
+    right: 25px;
+
+    z-index: 5;
+}
+
+
+.curtida-canto-superior .btn-curtir {
+    margin: 0;
+}
+
+
+/* =========================================================
+   ADICIONADO:
+   PLAYER DE PRÉVIA DA MÚSICA
+========================================================= */
+
+#areaPreviewMusica {
+    width: 100%;
+    margin-top: 15px;
+}
+
+
+#previewMusica {
+    width: 100%;
+    max-width: 400px;
+    height: 40px;
+}
+
+
+.preview-avaliacao {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    width: 100%;
+    max-width: 400px;
+
+    margin-top: 12px;
+    margin-bottom: 15px;
+}
+
+
+.preview-avaliacao span {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+
+.preview-avaliacao audio {
+    display: block;
+
+    width: 100%;
+    min-width: 420px;
+    height: 45px;
+
+    border: none;
+    border-radius: 25px;
+
+    /* MODIFICADO */
+    background-color: #c9c4d6;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.20);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+
+.preview-avaliacao audio::-webkit-media-controls-panel {
+    background-color: #b8b4ca;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+}
+/* =========================================================
+   ADICIONADO:
+   PRÉVIA DA MÚSICA NAS AVALIAÇÕES DO FEED
+========================================================= */
+
+.preview-avaliacao {
+    width: 100%;
+    margin: 14px 0;
+    padding: 12px;
+
+    background: rgba(124, 60, 255, 0.08);
+
+    border: 1px solid
+        rgba(124, 60, 255, 0.20);
+
+    border-radius: 12px;
+
+    box-sizing: border-box;
+}
+
+
+.preview-titulo {
+    margin: 0 0 8px 0;
+
+    color: var(--text-secondary);
+
+    font-size: 0.85rem;
+
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   PRÉVIA DA MÚSICA NO FEED
+========================================================= */
+
+/* =========================================================
+   PRÉVIA DA MÚSICA
+========================================================= */
+
+.preview-avaliacao {
+    width: 100%;
+    max-width: 520px;
+
+    margin-top: 18px;
+
+    padding: 0;
+
+    background: transparent;
+    border: none;
+}
+
+
+/* Remove o texto "Prévia da música" */
+.preview-titulo {
+    display: none;
+}
+
+
+/* Player branco */
+.preview-avaliacao audio {
+    display: block;
+
+    width: 100%;
+    min-width: 420px;
+    height: 45px;
+
+    border: none;
+    border-radius: 25px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.20);
+}
+
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .preview-avaliacao {
+        max-width: 100%;
+    }
+
+    .preview-avaliacao audio {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.card-avaliacao {
+    position: relative;
+}
+
+
+/* =========================================================
+   PRÉVIA NA PARTE INFERIOR
+========================================================= */
+
+.area-preview-feed {
+    width: 100%;
+    margin-top: 16px;
+}
+
+/* =========================================================
+   PÁGINA SEM LOGIN
+========================================================= */
+
+.acesso-sem-login {
+    min-height: 60vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    padding: 40px 25px;
+}
+
+
+.acesso-sem-login-icone {
+    width: 75px;
+    height: 75px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin-bottom: 22px;
+
+    border-radius: 50%;
+
+    border: 1px solid var(--border-color);
+
+    background:
+        rgba(124, 60, 255, 0.08);
+
+    color: var(--purple-light);
+
+    font-size: 2rem;
+
+    box-shadow:
+        0 10px 35px rgba(0, 0, 0, 0.25);
+}
+
+
+.acesso-sem-login h2 {
+    margin: 0 0 12px;
+
+    color: var(--text-color);
+
+    font-size: 1.8rem;
+}
+
+
+.acesso-sem-login p {
+    max-width: 480px;
+
+    margin: 0 0 25px;
+
+    color: var(--text-secondary);
+
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+
+.btn-acesso-login {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 12px 28px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--purple-dark)
+        );
+
+    color: #fff;
+
+    text-decoration: none;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.btn-acesso-login:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 22px
+        rgba(124, 60, 255, 0.30);
 }

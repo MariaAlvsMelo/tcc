@@ -35,14 +35,6 @@ const usuarioModel = {
         );
     },
 
-
-    // =========================================================
-    // MODIFICADO:
-    // LOGIN
-    //
-    // Agora retorna também foto e biografia.
-    // =========================================================
-
     login: (
         email,
         senha,
@@ -73,11 +65,6 @@ const usuarioModel = {
     },
 
 
-    // =========================================================
-    // ADICIONADO:
-    // BUSCAR PERFIL
-    // =========================================================
-
     buscarPerfil: (
         id_usuario,
         callback
@@ -104,14 +91,6 @@ const usuarioModel = {
         );
     },
 
-
-    // =========================================================
-    // ADICIONADO:
-    // ATUALIZAR PERFIL
-    //
-    // Se a senha estiver vazia, a senha antiga é mantida.
-    // =========================================================
-
     atualizarPerfil: (
         id_usuario,
         nome,
@@ -125,11 +104,6 @@ const usuarioModel = {
         let sql;
         let valores;
 
-
-        // =====================================================
-        // MODIFICADO:
-        // Se o usuário digitou uma nova senha, atualiza.
-        // =====================================================
 
         if (
             senha &&
@@ -160,11 +134,7 @@ const usuarioModel = {
 
         } else {
 
-            // =================================================
-            // MANTIDO/MODIFICADO:
-            // Não altera a senha quando o campo estiver vazio.
-            // =================================================
-
+           
             sql = `
                 UPDATE usuario
 
@@ -195,13 +165,6 @@ const usuarioModel = {
     },
 
 
-    // =========================================================
-    // MODIFICADO:
-    // SALVAR AVALIAÇÃO
-    //
-    // Agora a avaliação recebe id_usuario.
-    // =========================================================
-
     avaliar: (
         id_usuario,
         musica,
@@ -211,6 +174,7 @@ const usuarioModel = {
         capa_album,
         id_deezer,
         id_album,
+        preview,
         callback
     ) => {
 
@@ -224,9 +188,10 @@ const usuarioModel = {
                 nota,
                 capa_album,
                 id_deezer,
-                id_album
+                id_album,
+                preview
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         conexao.query(
@@ -239,65 +204,14 @@ const usuarioModel = {
                 nota,
                 capa_album,
                 id_deezer,
-                id_album
+                id_album,
+                preview
+
             ],
             callback
         );
     },
 
-
-    // =========================================================
-    // MODIFICADO:
-    // LISTAR AVALIAÇÕES
-    //
-    // O JOIN traz nome, e-mail e foto do autor.
-    // =========================================================
-
-    listarAvaliacoes: (
-        callback
-    ) => {
-
-        const sql = `
-            SELECT
-                a.id,
-                a.id_usuario,
-                a.musica,
-                a.artista,
-                a.comentario,
-                a.nota,
-                a.capa_album,
-                a.id_deezer,
-                a.id_album,
-                a.data_avaliacao,
-
-                u.nome_usuario,
-                u.email,
-                u.foto_perfil
-
-            FROM avaliacoes a
-
-            LEFT JOIN usuario u
-                ON a.id_usuario = u.id_usuario
-
-            ORDER BY
-                a.data_avaliacao DESC
-        `;
-
-        conexao.query(
-            sql,
-            callback
-        );
-    },
-
-
-    // =========================================================
-    // ADICIONADO:
-    // AVALIAÇÕES DO USUÁRIO
-    // =========================================================
-
-       // ==========================================
-    // ===== MODIFICADO: LISTAR AVALIAÇÕES =====
-    // ==========================================
     listarAvaliacoes: (callback) => {
 
         const sql = `
@@ -310,6 +224,7 @@ const usuarioModel = {
                 a.capa_album,
                 a.id_deezer,
                 a.id_album,
+                a.preview,
                 a.data_avaliacao,
                 a.id_usuario,
 
@@ -317,7 +232,6 @@ const usuarioModel = {
                 u.email,
                 u.foto_perfil,
 
-                -- ===== ADICIONADO: quantidade de curtidas =====
                 (
                     SELECT COUNT(*)
                     FROM curtidas c
@@ -336,13 +250,6 @@ const usuarioModel = {
     },
 
     
-
-
-    // =========================================================
-    // ADICIONADO:
-    // EXCLUIR AVALIAÇÃO
-    // =========================================================
-
     excluirAvaliacao: (
         id,
         id_usuario,
@@ -366,9 +273,7 @@ const usuarioModel = {
         );
     },
 
-        // ==========================================
-    // ===== ADICIONADO: CURTIR AVALIAÇÃO =====
-    // ==========================================
+       
     curtirAvaliacao: (id_usuario, id_avaliacao, callback) => {
 
         const sql = `
@@ -465,6 +370,7 @@ const usuarioModel = {
                 a.capa_album,
                 a.id_deezer,
                 a.id_album,
+                a.preview,
 
                 a.data_avaliacao,
                 a.id_usuario,
@@ -495,8 +401,5 @@ const usuarioModel = {
         
 
 };
-
-
-
 
 module.exports = usuarioModel;

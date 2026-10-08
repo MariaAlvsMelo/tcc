@@ -329,19 +329,6 @@
 
 
         /* ==========================================
-           CAMPO ARTISTA
-        ========================================== */
-
-        #artistaAvaliacao:read-only {
-
-            cursor: default;
-
-            opacity: 0.9;
-
-        }
-
-
-        /* ==========================================
            RESPONSIVIDADE
         ========================================== */
 
@@ -481,68 +468,96 @@
             </p>
 
 
+<section id="avaliarSemLogin" class="acesso-sem-login" style="display: none;">
 
-            <!-- ==================================
-                 FORMULÁRIO
-            ================================== -->
+    <div class="acesso-sem-login-icone">
+        ★
+    </div>
+
+    <h2>Quer avaliar uma música?</h2>
+
+    <p>
+        Entre na sua conta para compartilhar sua opinião,
+        dar uma nota e publicar sua avaliação.
+    </p>
+
+    <a href="login.html" class="btn-acesso-login">
+        Fazer login
+    </a>
+
+</section>
+
 
             <form id="formAvaliacao">
 
-
-
-                <!-- ==================================
-                     CAMPO MÚSICA
-                ================================== -->
-
                 <div class="busca-container">
 
-
-                    <label for="musicaAvaliacao" style="
+                    <label
+                        for="musicaAvaliacao"
+                        style="
                             display: block;
                             margin-bottom: 5px;
                             font-weight: 500;
-                        ">
+                        "
+                    >
                         Música
                     </label>
 
-
-                    <input type="text" id="musicaAvaliacao" placeholder="Digite o nome da música..." autocomplete="off"
-                        required>
-
+                    <input
+                        type="text"
+                        id="musicaAvaliacao"
+                        placeholder="Digite o nome da música..."
+                        autocomplete="off"
+                        required
+                    >
 
                     <!-- ==================================
-                         SUGESTÕES DA DEEZER
+                        SUGESTÕES DE MÚSICA
                     ================================== -->
 
-                    <div id="listaSugestoes" class="lista-sugestoes">
+                    <div
+                        id="listaSugestoesMusica"
+                        class="lista-sugestoes"
+                    >
                     </div>
-
 
                 </div>
 
 
-
                 <!-- ==================================
-                     CAMPO ARTISTA
+                    CAMPO ARTISTA
                 ================================== -->
 
-                <div style="
-                        margin-bottom: 15px;
-                    ">
+                <div class="busca-container">
 
-
-                    <label for="artistaAvaliacao" style="
+                    <label
+                        for="artistaAvaliacao"
+                        style="
                             display: block;
                             margin-bottom: 5px;
                             font-weight: 500;
-                        ">
+                        "
+                    >
                         Artista
                     </label>
 
+                    <input
+                        type="text"
+                        id="artistaAvaliacao"
+                        placeholder="Digite o nome do artista..."
+                        autocomplete="off"
+                        required
+                    >
 
-                    <input type="text" id="artistaAvaliacao" placeholder="Nome do Artista" autocomplete="off" required
-                        readonly>
+                    <!-- ==================================
+                        SUGESTÕES DE ARTISTA
+                    ================================== -->
 
+                    <div
+                        id="listaSugestoesArtista"
+                        class="lista-sugestoes"
+                    >
+                    </div>
 
                 </div>
 
@@ -571,6 +586,32 @@
 
                     <p id="albumMusicaSelecionada">
                     </p>
+
+                <!-- ==================================
+                    PRÉVIA DA MÚSICA
+                ================================== -->
+
+                <div
+                    id="areaPreviewMusica"
+                    style="display: none;"
+                >
+
+                    <p style="
+                        margin-bottom: 8px;
+                        color: #b8b4ca;
+                        font-size: 0.9rem;
+                    ">
+                        Prévia da música:
+                    </p>
+
+                    <audio
+                        id="previewMusica"
+                        controls
+                        preload="none"
+                    >
+                    </audio>
+
+                </div>
 
 
                 </div>

@@ -27,13 +27,6 @@ const usuario =
     obterUsuario();
 
 
-if (!usuario) {
-
-    window.location.href =
-        "login.html";
-}
-
-
 // =========================================================
 // ELEMENTOS
 // =========================================================
@@ -145,20 +138,69 @@ const contadorAvaliacoes =
         "contadorAvaliacoes"
     );
 
-
-// =========================================================
-// CARREGAR
-// =========================================================
-
-carregarPerfil();
-
-carregarMinhasAvaliacoes();
-
-
 // =========================================================
 // ADICIONADO:
-// BUSCAR PERFIL NO BANCO
+// PERFIL SEM LOGIN
 // =========================================================
+
+const usuarioLogado =
+    JSON.parse(
+        localStorage.getItem("usuarioLogado")
+    );
+
+const perfilSemLogin =
+    document.getElementById("perfilSemLogin");
+
+
+// Coloque aqui o ID do container principal
+// que já existe no seu perfil.html.
+const conteudoPerfil =
+    document.getElementById("perfil-container");
+
+
+if (!usuarioLogado) {
+
+    if (conteudoPerfil) {
+
+        conteudoPerfil.style.display =
+            "none";
+    }
+
+    if (perfilSemLogin) {
+
+        perfilSemLogin.style.display =
+            "flex";
+    }
+
+} else {
+
+    if (conteudoPerfil) {
+
+        conteudoPerfil.style.display =
+            "";
+    }
+
+    if (perfilSemLogin) {
+
+        perfilSemLogin.style.display =
+            "none";
+    }
+
+
+    // Continue aqui com seu código normal
+    // de carregar o perfil.
+}
+
+
+if (usuarioLogado) {
+
+    carregarPerfil();
+
+    carregarMinhasAvaliacoes();
+}
+
+
+
 
 async function carregarPerfil() {
 
