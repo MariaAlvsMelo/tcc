@@ -1,0 +1,46 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Altere para master se a sua branch principal for master
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Cria um arquivo index.html na raiz que redireciona o navegador para frontend/html/home.html
+      # Isso preserva todas as distâncias de pastas (../style.css continuará funcionando!)
+      - name: Criar Redirecionamento de Entrada
+        run: |
+          echo '<meta http-equiv="refresh" content="0; URL='\''frontend/html/home.html'\''">' > index.html
+
+      # Configura o ambiente do Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Envia o repositório inteiro (preservando as pastas frontend, html, img e css intactas)
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      # Realiza o deploy na internet
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
