@@ -4,192 +4,27 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Avaliar | Entre Notas</title>
 
     <link rel="stylesheet" href="../style.css">
-    <script src="../js/configuracoes.js"></script>
 
-    <style>
-        /* Centralização da página */
-
-        #home-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 100px 20px 40px;
-            box-sizing: border-box;
-        }
-
-        #home-container > .card-avaliacao {
-            width: 100%;
-            max-width: 700px;
-            min-width: 0;
-        }
-
-        /* Campos com sugestões */
-
-        .busca-container {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        .lista-sugestoes {
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 0;
-            right: 0;
-
-            background: #1a1a30;
-            border: 1px solid #30304d;
-            border-radius: 8px;
-
-            z-index: 1000;
-
-            max-height: 350px;
-            overflow-y: auto;
-
-            display: none;
-
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-        }
-
-        .sugestao-musica {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-
-            padding: 10px;
-            cursor: pointer;
-
-            transition: background 0.2s ease;
-        }
-
-        .sugestao-musica:hover {
-            background: #272747;
-        }
-
-        .sugestao-musica img {
-            width: 55px;
-            height: 55px;
-            object-fit: cover;
-            border-radius: 6px;
-            flex-shrink: 0;
-        }
-
-        .sugestao-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 0;
-        }
-
-        .sugestao-info strong {
-            color: white;
-        }
-
-        .sugestao-info span {
-            color: #aaa;
-            font-size: 0.9rem;
-        }
-
-        .sugestao-info strong,
-        .sugestao-info span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        /* Música selecionada */
-
-        #musicaSelecionada {
-            display: none;
-            width: 100%;
-            margin-bottom: 20px;
-            padding: 15px;
-
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            box-sizing: border-box;
-        }
-
-        #capaAlbum {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 12px;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        #tituloMusicaSelecionada {
-            color: var(--purple-light, #9b63ff);
-            font-weight: bold;
-            font-size: 1.05rem;
-            overflow-wrap: anywhere;
-        }
-
-        #albumMusicaSelecionada {
-            color: #b8b4ca;
-            font-size: 0.9rem;
-            overflow-wrap: anywhere;
-        }
-
-        /* Estrelas */
-
-        .estrelas-container {
-            display: flex;
-            flex-direction: row-reverse;
-            justify-content: flex-end;
-            gap: 4px;
-            margin: 8px 0;
-        }
-
-        .estrelas-container input[type="radio"] {
-            display: none;
-        }
-
-        .estrelas-container label {
-            font-size: 2rem;
-            color: #ccc;
-            cursor: pointer;
-            transition: color 0.15s, transform 0.1s;
-        }
-
-        .estrelas-container input[type="radio"]:checked ~ label,
-        .estrelas-container label:hover,
-        .estrelas-container label:hover ~ label {
-            color: #f5a623;
-            transform: scale(1.15);
-        }
-
-        @media (max-width: 600px) {
-            .lista-sugestoes {
-                max-height: 280px;
-            }
-
-            .sugestao-musica img {
-                width: 48px;
-                height: 48px;
-            }
-
-            #capaAlbum {
-                width: 120px;
-                height: 120px;
-            }
-        }
-    </style>
+    <script src="../js/configuracoes.js" defer></script>
 </head>
 
-<body>
+<body class="pagina-avaliar">
 
     <!-- CABEÇALHO -->
 
     <header class="cabecalho">
 
         <a href="home.html" class="nav-logo">
+
             <span>
                 <img
                     src="../img/logo.png"
@@ -205,28 +40,46 @@
                 width="160"
                 height="55"
             >
+
         </a>
 
         <nav class="cabecalho-menu">
 
             <a href="home.html" class="nav-item">
-                <img src="../img/home-icon.png" alt="" width="20" height="20">
+                <img
+                    src="../img/home-icon.png"
+                    alt=""
+                    width="20"
+                    height="20"
+                >
                 Feed
             </a>
 
             <a href="avaliar.html" class="nav-item">
-                <img src="../img/avaliar-icon.png" alt="" width="20" height="20">
+                <img
+                    src="../img/avaliar-icon.png"
+                    alt=""
+                    width="20"
+                    height="20"
+                >
                 Avaliar
             </a>
 
             <a href="perfil.html" class="nav-item">
-                <img src="../img/perfil-icon.png" alt="" width="20" height="20">
+                <img
+                    src="../img/perfil-icon.png"
+                    alt=""
+                    width="20"
+                    height="20"
+                >
                 Perfil
             </a>
-            
-<!-- CONFIGURAÇÕES NO CANTO SUPERIOR DIREITO -->
 
-            <a
+        </nav>
+
+        <!-- CONFIGURAÇÕES -->
+
+        <a
             href="configuracoes.html"
             class="atalho-config"
             title="Configurações"
@@ -244,12 +97,16 @@
                 stroke-linejoin="round"
                 aria-hidden="true"
             >
-                <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"></path>
-                <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2 2-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.57V21h-2.83v-.09A1.7 1.7 0 0 0 10.97 19.3a1.7 1.7 0 0 0-1.88.34l-.06.06-2-2 .06-.06A1.7 1.7 0 0 0 7.43 15a1.7 1.7 0 0 0-1.57-1.03H5v-2.83h.86A1.7 1.7 0 0 0 7.43 10a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2-2 .06.06A1.7 1.7 0 0 0 10.97 6.46 1.7 1.7 0 0 0 12 4.89V4h2.83v.89a1.7 1.7 0 0 0 1.03 1.57 1.7 1.7 0 0 0 1.88-.34l.06-.06 2 2-.06.06A1.7 1.7 0 0 0 19.4 10a1.7 1.7 0 0 0 1.57 1.03H21v2.83h-.03A1.7 1.7 0 0 0 19.4 15z"></path>
+                <path
+                    d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"
+                ></path>
+
+                <path
+                    d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2 2-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.57V21h-2.83v-.09A1.7 1.7 0 0 0 10.97 19.3a1.7 1.7 0 0 0-1.88.34l-.06.06-2-2 .06-.06A1.7 1.7 0 0 0 7.43 15a1.7 1.7 0 0 0-1.57-1.03H5v-2.83h.86A1.7 1.7 0 0 0 7.43 10a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2-2 .06.06A1.7 1.7 0 0 0 10.97 6.46a1.7 1.7 0 0 0 1.03-1.57V4h2.83v.89a1.7 1.7 0 0 0 1.03 1.57 1.7 1.7 0 0 0 1.88-.34l.06-.06 2 2-.06.06A1.7 1.7 0 0 0 19.4 10a1.7 1.7 0 0 0 1.57 1.03H21v2.83h-.03A1.7 1.7 0 0 0 19.4 15z"
+                ></path>
             </svg>
         </a>
 
-        </nav>
     </header>
 
     <!-- CONTEÚDO PRINCIPAL -->
@@ -258,28 +115,22 @@
 
         <section class="card-avaliacao">
 
-            <h2 style="
-                color: var(--purple-light, #9b63ff);
-                margin-top: 0;
-                font-size: 1.5rem;
-            ">
+            <h2 class="titulo-avaliar">
                 Avaliar Música
             </h2>
 
-            <p style="
-                margin-bottom: 20px;
-                color: #b8b4ca;
-            ">
+            <p class="subtitulo-avaliar">
                 Compartilhe sua opinião musical
             </p>
 
-            <!-- MENSAGEM PARA NÃO LOGADOS -->
+            <!-- SEM LOGIN -->
 
             <section
                 id="avaliarSemLogin"
                 class="acesso-sem-login"
                 style="display: none;"
             >
+
                 <div class="acesso-sem-login-icone">
                     ★
                 </div>
@@ -291,9 +142,13 @@
                     dar uma nota e publicar sua avaliação.
                 </p>
 
-                <a href="login.html" class="btn-acesso-login">
+                <a
+                    href="login.html"
+                    class="btn-acesso-login"
+                >
                     Fazer login
                 </a>
+
             </section>
 
             <!-- FORMULÁRIO -->
@@ -348,7 +203,10 @@
 
                 <!-- MÚSICA SELECIONADA -->
 
-                <div id="musicaSelecionada">
+                <div
+                    id="musicaSelecionada"
+                    style="display: none;"
+                >
 
                     <img
                         id="capaAlbum"
@@ -360,13 +218,14 @@
 
                     <p id="albumMusicaSelecionada"></p>
 
-                    <!-- PLAYER PADRONIZADO -->
+                    <!-- PLAYER -->
 
                     <div
                         id="areaPreviewMusica"
                         class="preview-avaliacao"
                         style="display: none;"
                     >
+
                         <p class="preview-titulo">
                             Prévia da música
                         </p>
@@ -386,13 +245,14 @@
                         >
                             Não foi possível reproduzir esta prévia.
                         </small>
+
                     </div>
 
                 </div>
 
                 <!-- COMENTÁRIO -->
 
-                <div style="margin-bottom: 15px;">
+                <div class="campo-avaliacao">
 
                     <label for="comentarioAvaliacao">
                         Comentário
@@ -409,7 +269,7 @@
 
                 <!-- NOTA -->
 
-                <div style="margin-bottom: 20px;">
+                <div class="campo-avaliacao">
 
                     <label>Nota</label>
 
@@ -421,7 +281,10 @@
                             name="nota"
                             value="5"
                         >
-                        <label for="star5" title="5 estrelas">★</label>
+                        <label
+                            for="star5"
+                            title="5 estrelas"
+                        >★</label>
 
                         <input
                             type="radio"
@@ -429,7 +292,10 @@
                             name="nota"
                             value="4"
                         >
-                        <label for="star4" title="4 estrelas">★</label>
+                        <label
+                            for="star4"
+                            title="4 estrelas"
+                        >★</label>
 
                         <input
                             type="radio"
@@ -437,7 +303,10 @@
                             name="nota"
                             value="3"
                         >
-                        <label for="star3" title="3 estrelas">★</label>
+                        <label
+                            for="star3"
+                            title="3 estrelas"
+                        >★</label>
 
                         <input
                             type="radio"
@@ -445,7 +314,10 @@
                             name="nota"
                             value="2"
                         >
-                        <label for="star2" title="2 estrelas">★</label>
+                        <label
+                            for="star2"
+                            title="2 estrelas"
+                        >★</label>
 
                         <input
                             type="radio"
@@ -453,7 +325,10 @@
                             name="nota"
                             value="1"
                         >
-                        <label for="star1" title="1 estrela">★</label>
+                        <label
+                            for="star1"
+                            title="1 estrela"
+                        >★</label>
 
                     </div>
 
@@ -479,7 +354,11 @@
 
     <!-- LOADING -->
 
-    <div id="loadingOverlay" class="loading-overlay">
+    <div
+        id="loadingOverlay"
+        class="loading-overlay"
+    >
+
         <div class="loading-conteudo">
 
             <img
@@ -491,6 +370,7 @@
             <p>Enviando avaliação...</p>
 
         </div>
+
     </div>
 
     <script src="../js/avaliar.js"></script>

@@ -1,214 +1,359 @@
 
-// =========================================================
-// ENTRE NOTAS - PERFIL PÚBLICO
-// =========================================================
+const API = "http://localhost:3000";
 
-const mensagem = document.getElementById(
-    "mensagemPerfilPublico"
-);
-
-const cabecalhoPerfil = document.getElementById(
-    "cabecalhoPerfilPublico"
-);
-
-const secaoAvaliacoes = document.getElementById(
-    "secaoAvaliacoesPublicas"
-);
-
-const listaAvaliacoes = document.getElementById(
-    "listaAvaliacoesPublicas"
-);
+const mensagem = document.getElementById("mensagemPerfilPublico");
+const cabecalhoPerfil = document.getElementById("cabecalhoPerfilPublico");
+const secaoAvaliacoes = document.getElementById("secaoAvaliacoesPublicas");
+const listaAvaliacoes = document.getElementById("listaAvaliacoesPublicas");
 
 // =========================================================
-// PROTEGER TEXTO DO HTML
+// AUXILIARES
 // =========================================================
 
 function escaparHTML(valor) {
-    return String(valor ?? "").replace(
-        /[&<>"']/g,
-        caractere => ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#39;"
-        })[caractere]
-    );
+    return String(valor ?? "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[c]);
 }
 
-// =========================================================
-// VALIDAR ENDEREÇO DA IMAGEM
-// =========================================================
+function obterUsuario() {
+    try {
+        return JSON.parse(localStorage.getItem("usuarioLogado"));
+    } catch {
+        return null;
+    }
+}
 
 function urlImagemSegura(valor) {
-    const url = String(valor || "");
+    const str = String(valor || "");
 
-    if (
-        /^https?:\/\//i.test(url) ||
-        /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(url)
-    ) {
-        return url;
-    }
-
-    return "";
+    return (
+        /^https:\/\//i.test(str) ||
+        /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(str) ||
+        /^\.\.\/img\//.test(str)
+    ) ? str : "";
 }
 
 // =========================================================
-// ESTRELAS DAS AVALIAÇÕES
+// ESTRELAS PADRONIZADAS
 // =========================================================
 
-function estrelasHTML(nota) {
-
+function gerarEstrelas(nota) {
     const n = Math.max(
         0,
-        Math.min(5, Number(nota) || 0)
+        Math.min(5, Math.round(Number(nota) || 0))
     );
-
-    const estrelas = Array.from(
-        { length: 5 },
-        (_, i) => `
-            <span class="${i < n ? "ativa" : ""}">
-                ★
-            </span>
-        `
-    ).join("");
 
     return `
         <div
-            class="perfil-publico-estrelas"
+            class="estrelas-avaliacao"
+            role="img"
             aria-label="Nota ${n} de 5 estrelas"
         >
-            ${estrelas}
+            ${Array.from({ length: 5 }, (_, i) => `
+                <span
+                    class="estrela ${i < n ? "ativa" : ""}"
+                    aria-hidden="true"
+                >★</span>
+            `).join("")}
         </div>
     `;
 }
 
 // =========================================================
-// FORMATAR DATA
+// DATA
 // =========================================================
 
-function dataFormatada(data) {
+function formatarData(valor) {
+    if (!valor) return "";
 
-    if (!data) return "";
-
-    const d = new Date(data);
-
-    if (Number.isNaN(d.getTime())) {
-        return "";
+    if (String(valor).includes("/")) {
+        return String(valor);
     }
 
-    return d.toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    const data = new Date(valor);
+
+    return Number.isNaN(data.getTime())
+        ? String(valor)
+        : data.toLocaleString("pt-BR");
 }
 
 // =========================================================
-// GERAR CARD DE AVALIAÇÃO
+// PRÉVIA MUSICAL
+// =========================================================
+
+function gerarPreview(avaliacao) {
+    const id = String(avaliacao.id_deezer ?? "");
+
+    const src =
+        /^\d{1,20}$/.test(id) && Number(id) > 0
+            ? `${API}/deezer/preview/${id}`
+            : /^https:\/\//i.test(String(avaliacao.preview || ""))
+                ? String(avaliacao.preview)
+                : "";
+
+    return src
+        ? `
+            <div class="preview-avaliacao">
+
+                <span class="preview-titulo">
+                    Prévia da música
+                </span>
+
+                <audio
+                    controls
+                    preload="none"
+                    src="${escaparHTML(src)}"
+                ></audio>
+
+            </div>
+        `
+        : `
+            <span class="sem-preview">
+                Prévia indisponível.
+            </span>
+        `;
+}
+
+// =========================================================
+// BOTÃO DE CURTIDA
+// =========================================================
+
+function curtidaHTML(avaliacao) {
+    const quantidade = Math.max(
+        0,
+        Number(avaliacao.total_curtidas) || 0
+    );
+
+    const usuario = obterUsuario();
+
+    if (!usuario) {
+        return `
+            <span
+                class="curtidas-sem-login"
+                aria-label="${quantidade} curtidas"
+            >
+                ♡ ${quantidade}
+            </span>
+        `;
+    }
+
+    return `
+        <button
+            type="button"
+            class="btn-curtir"
+            data-id="${Number(avaliacao.id)}"
+            disabled
+            aria-pressed="false"
+            aria-label="Curtir avaliação"
+        >
+            <span class="icone-curtida" aria-hidden="true">♡</span>
+            <span class="quantidade-curtidas">${quantidade}</span>
+        </button>
+    `;
+}
+
+function pintarCurtida(botao, ativo) {
+    botao.classList.toggle("curtido", ativo);
+
+    botao.setAttribute(
+        "aria-pressed",
+        String(ativo)
+    );
+
+    botao.setAttribute(
+        "aria-label",
+        ativo ? "Remover curtida" : "Curtir avaliação"
+    );
+
+    botao.querySelector(".icone-curtida").textContent =
+        ativo ? "♥" : "♡";
+}
+
+// =========================================================
+// VERIFICAR CURTIDA SALVA
+// =========================================================
+
+async function verificarCurtida(id, botao) {
+    const usuario = obterUsuario();
+
+    if (!usuario || !botao) return;
+
+    botao.disabled = true;
+
+    try {
+        const resposta = await fetch(
+            `${API}/usuarios/avaliacoes/${id}/curtiu?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
+            { cache: "no-store" }
+        );
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.sucesso) {
+            throw new Error(
+                dados.mensagem || "Erro ao verificar curtida"
+            );
+        }
+
+        pintarCurtida(botao, Boolean(dados.curtiu));
+        botao.disabled = false;
+
+    } catch (erro) {
+        console.error(erro);
+        botao.title = "Erro ao verificar curtida.";
+    }
+}
+
+// =========================================================
+// CURTIR / DESCURTIR
+// =========================================================
+
+async function alternarCurtida(botao) {
+    const usuario = obterUsuario();
+
+    if (!usuario) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    if (botao.disabled) return;
+
+    const id = Number(botao.dataset.id);
+    const ativo = botao.classList.contains("curtido");
+
+    botao.disabled = true;
+
+    try {
+        const resposta = await fetch(
+            `${API}/usuarios/avaliacoes/${id}/curtir`,
+            {
+                method: ativo ? "DELETE" : "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    id_usuario: usuario.id_usuario
+                })
+            }
+        );
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.sucesso) {
+            if (
+                String(dados.mensagem || "")
+                    .toLowerCase()
+                    .includes("já curtiu")
+            ) {
+                const contador = botao.querySelector(
+                    ".quantidade-curtidas"
+                );
+
+                if (!ativo) {
+                    contador.textContent =
+                        (Number(contador.textContent) || 0) + 1;
+                }
+
+                pintarCurtida(botao, true);
+                return;
+            }
+
+            throw new Error(
+                dados.mensagem || "Erro ao alterar curtida"
+            );
+        }
+
+        pintarCurtida(botao, !ativo);
+
+        const contador = botao.querySelector(
+            ".quantidade-curtidas"
+        );
+
+        contador.textContent = Math.max(
+            0,
+            (Number(contador.textContent) || 0) +
+            (ativo ? -1 : 1)
+        );
+
+    } catch (erro) {
+        console.error(erro);
+        alert("Não foi possível alterar a curtida.");
+
+    } finally {
+        botao.disabled = false;
+    }
+}
+
+// =========================================================
+// MONTAR CARD DO PERFIL PÚBLICO
 // =========================================================
 
 function montarCard(avaliacao) {
+    const id = Number(avaliacao.id);
 
-    // CAPA
+    if (!Number.isSafeInteger(id) || id <= 0) {
+        return "";
+    }
+
     const capa = urlImagemSegura(avaliacao.capa_album);
 
     const capaHTML = capa
         ? `
             <img
-                class="perfil-publico-capa"
+                class="perfil-publico-capa capa-musica-feed"
                 src="${escaparHTML(capa)}"
                 alt="Capa do álbum"
             >
         `
         : `
             <div
-                class="perfil-publico-capa perfil-publico-sem-capa"
-            >
-                ♫
-            </div>
+                class="perfil-publico-capa capa-musica-feed capa-placeholder"
+                aria-hidden="true"
+            >♫</div>
         `;
-
-    // =====================================================
-    // PRÉVIA DA DEEZER
-    // =====================================================
-
-    const idDeezer = Number(avaliacao.id_deezer);
-
-    const preview =
-        /^https:\/\//i.test(String(avaliacao.preview || ""))
-            ? String(avaliacao.preview)
-            : "";
-
-    const srcAudio =
-        Number.isSafeInteger(idDeezer) && idDeezer > 0
-            ? `/deezer/preview/${idDeezer}`
-            : preview;
-
-    const player = srcAudio
-        ? `
-            <div class="perfil-publico-preview">
-
-                <span>Prévia da música</span>
-
-                <audio
-                    controls
-                    preload="none"
-                    src="${escaparHTML(srcAudio)}"
-                ></audio>
-
-            </div>
-        `
-        : `
-            <p class="perfil-publico-sem-preview">
-                Prévia indisponível.
-            </p>
-        `;
-
-    // =====================================================
-    // CARD COMPLETO
-    // =====================================================
 
     return `
-        <article class="perfil-publico-avaliacao">
+        <article
+            class="perfil-publico-avaliacao"
+            data-avaliacao-id="${id}"
+        >
 
-            ${capaHTML}
+            <div class="capa-musica-container">
+                ${capaHTML}
+            </div>
 
-            <div class="perfil-publico-conteudo">
+            <div class="perfil-publico-conteudo informacoes-musica">
 
-                <h3>
-                    ${escaparHTML(avaliacao.musica)}
-                </h3>
+                <h3>${escaparHTML(avaliacao.musica)}</h3>
 
-                <p class="perfil-publico-artista">
+                <p class="perfil-publico-artista artista-avaliacao">
                     <strong>Artista:</strong>
                     ${escaparHTML(avaliacao.artista)}
                 </p>
 
-                <p class="perfil-publico-comentario">${escaparHTML(avaliacao.comentario)}</p>
+                <p class="perfil-publico-comentario comentario-avaliacao">${escaparHTML(avaliacao.comentario)}</p>
 
-                ${estrelasHTML(avaliacao.nota)}
+                ${gerarEstrelas(avaliacao.nota)}
 
-                <div class="perfil-publico-meta">
+                <p class="data-postagem">
+                    ${escaparHTML(formatarData(avaliacao.data_avaliacao))}
+                </p>
 
-                    <span>
-                        ${escaparHTML(
-                            dataFormatada(avaliacao.data_avaliacao)
-                        )}
-                    </span>
-
-                    <span>
-                        ♥ ${Number(avaliacao.total_curtidas) || 0}
-                    </span>
-
+                <div class="area-preview-feed">
+                    ${gerarPreview(avaliacao)}
                 </div>
 
-                ${player}
+                <div class="acoes-avaliacao-publica">
+                    ${curtidaHTML(avaliacao)}
+                </div>
 
             </div>
-
         </article>
     `;
 }
@@ -218,63 +363,29 @@ function montarCard(avaliacao) {
 // =========================================================
 
 async function carregarPerfilPublico() {
-
-    // Obtém o ID da URL.
-    // Exemplo: perfil-publico.html?id=2
-
     const id = Number(
-        new URLSearchParams(
-            window.location.search
-        ).get("id")
+        new URLSearchParams(window.location.search).get("id")
     );
 
-    // Validar ID.
-    if (
-        !Number.isSafeInteger(id) ||
-        id <= 0
-    ) {
-        mensagem.textContent =
-            "Perfil inválido. Volte ao Feed e selecione um usuário.";
+    if (!Number.isSafeInteger(id) || id <= 0) {
+        if (mensagem) {
+            mensagem.textContent =
+                "Perfil inválido. Volte ao Feed e selecione um usuário.";
+        }
 
         return;
     }
 
-    // =====================================================
-    // VERIFICAR SE É O PRÓPRIO PERFIL
-    // =====================================================
-
-    try {
-        const logado = JSON.parse(
-            localStorage.getItem("usuarioLogado")
-        );
-
-        if (Number(logado?.id_usuario) === id) {
-            window.location.replace("perfil.html");
-            return;
-        }
-
-    } catch (erro) {
-        console.warn("Não foi possível ler a sessão.", erro);
+    if (Number(obterUsuario()?.id_usuario) === id) {
+        window.location.replace("perfil.html");
+        return;
     }
 
-    // =====================================================
-    // BUSCAR INFORMAÇÕES
-    // =====================================================
-
     try {
-
-        
         const resposta = await fetch(
-            `http://localhost:3000/usuarios/perfil-publico/${id}`,
-            {
-                method: "GET",
-                headers: {
-                    "Accept": "application/json"
-                },
-                cache: "no-store"
-            }
+            `${API}/usuarios/perfil-publico/${id}`,
+            { cache: "no-store" }
         );
-
 
         const dados = await resposta.json();
 
@@ -284,24 +395,16 @@ async function carregarPerfilPublico() {
             );
         }
 
-        const usuario = dados.usuario;
+        const usuario = dados.usuario || {};
         const avaliacoes = dados.avaliacoes || [];
 
-        document.title =
-            `${usuario.nome_usuario} | Entre Notas`;
-
-        // =================================================
-        // NOME
-        // =================================================
+        document.title = `
+            ${usuario.nome_usuario || "Usuário"} | Entre Notas
+        `;
 
         document.getElementById(
             "nomePerfilPublico"
-        ).textContent =
-            usuario.nome_usuario || "Usuário";
-
-        // =================================================
-        // BIOGRAFIA
-        // =================================================
+        ).textContent = usuario.nome_usuario || "Usuário";
 
         document.getElementById(
             "biografiaPerfilPublico"
@@ -309,26 +412,14 @@ async function carregarPerfilPublico() {
             usuario.biografia ||
             "Este usuário ainda não adicionou uma biografia.";
 
-        // =================================================
-        // QUANTIDADE DE AVALIAÇÕES
-        // =================================================
-
         document.getElementById(
             "totalAvaliacoesPublicas"
         ).textContent = `
             ${avaliacoes.length}
-            ${avaliacoes.length === 1
-                ? "avaliação"
-                : "avaliações"}
+            ${avaliacoes.length === 1 ? "avaliação" : "avaliações"}
         `;
 
-        // =================================================
-        // FOTO
-        // =================================================
-
-        const foto = urlImagemSegura(
-            usuario.foto_perfil
-        );
+        const foto = urlImagemSegura(usuario.foto_perfil);
 
         if (foto) {
             document.getElementById(
@@ -336,44 +427,62 @@ async function carregarPerfilPublico() {
             ).src = foto;
         }
 
-        // =================================================
-        // LISTAR AVALIAÇÕES DO USUÁRIO
-        // =================================================
-
-        if (avaliacoes.length) {
-
-            listaAvaliacoes.innerHTML =
-                avaliacoes.map(montarCard).join("");
-
-        } else {
-
-            listaAvaliacoes.innerHTML = `
+        listaAvaliacoes.innerHTML = avaliacoes.length
+            ? avaliacoes.map(montarCard).join("")
+            : `
                 <p class="perfil-publico-vazio">
                     Este usuário ainda não publicou avaliações.
                 </p>
             `;
+
+        if (mensagem) {
+            mensagem.hidden = true;
         }
 
-        // MOSTRAR PERFIL
-        mensagem.hidden = true;
-        cabecalhoPerfil.hidden = false;
-        secaoAvaliacoes.hidden = false;
+        if (cabecalhoPerfil) {
+            cabecalhoPerfil.hidden = false;
+        }
+
+        if (secaoAvaliacoes) {
+            secaoAvaliacoes.hidden = false;
+        }
+
+        const botoes = Array.from(
+            listaAvaliacoes.querySelectorAll(".btn-curtir")
+        );
+
+        await Promise.all(
+            botoes.map(botao =>
+                verificarCurtida(
+                    Number(botao.dataset.id),
+                    botao
+                )
+            )
+        );
 
     } catch (erro) {
-
         console.error(
             "Erro ao carregar perfil público:",
             erro
         );
 
-        mensagem.textContent =
-            erro.message ||
-            "Não foi possível carregar o perfil.";
+        if (mensagem) {
+            mensagem.textContent =
+                erro.message || "Erro ao buscar perfil.";
+        }
     }
 }
 
 // =========================================================
 // INICIAR
 // =========================================================
+
+listaAvaliacoes?.addEventListener("click", event => {
+    const botao = event.target.closest(".btn-curtir");
+
+    if (botao) {
+        alternarCurtida(botao);
+    }
+});
 
 carregarPerfilPublico();

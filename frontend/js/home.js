@@ -4,57 +4,170 @@ const API = "http://localhost:3000";
 const avaliacoesContainer = document.getElementById("home-container");
 const btnLoginCabecalho = document.getElementById("btnLoginCabecalho");
 
-// =========================================================
-// USUÁRIO LOGADO
-// =========================================================
-
 function obterUsuarioLogado() {
     try {
         return JSON.parse(localStorage.getItem("usuarioLogado"));
-    } catch (erro) {
+    } catch {
         return null;
     }
 }
 
-if (btnLoginCabecalho) {
-    btnLoginCabecalho.style.display = obterUsuarioLogado()
-        ? "none"
-        : "inline-flex";
+function escaparHTML(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[c]);
+}
+
+function urlImagemSegura(valor) {
+    const str = String(valor || "");
+
+    if (
+        /^https:\/\//i.test(str) ||
+        /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(str) ||
+        /^\.\.\/img\//.test(str)
+    ) {
+        return str;
+    }
+
+    return "";
 }
 
 // =========================================================
-// FUNÇÕES AUXILIARES
+// ESTRELAS PADRONIZADAS
 // =========================================================
-
-function escaparHTML(texto) {
-    const elemento = document.createElement("div");
-    elemento.textContent = texto ?? "";
-    return elemento.innerHTML;
-}
 
 function gerarEstrelas(nota) {
-    const numero = Math.max(0, Math.min(5, Number(nota) || 0));
+    const n = Math.max(0, Math.min(5, Math.round(Number(nota) || 0)));
 
-    let html = `<div class="estrelas-avaliacao" aria-label="Nota ${numero} de 5 estrelas">`;
+    return `
+        <div
+            class="estrelas-avaliacao"
+            role="img"
+            aria-label="Nota ${n} de 5 estrelas"
+        >
+            ${Array.from({ length: 5 }, (_, i) => `
+                <span
+                    class="estrela ${i < n ? "ativa" : ""}"
+                    aria-hidden="true"
+                >★</span>
+            `).join("")}
+        </div>
+    `;
+}
 
-    for (let i = 1; i <= 5; i++) {
-        html += `
-            <span class="estrela ${i <= numero ? "ativa" : ""}">
-                ★
+// =========================================================
+// PRÉVIA MUSICAL
+// =========================================================
+
+function gerarPreview(avaliacao) {
+    const id = String(avaliacao.id_deezer ?? "");
+
+    const src =
+        /^\d{1,20}$/.test(id) && Number(id) > 0
+            ? `${API}/deezer/preview/${id}`
+            : /^https:\/\//i.test(String(avaliacao.preview || ""))
+                ? String(avaliacao.preview)
+                : "";
+
+    if (!src) {
+        return `
+            <div class="preview-avaliacao">
+                <span class="preview-titulo">Prévia da música</span>
+                <small class="sem-preview">
+                    Prévia indisponível.
+                </small>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="preview-avaliacao">
+            <span class="preview-titulo">Prévia da música</span>
+
+            <audio
+                controls
+                preload="none"
+                src="${escaparHTML(src)}"
+            ></audio>
+
+            <small class="erro-preview" hidden>
+                Prévia indisponível no momento.
+            </small>
+        </div>
+    `;
+}
+
+// =========================================================
+// FORMATAR DATA
+// =========================================================
+
+function formatoData(data) {
+    if (!data) return "";
+
+    if (String(data).includes("/")) {
+        return String(data);
+    }
+
+    const d = new Date(data);
+
+    return Number.isNaN(d.getTime())
+        ? String(data)
+        : d.toLocaleString("pt-BR");
+}
+
+// =========================================================
+// BOTÃO DE CURTIDA
+// =========================================================
+
+function renderizarCurtida(avaliacao, usuario) {
+    const id = Number(avaliacao.id);
+    const total = Math.max(0, Number(avaliacao.total_curtidas) || 0);
+
+    if (!usuario) {
+        return `
+            <span
+                class="curtidas-sem-login"
+                aria-label="${total} curtidas"
+            >
+                <span aria-hidden="true">♡</span>
+                ${total}
             </span>
         `;
     }
 
-    html += `</div>`;
-
-    return html;
+    return `
+        <button
+            type="button"
+            class="btn-curtir"
+            data-id="${id}"
+            disabled
+            aria-pressed="false"
+            aria-label="Curtir avaliação"
+        >
+            <span class="icone-curtida" aria-hidden="true">♡</span>
+            <span class="quantidade-curtidas">${total}</span>
+        </button>
+    `;
 }
 
-function atualizarBotaoCurtida(botao, curtiu) {
-    const icone = botao.querySelector(".icone-curtida");
+function atualizarCurtida(botao, curtiu) {
+    botao.classList.toggle("curtido", Boolean(curtiu));
 
-    botao.classList.toggle("curtido", curtiu);
-    botao.setAttribute("aria-pressed", String(curtiu));
+    botao.setAttribute(
+        "aria-pressed",
+        String(Boolean(curtiu))
+    );
+
+    botao.setAttribute(
+        "aria-label",
+        curtiu ? "Remover curtida" : "Curtir avaliação"
+    );
+
+    const icone = botao.querySelector(".icone-curtida");
 
     if (icone) {
         icone.textContent = curtiu ? "♥" : "♡";
@@ -62,10 +175,10 @@ function atualizarBotaoCurtida(botao, curtiu) {
 }
 
 // =========================================================
-// VERIFICAR CURTIDA SALVA NO MYSQL
+// VERIFICAR CURTIDA NO MYSQL
 // =========================================================
 
-async function verificarCurtida(idAvaliacao, botao) {
+async function verificarCurtida(id, botao) {
     const usuario = obterUsuarioLogado();
 
     if (!usuario || !botao) return;
@@ -74,24 +187,26 @@ async function verificarCurtida(idAvaliacao, botao) {
 
     try {
         const resposta = await fetch(
-            `${API}/usuarios/avaliacoes/${idAvaliacao}/curtiu?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
+            `${API}/usuarios/avaliacoes/${id}/curtiu?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
             { cache: "no-store" }
         );
 
         const dados = await resposta.json();
 
         if (!resposta.ok || !dados.sucesso) {
-            throw new Error("Erro ao verificar curtida.");
+            throw new Error(
+                dados.mensagem || "Erro ao consultar curtida"
+            );
         }
 
-        atualizarBotaoCurtida(botao, Boolean(dados.curtiu));
+        atualizarCurtida(botao, Boolean(dados.curtiu));
         botao.disabled = false;
 
     } catch (erro) {
-        console.error("Erro ao verificar curtida:", erro);
+        console.error("Falha na verificação da curtida:", erro);
 
-        // Evita uma curtida duplicada caso a consulta falhe.
-        botao.title = "Não foi possível verificar a curtida.";
+        botao.title =
+            "Não foi possível consultar esta curtida. Atualize a página.";
     }
 }
 
@@ -99,29 +214,30 @@ async function verificarCurtida(idAvaliacao, botao) {
 // CURTIR E DESCURTIR
 // =========================================================
 
-async function curtirAvaliacao(idAvaliacao, botao) {
+async function curtirAvaliacao(id, botao) {
     const usuario = obterUsuarioLogado();
 
     if (!usuario) {
-        alert("Faça login para curtir uma avaliação.");
+        window.location.href = "login.html";
         return;
     }
 
     if (botao.disabled) return;
 
-    const jaCurtiu = botao.classList.contains("curtido");
-    const contador = botao.querySelector(".quantidade-curtidas");
+    const estavaCurtido = botao.classList.contains("curtido");
 
     botao.disabled = true;
 
     try {
         const resposta = await fetch(
-            `${API}/usuarios/avaliacoes/${idAvaliacao}/curtir`,
+            `${API}/usuarios/avaliacoes/${id}/curtir`,
             {
-                method: jaCurtiu ? "DELETE" : "POST",
+                method: estavaCurtido ? "DELETE" : "POST",
+
                 headers: {
                     "Content-Type": "application/json"
                 },
+
                 body: JSON.stringify({
                     id_usuario: usuario.id_usuario
                 })
@@ -131,33 +247,46 @@ async function curtirAvaliacao(idAvaliacao, botao) {
         const dados = await resposta.json();
 
         if (!resposta.ok || !dados.sucesso) {
-            // Se o banco já possuir a curtida, apenas
-            // recupera o estado correto do botão.
             if (
                 String(dados.mensagem || "")
                     .toLowerCase()
                     .includes("já curtiu")
             ) {
-                await verificarCurtida(idAvaliacao, botao);
+                const total = botao.querySelector(
+                    ".quantidade-curtidas"
+                );
+
+                if (total && !estavaCurtido) {
+                    total.textContent =
+                        (Number(total.textContent) || 0) + 1;
+                }
+
+                atualizarCurtida(botao, true);
                 return;
             }
 
             throw new Error(
-                dados.mensagem || "Erro ao alterar curtida."
+                dados.mensagem ||
+                "Não foi possível alterar a curtida."
             );
         }
 
-        atualizarBotaoCurtida(botao, !jaCurtiu);
+        atualizarCurtida(botao, !estavaCurtido);
 
-        if (contador) {
-            const atual = Number(contador.textContent) || 0;
-            contador.textContent = jaCurtiu
-                ? Math.max(0, atual - 1)
-                : atual + 1;
+        const total = botao.querySelector(
+            ".quantidade-curtidas"
+        );
+
+        if (total) {
+            total.textContent = Math.max(
+                0,
+                (Number(total.textContent) || 0) +
+                (estavaCurtido ? -1 : 1)
+            );
         }
 
     } catch (erro) {
-        console.error("Erro na curtida:", erro);
+        console.error("Falha ao alterar curtida:", erro);
         alert("Não foi possível alterar a curtida.");
 
     } finally {
@@ -166,62 +295,132 @@ async function curtirAvaliacao(idAvaliacao, botao) {
 }
 
 // =========================================================
-// GERAR PLAYER DA MÚSICA
+// MONTAR CARD DO FEED
 // =========================================================
 
-function gerarPreview(avaliacao) {
-    const idDeezer = Number(avaliacao.id_deezer);
+function montarCard(avaliacao, usuario) {
+    const id = Number(avaliacao.id);
 
-    let urlPreview = "";
-
-    // Prioriza o ID da Deezer, pois o endereço antigo
-    // salvo no MySQL pode não funcionar mais.
-    if (Number.isSafeInteger(idDeezer) && idDeezer > 0) {
-        urlPreview = `${API}/deezer/preview/${idDeezer}`;
-
-    } else if (avaliacao.preview) {
-        urlPreview = String(avaliacao.preview);
-
-        if (!/^https:\/\//i.test(urlPreview)) {
-            urlPreview = "";
-        }
+    if (!Number.isSafeInteger(id) || id <= 0) {
+        return "";
     }
 
-    if (!urlPreview) {
-        return `
-            <div class="preview-avaliacao">
-                <p class="preview-titulo">Prévia da música</p>
-                <small class="sem-preview">
-                    Prévia indisponível para esta música.
-                </small>
+    const idAutor = Number(avaliacao.id_usuario);
+
+    const perfilURL =
+        Number.isSafeInteger(idAutor) && idAutor > 0
+            ? (
+                Number(usuario?.id_usuario) === idAutor
+                    ? "perfil.html"
+                    : `perfil-publico.html?id=${idAutor}`
+            )
+            : "";
+
+    const nome = avaliacao.nome_usuario || "Usuário";
+    const email = avaliacao.email || "";
+
+    const foto = urlImagemSegura(avaliacao.foto_perfil);
+    const capa = urlImagemSegura(avaliacao.capa_album);
+
+    const avatar = foto
+        ? `
+            <img
+                class="foto-autor-avaliacao"
+                src="${escaparHTML(foto)}"
+                alt="Foto do usuário"
+            >
+        `
+        : `
+            <span
+                class="foto-autor-avaliacao foto-autor-placeholder"
+                aria-hidden="true"
+            >👤</span>
+        `;
+
+    const dadosAutor = `
+        ${avatar}
+
+        <span class="dados-autor">
+            <strong>${escaparHTML(nome)}</strong>
+            <span class="email-autor">${escaparHTML(email)}</span>
+        </span>
+    `;
+
+    const autor = perfilURL
+        ? `
+            <a
+                class="link-perfil-autor"
+                href="${perfilURL}"
+                aria-label="Abrir perfil de ${escaparHTML(nome)}"
+            >
+                ${dadosAutor}
+            </a>
+        `
+        : `
+            <div class="link-perfil-autor">
+                ${dadosAutor}
             </div>
         `;
-    }
+
+    const capaHTML = capa
+        ? `
+            <img
+                class="capa-musica-feed"
+                src="${escaparHTML(capa)}"
+                alt="Capa do álbum"
+            >
+        `
+        : `
+            <div
+                class="capa-musica-feed capa-placeholder"
+                aria-hidden="true"
+            >♫</div>
+        `;
 
     return `
-        <div class="preview-avaliacao">
-            <p class="preview-titulo">Prévia da música</p>
+        <article
+            class="card-avaliacao"
+            data-avaliacao-id="${id}"
+        >
 
-            <audio
-                controls
-                preload="metadata"
-                src="${escaparHTML(urlPreview)}"
-                onerror="
-                    this.closest('.preview-avaliacao')
-                    .querySelector('.erro-preview').hidden = false;
-                "
-                onloadeddata="
-                    this.closest('.preview-avaliacao')
-                    .querySelector('.erro-preview').hidden = true;
-                "
-            >
-                Seu navegador não suporta áudio.
-            </audio>
+            <div class="curtida-canto-superior">
+                ${renderizarCurtida(avaliacao, usuario)}
+            </div>
 
-            <small class="erro-preview" hidden>
-                Não foi possível reproduzir esta prévia.
-            </small>
-        </div>
+            <div class="autor-avaliacao">
+                ${autor}
+            </div>
+
+            <div class="conteudo-card-musica">
+
+                <div class="capa-musica-container">
+                    ${capaHTML}
+                </div>
+
+                <div class="informacoes-musica">
+
+                    <h3>${escaparHTML(avaliacao.musica)}</h3>
+
+                    <p class="artista-avaliacao">
+                        <strong>Artista:</strong>
+                        ${escaparHTML(avaliacao.artista)}
+                    </p>
+
+                    <p class="comentario-avaliacao">${escaparHTML(avaliacao.comentario)}</p>
+
+                    ${gerarEstrelas(avaliacao.nota)}
+
+                    <p class="data-postagem">
+                        ${escaparHTML(formatoData(avaliacao.data_avaliacao))}
+                    </p>
+
+                    <div class="area-preview-feed">
+                        ${gerarPreview(avaliacao)}
+                    </div>
+
+                </div>
+            </div>
+        </article>
     `;
 }
 
@@ -234,242 +433,104 @@ async function carregarAvaliacoes() {
 
     try {
         const resposta = await fetch(
-            `${API}/usuarios/avaliacoes`
+            `${API}/usuarios/avaliacoes`,
+            { cache: "no-store" }
         );
 
         const dados = await resposta.json();
 
         if (!resposta.ok || !dados.sucesso) {
-            throw new Error("Erro ao carregar avaliações.");
+            throw new Error(
+                dados.mensagem || "Erro ao carregar avaliações."
+            );
         }
 
-        if (!dados.avaliacoes || !dados.avaliacoes.length) {
-            avaliacoesContainer.innerHTML =
-                "<p>Nenhuma avaliação encontrada ainda.</p>";
+        const avaliacoes = dados.avaliacoes || [];
+
+        if (!avaliacoes.length) {
+            avaliacoesContainer.innerHTML = `
+                <p class="mensagem-lista-vazia">
+                    Nenhuma avaliação encontrada ainda.
+                </p>
+            `;
             return;
         }
 
         const usuario = obterUsuarioLogado();
-        const idUsuario = usuario?.id_usuario;
 
-        // Cria todos os cards antes de verificar curtidas.
-        const cards = dados.avaliacoes.map(avaliacao => {
-            const idAvaliacao = Number(avaliacao.id);
+        avaliacoesContainer.innerHTML = avaliacoes
+            .map(a => montarCard(a, usuario))
+            .join("");
 
-            if (!Number.isSafeInteger(idAvaliacao)) {
-                return "";
-            }
-
-            const totalCurtidas =
-                Number(avaliacao.total_curtidas) || 0;
-
-            const nomeAutor =
-                avaliacao.nome_usuario || "Usuário";
-
-
-            const idAutor = Number(avaliacao.id_usuario);
-
-            const perfilURL =
-                Number.isSafeInteger(idAutor) && idAutor > 0
-                    ? (
-                        Number(idUsuario) === idAutor
-                            ? "perfil.html"
-                            : `perfil-publico.html?id=${idAutor}`
-                    )
-                    : null;
-
-
-            const emailAutor =
-                avaliacao.email || "";
-
-            const fotoHTML = avaliacao.foto_perfil
-                ? `
-                    <img
-                        src="${escaparHTML(avaliacao.foto_perfil)}"
-                        alt="Foto de perfil"
-                        class="foto-autor-avaliacao"
-                    >
-                `
-                : `
-                    <div class="foto-autor-avaliacao foto-autor-placeholder">
-                        👤
-                    </div>
-                `;
-
-
-            const capaHTML = avaliacao.capa_album
-                ? `
-                    <img
-                        src="${escaparHTML(avaliacao.capa_album)}"
-                        alt="Capa do álbum"
-                        class="capa-musica-feed"
-                    >
-                `
-                : "";
-
-
-            const botaoCurtida = idUsuario
-                ? `
-                    <button
-                        type="button"
-                        class="btn-curtir"
-                        data-id="${idAvaliacao}"
-                        aria-pressed="false"
-                        disabled
-                        onclick="curtirAvaliacao(${idAvaliacao}, this)"
-                    >
-                        <span class="icone-curtida">♡</span>
-                        <span class="quantidade-curtidas">
-                            ${totalCurtidas}
-                        </span>
-                    </button>
-                `
-                : `
-                    <div class="curtidas-sem-login">
-                        ♡ ${totalCurtidas}
-                    </div>
-                `;
-
-
-return `
-    <div
-        class="card-avaliacao"
-        data-avaliacao-id="${idAvaliacao}"
-    >
-
-        <!-- CURTIDA -->
-
-        <div class="curtida-canto-superior">
-            ${botaoCurtida}
-        </div>
-
-        <!-- AUTOR -->
-
-       
-   
-<!-- AUTOR DA AVALIAÇÃO -->
-
-    <div class="autor-avaliacao">
-
-        ${
-            perfilURL
-                ? `
-                    <a
-                        href="${perfilURL}"
-                        class="link-perfil-autor"
-                        aria-label="Visualizar perfil de ${escaparHTML(nomeAutor)}"
-                    >
-
-                        ${fotoHTML}
-
-                        <div class="dados-autor">
-
-                            <strong>
-                                ${escaparHTML(nomeAutor)}
-                            </strong>
-
-                            <span class="email-autor">
-                                ${escaparHTML(emailAutor)}
-                            </span>
-
-                        </div>
-
-                    </a>
-                `
-                : `
-                    ${fotoHTML}
-
-                    <div class="dados-autor">
-
-                        <strong>
-                            ${escaparHTML(nomeAutor)}
-                        </strong>
-
-                        <span class="email-autor">
-                            ${escaparHTML(emailAutor)}
-                        </span>
-
-                    </div>
-                `
-        }
-
-    </div>
-
-
-        <!-- CAPA E INFORMAÇÕES LADO A LADO -->
-
-        <div class="conteudo-card-musica">
-
-            <div class="capa-musica-container">
-                ${capaHTML}
-            </div>
-
-            <div class="informacoes-musica">
-
-                <h3>${escaparHTML(avaliacao.musica)}</h3>
-
-                <p class="artista-avaliacao"><strong>Artista:</strong> ${escaparHTML(avaliacao.artista)}</p>
-
-                <p class="comentario-avaliacao">${escaparHTML(avaliacao.comentario)}</p>
-
-                ${gerarEstrelas(avaliacao.nota)}
-
-                <p class="data-postagem">
-                    ${escaparHTML(avaliacao.data_avaliacao || "Sem data")}
-                </p>
-
-                <div class="area-preview-feed">
-                    ${gerarPreview(avaliacao)}
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-`;
-
-        });
-
-        avaliacoesContainer.innerHTML = cards.join("");
-
-        // Verifica o estado das curtidas somente depois
-        // que todos os elementos estão na página.
-        if (idUsuario) {
-            const botoes = avaliacoesContainer.querySelectorAll(
-                ".btn-curtir"
+        if (usuario) {
+            const botoes = Array.from(
+                avaliacoesContainer.querySelectorAll(".btn-curtir")
             );
 
             await Promise.all(
-                Array.from(botoes).map(botao => {
-                    return verificarCurtida(
+                botoes.map(botao =>
+                    verificarCurtida(
                         Number(botao.dataset.id),
                         botao
-                    );
-                })
+                    )
+                )
             );
         }
 
     } catch (erro) {
-        console.error("Erro ao carregar avaliações:", erro);
+        console.error("Erro no Feed:", erro);
 
         avaliacoesContainer.innerHTML = `
-            <p>
-                Erro ao carregar avaliações.
-                Verifique se o servidor está funcionando.
+            <p class="mensagem-lista-vazia">
+                Não foi possível carregar o Feed.
+                Verifique o servidor.
             </p>
         `;
     }
 }
 
 // =========================================================
-// INICIAR FEED
+// INICIAR EVENTOS
 // =========================================================
+
+if (btnLoginCabecalho) {
+    btnLoginCabecalho.style.display =
+        obterUsuarioLogado() ? "none" : "inline-flex";
+}
+
+if (avaliacoesContainer) {
+    avaliacoesContainer.addEventListener("click", event => {
+        const botao = event.target.closest(".btn-curtir");
+
+        if (botao) {
+            curtirAvaliacao(
+                Number(botao.dataset.id),
+                botao
+            );
+        }
+    });
+
+    avaliacoesContainer.addEventListener(
+        "error",
+        event => {
+            if (event.target.tagName === "AUDIO") {
+                const mensagem = event.target
+                    .closest(".preview-avaliacao")
+                    ?.querySelector(".erro-preview");
+
+                if (mensagem) {
+                    mensagem.hidden = false;
+                }
+            }
+        },
+        true
+    );
+}
 
 carregarAvaliacoes();
 
 // =========================================================
-// ESCONDER / MOSTRAR CABEÇALHO AO ROLAR
+// ESCONDER CABEÇALHO AO ROLAR
 // =========================================================
 
 const cabecalho = document.querySelector(".cabecalho");
@@ -477,13 +538,17 @@ const cabecalho = document.querySelector(".cabecalho");
 let ultimaRolagem = window.scrollY;
 
 if (cabecalho) {
-    window.addEventListener("scroll", () => {
-        if (window.scrollY > ultimaRolagem) {
-            cabecalho.classList.add("cabecalho--hidden");
-        } else {
-            cabecalho.classList.remove("cabecalho--hidden");
-        }
+    window.addEventListener(
+        "scroll",
+        () => {
+            cabecalho.classList.toggle(
+                "cabecalho--hidden",
+                window.scrollY > ultimaRolagem &&
+                window.scrollY > 120
+            );
 
-        ultimaRolagem = window.scrollY;
-    });
+            ultimaRolagem = window.scrollY;
+        },
+        { passive: true }
+    );
 }
