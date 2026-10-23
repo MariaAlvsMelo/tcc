@@ -98,8 +98,15 @@ router.get(
     usuarioController.verificarCurtida
 );
 
-// =====================================================
-// ADICIONADO — Buscar avaliações de um usuário
-// =====================================================
+
+// =========================================================
+// ADICIONADO: ROTA DO PERFIL PÚBLICO
+// =========================================================
+
+router.get(
+    "/perfil-publico/:id_usuario",
+    usuarioController.buscarPerfilPublico
+);
+
 
 module.exports = router;

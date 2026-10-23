@@ -3186,3 +3186,1492 @@ button[type="submit"],
         0 8px 22px
         rgba(124, 60, 255, 0.30);
 }
+
+
+/* ====================================================
+   CORREÇÃO DEFINITIVA DOS ESPAÇAMENTOS NO FEED
+==================================================== */
+
+#home-container .card-avaliacao .informacoes-musica {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0;
+}
+
+/* Título da música */
+
+#home-container .informacoes-musica h3 {
+    margin: 0 0 6px !important;
+    padding: 0;
+    line-height: 1.3;
+}
+
+/* Artista */
+
+#home-container .informacoes-musica .artista-avaliacao {
+    margin: 0 0 4px !important;
+    padding: 0;
+    line-height: 1.4;
+}
+
+/* Comentário */
+
+#home-container .informacoes-musica .comentario-avaliacao {
+    margin: 0 0 6px !important;
+    padding: 0;
+
+    line-height: 1.4;
+
+    /* Remove espaços preservados do HTML */
+    white-space: normal !important;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    text-align: left;
+}
+
+/* Estrelas */
+
+#home-container .informacoes-musica .estrelas-avaliacao {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    gap: 4px;
+
+    margin: 0 0 8px !important;
+    padding: 0;
+    line-height: 1;
+}
+
+/* Data */
+
+#home-container .informacoes-musica .data-postagem {
+    margin: 0 0 12px !important;
+    padding: 0;
+}
+
+/* Player */
+
+#home-container .informacoes-musica .area-preview-feed {
+    width: 100%;
+    margin-top: 0;
+}
+
+/* =========================================================
+   AJUSTE DE ESPAÇAMENTO DOS CARDS
+========================================================= */
+
+.informacoes-musica {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0;
+}
+
+.informacoes-musica h3 {
+    margin: 0 0 8px;
+    line-height: 1.25;
+}
+
+.artista-avaliacao {
+    margin: 0 0 6px;
+    line-height: 1.4;
+    color: #f2efff;
+}
+
+.comentario-avaliacao {
+    margin: 0 0 8px;
+    line-height: 1.45;
+    color: #d8d4ea;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.data-postagem {
+    margin: 0 0 12px;
+    color: #8b86a7;
+    font-size: 0.85rem;
+}
+
+/* =========================================================
+   ESTRELAS MAIS BONITAS
+========================================================= */
+
+.estrelas-avaliacao {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 0 10px;
+}
+
+.estrelas-avaliacao .estrela {
+    font-size: 1.15rem;
+    line-height: 1;
+    color: #4f4677;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.estrelas-avaliacao .estrela.ativa {
+    color: #ffd45c;
+    text-shadow:
+        0 0 6px rgba(255, 212, 92, 0.35),
+        0 0 10px rgba(255, 212, 92, 0.18);
+}
+
+.estrelas-avaliacao .estrela:hover {
+    transform: scale(1.08);
+}
+
+/* =========================================================
+   GARANTIR QUE NÃO EXISTAM ESPAÇOS EXAGERADOS NO CARD
+========================================================= */
+
+.card-avaliacao p {
+    padding: 0;
+}
+
+.conteudo-card-musica {
+    align-items: flex-start;
+}
+
+.informacoes-musica > * {
+    flex-shrink: 0;
+}
+
+
+/* ==============================================
+   LAYOUT DEFINITIVO DOS CARDS DO FEED
+============================================== */
+
+/* Capa à esquerda e informações à direita */
+
+#home-container .conteudo-card-musica {
+    display: grid !important;
+
+    grid-template-columns: 120px minmax(0, 1fr);
+
+    align-items: start;
+
+    gap: 18px;
+
+    width: 100%;
+    min-width: 0;
+}
+
+/* Container da capa */
+
+#home-container .capa-musica-container {
+    width: 120px;
+    height: 120px;
+    min-width: 0;
+}
+
+/* Tamanho correto da capa */
+
+#home-container .capa-musica-feed {
+    display: block;
+
+    width: 120px !important;
+    height: 120px !important;
+
+    max-width: 120px !important;
+
+    object-fit: cover;
+
+    border-radius: 10px;
+}
+
+/* Informações ao lado da capa */
+
+#home-container .informacoes-musica {
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    width: 100% !important;
+    min-width: 0;
+
+    gap: 0;
+}
+
+/* Título */
+
+#home-container .informacoes-musica h3 {
+    margin: 0 0 5px !important;
+    line-height: 1.3;
+}
+
+/* Artista */
+
+#home-container .informacoes-musica .artista-avaliacao {
+    margin: 0 0 5px !important;
+    line-height: 1.4;
+}
+
+/* Comentário */
+
+#home-container .informacoes-musica .comentario-avaliacao {
+    margin: 0 0 8px !important;
+
+    white-space: normal !important;
+
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Estrelas */
+
+#home-container .informacoes-musica .estrelas-avaliacao {
+    display: flex;
+
+    gap: 4px;
+
+    margin: 0 0 8px !important;
+    padding: 0;
+}
+
+/* Data */
+
+#home-container .informacoes-musica .data-postagem {
+    margin: 0 0 10px !important;
+
+    color: #8b86a7;
+    font-size: 12px;
+}
+
+/* Player */
+
+#home-container .area-preview-feed {
+    width: 100%;
+    min-width: 0;
+
+    margin: 0;
+}
+
+#home-container .area-preview-feed audio {
+    display: block;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+
+/* ==============================================
+   RESPONSIVIDADE
+============================================== */
+
+@media (max-width: 600px) {
+
+    #home-container .conteudo-card-musica {
+        grid-template-columns: 80px minmax(0, 1fr);
+
+        gap: 12px;
+    }
+
+    #home-container .capa-musica-container,
+    #home-container .capa-musica-feed {
+        width: 80px !important;
+        height: 80px !important;
+        max-width: 80px !important;
+    }
+
+    #home-container .informacoes-musica h3 {
+        font-size: 16px;
+    }
+}
+
+
+/* BOTÃO DE CONFIGURAÇÕES NO CABEÇALHO */
+
+.btn-config-header {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    text-decoration: none;
+}
+
+.btn-config-header:hover {
+    color: white;
+}
+
+
+/* =========================================================
+   ENTRE NOTAS - SISTEMA DE CONFIGURAÇÕES
+========================================================= */
+
+/* =========================================================
+   ENGRENAGEM DO CABEÇALHO
+========================================================= */
+
+.atalho-config {
+    position: absolute;
+    right: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #b89aff;
+
+    background: rgba(124, 60, 255, 0.08);
+
+    border: 1px solid rgba(124, 60, 255, 0.3);
+    border-radius: 12px;
+
+    text-decoration: none;
+
+    z-index: 10;
+
+    transition:
+        background 0.2s,
+        color 0.2s,
+        border-color 0.2s;
+}
+
+.atalho-config:hover {
+    background: #7c3cff;
+    border-color: #9b63ff;
+    color: white;
+}
+
+.atalho-config svg {
+    display: block;
+}
+
+/* =========================================================
+   CORES DAS PÁGINAS DE CONFIGURAÇÕES
+========================================================= */
+
+.config-pagina {
+    --config-fundo: #080613;
+    --config-card: #141a38;
+    --config-texto: #f2efff;
+    --config-secundario: #b8b4ca;
+    --config-borda: rgba(155, 99, 255, 0.23);
+
+    margin: 0;
+    min-height: 100vh;
+
+    background: var(--config-fundo);
+    color: var(--config-texto);
+
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.config-pagina.tema-claro {
+    --config-fundo: #f5f6fa;
+    --config-card: #ffffff;
+    --config-texto: #1c1b23;
+    --config-secundario: #666674;
+    --config-borda: #e8e8ef;
+
+    background: var(--config-fundo);
+    color: var(--config-texto);
+}
+
+/* =========================================================
+   CONTAINER PRINCIPAL
+========================================================= */
+
+.config-container {
+    width: min(1350px, calc(100% - 60px));
+
+    margin: 0 auto;
+    padding: 35px 0 65px;
+}
+
+/* =========================================================
+   BOTÃO VOLTAR
+========================================================= */
+
+.config-voltar {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--config-texto);
+    background: transparent;
+
+    text-decoration: none;
+    font-size: 30px;
+
+    border-radius: 10px;
+
+    transition: background 0.2s;
+}
+
+.config-voltar:hover {
+    background: rgba(155, 99, 255, 0.12);
+}
+
+/* =========================================================
+   TÍTULO E SUBTÍTULO
+========================================================= */
+
+.config-apresentacao {
+    margin: 25px 0 35px;
+}
+
+.config-apresentacao h1 {
+    margin: 0 0 12px;
+
+    color: var(--config-texto);
+
+    font-size: clamp(27px, 3vw, 38px);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.config-apresentacao p {
+    margin: 0;
+
+    font-size: 15px;
+    line-height: 1.6;
+
+    color: var(--config-secundario);
+}
+
+/* =========================================================
+   TRÊS CARDS LADO A LADO
+========================================================= */
+
+.config-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 22px;
+    align-items: stretch;
+}
+
+.config-card,
+.config-detalhes,
+.config-ajuda {
+    background: var(--config-card);
+
+    border: 1px solid var(--config-borda);
+    border-radius: 17px;
+
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.config-card {
+    min-width: 0;
+    min-height: 270px;
+
+    padding: 26px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 22px;
+}
+
+.config-card-titulo {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+.config-card-titulo h2 {
+    margin: 0;
+
+    font-size: 20px;
+    line-height: 1.3;
+
+    color: var(--config-texto);
+}
+
+.config-icone {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #b795ff;
+
+    background: rgba(124, 60, 255, 0.13);
+
+    border-radius: 9px;
+
+    font-size: 22px;
+}
+
+/* =========================================================
+   PREFERÊNCIAS DE EXIBIÇÃO
+========================================================= */
+
+.config-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+.config-texto {
+    min-width: 0;
+}
+
+.config-texto h3 {
+    margin: 0 0 8px;
+
+    color: var(--config-texto);
+    font-size: 16px;
+}
+
+.config-texto p,
+.config-descricao {
+    margin: 0;
+
+    color: var(--config-secundario);
+
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   LINKS DE PRIVACIDADE E COOKIES
+========================================================= */
+
+.config-link {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding-bottom: 15px;
+
+    text-decoration: none;
+
+    border-bottom: 1px solid var(--config-borda);
+
+    transition: opacity 0.2s;
+}
+
+.config-link:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.config-link:hover {
+    opacity: 0.7;
+}
+
+.config-link h3 {
+    margin: 0 0 7px;
+
+    color: var(--config-texto);
+    font-size: 15px;
+}
+
+.config-link p {
+    margin: 0;
+
+    color: var(--config-secundario);
+
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.config-seta {
+    color: #9b63ff;
+    font-size: 24px;
+}
+
+/* =========================================================
+   CENTRAL DE AJUDA
+========================================================= */
+
+.config-botao-ajuda {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+
+    padding: 13px 16px;
+    margin-top: auto;
+
+    border-radius: 10px;
+
+    background: linear-gradient(
+        135deg,
+        #5423bd,
+        #7c3cff
+    );
+
+    color: white;
+
+    text-align: center;
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    transition: transform 0.2s;
+}
+
+.config-botao-ajuda:hover {
+    transform: translateY(-2px);
+}
+
+.config-ajuda {
+    margin-top: 26px;
+    padding: 25px;
+}
+
+.config-ajuda h2 {
+    margin: 0 0 18px;
+
+    color: var(--config-texto);
+    font-size: 20px;
+}
+
+.config-ajuda details {
+    padding: 15px 0;
+
+    border-bottom: 1px solid var(--config-borda);
+}
+
+.config-ajuda details:last-child {
+    border-bottom: none;
+}
+
+.config-ajuda summary {
+    color: var(--config-texto);
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.config-ajuda details p {
+    margin: 12px 0 0;
+
+    color: var(--config-secundario);
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* =========================================================
+   INTERRUPTOR DO MODO NOTURNO E COOKIES
+========================================================= */
+
+.config-switch {
+    position: relative;
+
+    display: inline-block;
+    flex-shrink: 0;
+
+    width: 52px;
+    height: 29px;
+
+    margin: 0;
+}
+
+.config-switch input {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    opacity: 0;
+
+    cursor: pointer;
+}
+
+.config-slider {
+    position: absolute;
+    inset: 0;
+
+    background: #5a5870;
+
+    border-radius: 30px;
+
+    pointer-events: none;
+
+    transition: background 0.25s;
+}
+
+.config-slider::before {
+    content: "";
+
+    position: absolute;
+
+    width: 21px;
+    height: 21px;
+
+    left: 4px;
+    top: 4px;
+
+    background: white;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.25);
+
+    transition: transform 0.25s;
+}
+
+.config-switch input:checked + .config-slider {
+    background: #7c3cff;
+}
+
+.config-switch input:checked + .config-slider::before {
+    transform: translateX(23px);
+}
+
+.config-switch input:focus-visible + .config-slider {
+    outline: 2px solid #b795ff;
+    outline-offset: 3px;
+}
+
+/* =========================================================
+   PÁGINAS COOKIES E PRIVACIDADE
+========================================================= */
+
+.config-detalhes {
+    width: 100%;
+
+    padding: 30px;
+}
+
+.config-detalhes h2 {
+    margin: 0 0 15px;
+
+    color: var(--config-texto);
+    font-size: 21px;
+}
+
+.config-detalhes-intro p {
+    margin: 0 0 18px;
+
+    color: var(--config-secundario);
+
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+/* =========================================================
+   OPÇÕES DE COOKIES
+========================================================= */
+
+.config-opcao {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 25px;
+
+    padding: 22px 0;
+
+    border-bottom: 1px solid var(--config-borda);
+}
+
+.config-opcao:last-of-type {
+    border-bottom: none;
+}
+
+.config-opcao-texto {
+    min-width: 0;
+}
+
+.config-opcao h3 {
+    margin: 0 0 8px;
+
+    color: var(--config-texto);
+    font-size: 16px;
+}
+
+.config-opcao p {
+    margin: 0;
+
+    color: var(--config-secundario);
+
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.config-sempre-ativo {
+    flex-shrink: 0;
+
+    color: #a97dff;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.config-opcao-controle {
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+}
+
+.config-status {
+    color: var(--config-secundario);
+    font-size: 13px;
+}
+
+.config-observacao {
+    margin: 22px 0 0;
+
+    padding: 13px 16px;
+
+    background: rgba(124, 60, 255, 0.07);
+
+    border-radius: 9px;
+
+    color: var(--config-secundario);
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   POLÍTICA DE PRIVACIDADE
+========================================================= */
+
+.config-politica-item {
+    margin: 22px 0;
+}
+
+.config-politica-item h3 {
+    margin: 0 0 9px;
+
+    color: var(--config-texto);
+    font-size: 16px;
+}
+
+.config-politica-item p {
+    margin: 0;
+
+    color: var(--config-secundario);
+
+    line-height: 1.7;
+    font-size: 14px;
+}
+
+/* =========================================================
+   TEMA CLARO PARA O RESTANTE DO SITE
+========================================================= */
+
+body.tema-claro {
+    background: #f5f6fa;
+    color: #1c1b23;
+}
+
+body.tema-claro .cabecalho {
+    background: rgba(255, 255, 255, 0.96);
+}
+
+body.tema-claro .cabecalho-menu {
+    background: #ffffff;
+    border-color: #dedeea;
+}
+
+body.tema-claro .nav-item {
+    color: #53536b;
+}
+
+body.tema-claro .nav-item:hover {
+    color: #5423bd;
+}
+
+body.tema-claro .card-avaliacao,
+body.tema-claro .perfil-card,
+body.tema-claro .card-minha-avaliacao {
+    background: #ffffff;
+    color: #1c1b23;
+    border-color: #dedeea;
+}
+
+body.tema-claro .card-avaliacao h3,
+body.tema-claro .card-avaliacao strong,
+body.tema-claro .perfil-card h1 {
+    color: #1c1b23;
+}
+
+body.tema-claro .card-avaliacao p,
+body.tema-claro .comentario-avaliacao {
+    color: #53536b;
+}
+
+body.tema-claro .preview-avaliacao {
+    background: #f1effa;
+}
+
+body.tema-claro .banner-inicial {
+    background: #ffffff;
+}
+
+body.tema-claro .banner-overlay {
+    background: linear-gradient(
+        90deg,
+        #ffffff 0%,
+        rgba(255, 255, 255, 0.95) 40%,
+        rgba(255, 255, 255, 0.50) 100%
+    );
+}
+
+body.tema-claro .texto-banner h1,
+body.tema-claro .texto-banner p,
+body.tema-claro .item-info-banner h3 {
+    color: #1c1b23;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+@media (max-width: 1000px) {
+
+    .config-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .config-card {
+        min-height: auto;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .atalho-config {
+        right: 10px;
+
+        width: 38px;
+        height: 38px;
+    }
+
+    .cabecalho .cabecalho-menu {
+        width: auto;
+        max-width: calc(100% - 55px);
+
+        margin-right: 45px;
+    }
+
+    .cabecalho-menu .nav-item {
+        padding: 7px;
+        gap: 4px;
+    }
+
+    .config-container {
+        width: calc(100% - 28px);
+
+        padding: 25px 0 45px;
+    }
+
+    .config-apresentacao {
+        margin: 20px 0 25px;
+    }
+
+    .config-card,
+    .config-detalhes,
+    .config-ajuda {
+        padding: 20px;
+    }
+
+    .config-opcao {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .config-opcao-controle {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .config-apresentacao h1 {
+        font-size: 27px;
+    }
+
+}
+
+
+/* CENTRAL DE AJUDA */
+
+.config-container > .config-ajuda {
+    width: 100%;
+    margin: 0;
+}
+
+.config-ajuda details {
+    padding: 18px 0;
+}
+
+.config-ajuda summary {
+    font-size: 15px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.config-ajuda summary:hover {
+    color: #9b63ff;
+}
+
+.config-ajuda details[open] summary {
+    color: #b795ff;
+}
+
+.config-ajuda details p {
+    padding: 8px 0;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   ENTRE NOTAS - PERFIL PÚBLICO
+========================================================= */
+
+/* CONTAINER PRINCIPAL */
+
+.pagina-perfil-publico {
+    width: min(1100px, calc(100% - 32px));
+
+    margin: 115px auto 60px;
+
+    color: var(--text-color, #f2efff);
+}
+
+/* ESCONDER ELEMENTOS NÃO CARREGADOS */
+
+.pagina-perfil-publico [hidden] {
+    display: none !important;
+}
+
+/* VOLTAR AO FEED */
+
+.voltar-perfil-publico {
+    display: inline-block;
+
+    margin-bottom: 22px;
+
+    color: #9b63ff;
+
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.voltar-perfil-publico:hover {
+    text-decoration: underline;
+}
+
+/* =========================================================
+   PARTE SUPERIOR DO PERFIL
+========================================================= */
+
+.perfil-publico-topo {
+    display: flex;
+    align-items: center;
+
+    gap: 26px;
+    padding: 30px;
+
+    border: 1px solid rgba(155, 99, 255, 0.3);
+    border-radius: 16px;
+
+    background: #10152d;
+
+    margin-bottom: 30px;
+}
+
+/* FOTO */
+
+.perfil-publico-foto {
+    width: 125px;
+    height: 125px;
+
+    flex-shrink: 0;
+
+    border: 3px solid #7c3cff;
+    border-radius: 50%;
+
+    background: #080613;
+
+    object-fit: cover;
+}
+
+/* INFORMAÇÕES */
+
+.perfil-publico-info {
+    min-width: 0;
+}
+
+.perfil-publico-etiqueta {
+    font-size: 12px;
+    color: #b8b4ca;
+}
+
+.perfil-publico-info h1 {
+    margin: 7px 0;
+
+    font-size: clamp(23px, 3vw, 32px);
+
+    overflow-wrap: anywhere;
+}
+
+.perfil-publico-info p {
+    margin: 0 0 10px;
+
+    color: #b8b4ca;
+
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+/* QUANTIDADE DE AVALIAÇÕES */
+
+.perfil-publico-total {
+    color: #9b63ff;
+    font-weight: 600;
+}
+
+/* =========================================================
+   LISTA DE AVALIAÇÕES
+========================================================= */
+
+.perfil-publico-secao h2 {
+    font-size: 22px;
+
+    margin: 0 0 20px;
+}
+
+.perfil-publico-lista {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 20px;
+}
+
+/* CARD */
+
+.perfil-publico-avaliacao {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 16px;
+    padding: 20px;
+
+    border: 1px solid rgba(155, 99, 255, 0.2);
+    border-radius: 14px;
+
+    background: #10152d;
+
+    min-width: 0;
+}
+
+/* CAPA */
+
+.perfil-publico-capa {
+    width: 100px;
+    height: 100px;
+
+    flex: 0 0 100px;
+
+    object-fit: cover;
+
+    border-radius: 10px;
+}
+
+.perfil-publico-sem-capa {
+    display: grid;
+    place-items: center;
+
+    background: #27366d;
+
+    font-size: 30px;
+}
+
+/* TEXTO */
+
+.perfil-publico-conteudo {
+    flex: 1;
+    min-width: 0;
+}
+
+.perfil-publico-conteudo h3 {
+    color: #f2efff;
+
+    margin: 0 0 6px;
+
+    font-size: 18px;
+
+    overflow-wrap: anywhere;
+}
+
+.perfil-publico-artista,
+.perfil-publico-comentario {
+    margin: 0 0 6px;
+
+    color: #d8d4ea;
+
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+
+    line-height: 1.4;
+}
+
+/* =========================================================
+   ESTRELAS
+========================================================= */
+
+.perfil-publico-estrelas {
+    display: flex;
+
+    gap: 3px;
+
+    margin: 8px 0;
+}
+
+.perfil-publico-estrelas span {
+    color: #554779;
+
+    font-size: 19px;
+}
+
+.perfil-publico-estrelas .ativa {
+    color: #ffd45c;
+
+    text-shadow:
+        0 0 6px rgba(255, 212, 92, 0.2);
+}
+
+/* DATA E CURTIDAS */
+
+.perfil-publico-meta {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    color: #aaa2c0;
+
+    font-size: 12px;
+
+    margin: 7px 0 12px;
+}
+
+/* =========================================================
+   PRÉVIA DA MÚSICA
+========================================================= */
+
+.perfil-publico-preview {
+    width: 100%;
+    min-width: 0;
+}
+
+.perfil-publico-preview span {
+    display: block;
+
+    font-size: 12px;
+
+    color: #b8b4ca;
+
+    margin-bottom: 5px;
+}
+
+.perfil-publico-preview audio {
+    display: block;
+
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    height: 42px;
+
+    border-radius: 10px;
+}
+
+.perfil-publico-sem-preview,
+.perfil-publico-vazio {
+    color: #b8b4ca;
+}
+
+/* =========================================================
+   LINK PARA PERFIL NO FEED
+========================================================= */
+
+.link-perfil-autor {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 12px;
+
+    min-width: 0;
+
+    text-decoration: none;
+    color: inherit;
+
+    border-radius: 8px;
+}
+
+.link-perfil-autor .dados-autor {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    gap: 3px;
+}
+
+.link-perfil-autor strong {
+    color: #f2efff;
+
+    overflow-wrap: anywhere;
+}
+
+.link-perfil-autor .indicador-perfil {
+    color: #9b63ff;
+
+    font-size: 12px;
+}
+
+.link-perfil-autor:hover strong {
+    color: #9b63ff;
+}
+
+.link-perfil-autor:focus-visible {
+    outline: 2px solid #9b63ff;
+    outline-offset: 4px;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+@media (max-width: 800px) {
+
+    .perfil-publico-lista {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .perfil-publico-topo {
+        padding: 20px;
+        gap: 16px;
+    }
+
+    .perfil-publico-foto {
+        width: 80px;
+        height: 80px;
+    }
+
+    .perfil-publico-avaliacao {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .perfil-publico-capa {
+        width: 76px;
+        height: 76px;
+
+        flex-basis: 76px;
+    }
+
+}
+
+/* =========================================================
+   TEMA CLARO
+========================================================= */
+
+body.tema-claro .perfil-publico-topo,
+body.tema-claro .perfil-publico-avaliacao {
+    background: #ffffff;
+
+    border-color: #ddd9e8;
+}
+
+body.tema-claro .perfil-publico-conteudo h3,
+body.tema-claro .link-perfil-autor strong {
+    color: #1c1b23;
+}
+
+body.tema-claro .perfil-publico-info p,
+body.tema-claro .perfil-publico-artista,
+body.tema-claro .perfil-publico-comentario {
+    color: #53536b;
+}
+
+
+/* =========================================
+   NOME E EMAIL DO AUTOR NO FEED
+========================================= */
+
+.link-perfil-autor {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+
+    text-decoration: none;
+    color: inherit;
+}
+
+.dados-autor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.dados-autor strong {
+    color: #f2efff;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.autor-avaliacao .email-autor {
+    color: #77738e;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+/* Efeito ao passar o mouse */
+
+.link-perfil-autor:hover strong {
+    color: #9b63ff;
+}

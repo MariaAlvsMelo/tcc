@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Perfil público | Entre Notas</title>
+
+    <link rel="stylesheet" href="../style.css">
+
+    <script src="../js/configuracoes.js" defer></script>
+    <script src="../js/perfil-publico.js" defer></script>
+</head>
+
+<body>
+
+    <!-- CABEÇALHO -->
+
+    <header class="cabecalho">
+
+        <a href="home.html" class="nav-logo">
+
+            <img
+                src="../img/logo.png"
+                alt="Entre Notas"
+                width="55"
+                height="55"
+            >
+
+            <img
+                src="../img/entrenotas.png"
+                alt="Entre Notas"
+                width="160"
+                height="55"
+            >
+
+        </a>
+
+        <!-- NAVEGAÇÃO -->
+
+        <nav
+            class="cabecalho-menu"
+            aria-label="Navegação principal"
+        >
+
+            <a href="home.html" class="nav-item">
+                Feed
+            </a>
+
+            <a href="avaliar.html" class="nav-item">
+                Avaliar
+            </a>
+
+            <a href="perfil.html" class="nav-item">
+                Meu perfil
+            </a>
+
+        </nav>
+
+        <!-- CONFIGURAÇÕES -->
+
+        <a
+            href="configuracoes.html"
+            class="atalho-config"
+            aria-label="Configurações"
+        >
+            ⚙
+        </a>
+
+    </header>
+
+    <!-- CONTEÚDO -->
+
+    <main class="pagina-perfil-publico">
+
+        <!-- VOLTAR -->
+
+        <a
+            href="home.html"
+            class="voltar-perfil-publico"
+        >
+            ← Voltar ao Feed
+        </a>
+
+        <!-- CARREGAMENTO -->
+
+        <p
+            id="mensagemPerfilPublico"
+            role="status"
+            aria-live="polite"
+        >
+            Carregando perfil...
+        </p>
+
+        <!-- DADOS DO PERFIL -->
+
+        <section
+            id="cabecalhoPerfilPublico"
+            class="perfil-publico-topo"
+            hidden
+        >
+
+            <!-- FOTO -->
+
+            <img
+                id="fotoPerfilPublico"
+                src="../img/logo.png"
+                alt="Foto do usuário"
+                class="perfil-publico-foto"
+            >
+
+            <!-- INFORMAÇÕES -->
+
+            <div class="perfil-publico-info">
+
+                <span class="perfil-publico-etiqueta">
+                    Perfil público
+                </span>
+
+                <h1 id="nomePerfilPublico"></h1>
+
+                <p id="biografiaPerfilPublico"></p>
+
+                <span
+                    id="totalAvaliacoesPublicas"
+                    class="perfil-publico-total"
+                ></span>
+
+            </div>
+
+        </section>
+
+        <!-- AVALIAÇÕES -->
+
+        <section
+            id="secaoAvaliacoesPublicas"
+            class="perfil-publico-secao"
+            hidden
+        >
+
+            <h2>Avaliações publicadas</h2>
+
+            <div
+                id="listaAvaliacoesPublicas"
+                class="perfil-publico-lista"
+            ></div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

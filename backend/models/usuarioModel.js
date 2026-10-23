@@ -2,6 +2,75 @@ const conexao = require("../database/conexao");
 
 const usuarioModel = {
 
+
+    // =====================================================
+    // ADICIONADO: BUSCAR PERFIL PÚBLICO
+    // =====================================================
+
+    buscarPerfilPublico: (id_usuario, callback) => {
+
+        const sql = `
+            SELECT
+                id_usuario,
+                nome_usuario,
+                foto_perfil,
+                biografia
+
+            FROM usuario
+
+            WHERE id_usuario = ?
+
+            LIMIT 1
+        `;
+
+        conexao.query(
+            sql,
+            [id_usuario],
+            callback
+        );
+    },
+
+
+    // =====================================================
+    // ADICIONADO: AVALIAÇÕES DE OUTROS USUÁRIOS
+    // =====================================================
+
+    listarAvaliacoesPublicas: (id_usuario, callback) => {
+
+        const sql = `
+            SELECT
+                a.id,
+                a.id_usuario,
+                a.musica,
+                a.artista,
+                a.comentario,
+                a.nota,
+                a.capa_album,
+                a.id_deezer,
+                a.preview,
+                a.data_avaliacao,
+
+                (
+                    SELECT COUNT(*)
+                    FROM curtidas c
+                    WHERE c.id_avaliacao = a.id
+                ) AS total_curtidas
+
+            FROM avaliacoes a
+
+            WHERE a.id_usuario = ?
+
+            ORDER BY a.data_avaliacao DESC
+        `;
+
+        conexao.query(
+            sql,
+            [id_usuario],
+            callback
+        );
+    },
+
+
     // =========================================================
     // MANTIDO:
     // CADASTRAR USUÁRIO

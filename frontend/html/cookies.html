@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Gerenciar Cookies | Entre Notas</title>
+
+    <link rel="stylesheet" href="../style.css">
+
+    <script
+        src="../js/configuracoes.js"
+        defer
+    ></script>
+</head>
+
+<body class="config-pagina">
+
+    <main class="config-container">
+
+        <!-- VOLTAR PARA CONFIGURAÇÕES -->
+
+        <a
+            href="configuracoes.html"
+            class="config-voltar"
+            aria-label="Voltar às configurações"
+        >
+            ←
+        </a>
+
+        <!-- TÍTULO -->
+
+        <div class="config-apresentacao">
+
+            <h1>Preferências de Cookies</h1>
+
+            <p>
+                Gerencie as preferências de
+                armazenamento do Entre Notas.
+            </p>
+
+        </div>
+
+        <!-- CARD PRINCIPAL -->
+
+        <section class="config-detalhes">
+
+            <div class="config-detalhes-intro">
+
+                <h2>🍪 Uso de Cookies no Entre Notas</h2>
+
+                <p>
+                    A plataforma utiliza armazenamento
+                    do navegador para manter preferências
+                    e informações necessárias ao
+                    funcionamento das funcionalidades.
+                </p>
+
+            </div>
+
+            <!-- ESSENCIAIS -->
+
+            <div class="config-opcao">
+
+                <div class="config-opcao-texto">
+
+                    <h3>Dados Essenciais</h3>
+
+                    <p>
+                        Informações necessárias para manter
+                        sua sessão e o funcionamento
+                        básico da plataforma.
+                    </p>
+
+                </div>
+
+                <span class="config-sempre-ativo">
+                    Sempre Ativo
+                </span>
+
+            </div>
+
+            <!-- PROGRESSO E MÉTRICAS -->
+
+            <div class="config-opcao">
+
+                <div class="config-opcao-texto">
+
+                    <h3>Cookies de Progresso & Métricas</h3>
+
+                    <p>
+                        Escolha se deseja permitir recursos
+                        opcionais de histórico de uso
+                        e métricas, caso sejam implementados
+                        na plataforma.
+                    </p>
+
+                </div>
+
+                <div class="config-opcao-controle">
+
+                    <span
+                        id="statusCookiesMetricas"
+                        class="config-status"
+                        aria-live="polite"
+                    >
+                        Desativado
+                    </span>
+
+                    <label class="config-switch">
+
+                        <input
+                            type="checkbox"
+                            id="toggleCookiesMetricas"
+                            aria-label="Permitir métricas opcionais"
+                        >
+
+                        <span class="config-slider"></span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+            <p class="config-observacao">
+                Sua escolha é salva neste navegador.
+                A opção de métricas não ativa automaticamente
+                serviços externos de rastreamento.
+            </p>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

@@ -4,6 +4,81 @@ const usuarioModel =
 
 const UsuarioController = {
 
+
+    // =====================================================
+    // ADICIONADO: VISUALIZAR PERFIL DE OUTRO USUÁRIO
+    // =====================================================
+
+    buscarPerfilPublico: (req, res) => {
+
+        const id_usuario = Number(req.params.id_usuario);
+
+        // Validar o ID.
+        if (
+            !Number.isSafeInteger(id_usuario) ||
+            id_usuario <= 0
+        ) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: "ID inválido."
+            });
+        }
+
+        // Buscar dados públicos.
+        usuarioModel.buscarPerfilPublico(
+            id_usuario,
+
+            (erro, usuarios) => {
+
+                if (erro) {
+                    console.error(
+                        "Erro ao consultar perfil público:",
+                        erro
+                    );
+
+                    return res.status(500).json({
+                        sucesso: false,
+                        mensagem: "Erro ao consultar perfil."
+                    });
+                }
+
+                if (!usuarios || !usuarios.length) {
+                    return res.status(404).json({
+                        sucesso: false,
+                        mensagem: "Usuário não encontrado."
+                    });
+                }
+
+                // Buscar avaliações desse usuário.
+                usuarioModel.listarAvaliacoesPublicas(
+                    id_usuario,
+
+                    (erroAvaliacoes, avaliacoes) => {
+
+                        if (erroAvaliacoes) {
+                            console.error(
+                                "Erro ao consultar avaliações:",
+                                erroAvaliacoes
+                            );
+
+                            return res.status(500).json({
+                                sucesso: false,
+                                mensagem: "Erro ao consultar avaliações."
+                            });
+                        }
+
+                        return res.json({
+                            sucesso: true,
+                            usuario: usuarios[0],
+                            avaliacoes: avaliacoes || []
+                        });
+                    }
+                );
+            }
+        );
+    },
+
+
     // =====================================================
 // ADICIONADO — LISTAR AVALIAÇÕES DO USUÁRIO
 // =====================================================
