@@ -2087,3 +2087,16 @@ body.tema-claro .preview-avaliacao {background:#f3f0fb;}
 
 /* Tipografia final: substitui a fonte serifada padrão do navegador. */
 body {font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;}
+
+.titulo-container {
+  display: flex;
+  justify-content: space-between; /* Empurra o texto para a esquerda e a imagem para a direita */
+  align-items: center;            /* Alinha os dois verticalmente ao centro */
+  width: 100%;
+}
+
+.imagem-titulo {
+  width: 32px;                    /* Ajuste o tamanho da imagem como preferir */
+  height: auto;
+  object-fit: contain;
+}
