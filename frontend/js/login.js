@@ -178,151 +178,106 @@ if (formCadastro) {
 // LOGIN
 // =========================================================
 
+
+// =========================================================
+// LOGIN
+// =========================================================
+
 if (formLogin) {
+    formLogin.addEventListener("submit", async function(event) {
+        event.preventDefault();
 
-    formLogin.addEventListener(
-        "submit",
-        async function(event) {
+        const email = document
+            .getElementById("emailLogin")
+            .value.trim();
 
-            event.preventDefault();
+        const senha = document
+            .getElementById("senhaLogin")
+            .value;
 
-            const email =
-                document
-                    .getElementById("emailLogin")
-                    .value
-                    .trim();
+        const mensagemLogin = document.getElementById(
+            "mensagemLogin"
+        );
 
-            const senha =
-                document
-                    .getElementById("senhaLogin")
-                    .value;
+        const botaoLogin = formLogin.querySelector(
+            'button[type="submit"]'
+        );
 
-            const mensagemLogin =
-                document.getElementById(
-                    "mensagemLogin"
-                );
+        let loginSucesso = false;
 
-            const botaoLogin =
-                formLogin.querySelector(
-                    'button[type="submit"]'
-                );
-
-            // =================================================
-            // MOSTRAR TELA DE CARREGAMENTO
-            // =================================================
+        try {
+            if (botaoLogin) {
+                botaoLogin.disabled = true;
+            }
 
             if (loadingOverlay) {
                 loadingOverlay.classList.add("ativo");
             }
 
-            // =================================================
-            // DESATIVAR BOTÃO DURANTE O LOGIN
-            // =================================================
+            mensagemLogin.innerText = "Entrando...";
+            mensagemLogin.style.color = "inherit";
 
-            if (botaoLogin) {
-                botaoLogin.disabled = true;
+            const resposta = await fetch(
+                `${API}/usuarios/login`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email,
+                        senha
+                    })
+                }
+            );
+
+            const resultado = await obterRespostaJSON(resposta);
+
+            if (!resposta.ok || !resultado.sucesso) {
+                throw new Error(
+                    resultado.erro ||
+                    resultado.mensagem ||
+                    "E-mail ou senha incorretos."
+                );
             }
 
-            try {
+            const usuario = resultado.usuario;
 
-                mensagemLogin.innerText =
-                    "Entrando...";
-
-                // =================================================
-                // MODIFICADO:
-                // ENDEREÇO DINÂMICO DA API
-                // =================================================
-
-                const resposta = await fetch(
-                    `${API}/usuarios/login`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-
-                        body: JSON.stringify({
-                            email,
-                            senha
-                        })
-                    }
+            if (!usuario || !usuario.access_token) {
+                throw new Error(
+                    "Não foi possível obter os dados de autenticação."
                 );
+            }
 
-                const resultado =
-                    await obterRespostaJSON(resposta);
+            localStorage.setItem(
+                "usuarioLogado",
+                JSON.stringify(usuario)
+            );
 
-                mensagemLogin.innerText =
-                    resultado.mensagem ||
-                    resultado.erro ||
-                    "Não foi possível realizar o login.";
+            loginSucesso = true;
 
-                if (!resposta.ok || !resultado.sucesso) {
+            mensagemLogin.innerText =
+                "Login realizado com sucesso!";
 
-                    mensagemLogin.style.color =
-                        "red";
+            mensagemLogin.style.color = "green";
 
-                    return;
-                }
+            window.location.href = "home.html";
 
-                // =================================================
-                // ADICIONADO:
-                // VALIDAR DADOS RETORNADOS PELO SUPABASE
-                // =================================================
+        } catch (erro) {
+            console.error("Erro no login:", erro);
 
-                const usuario = resultado.usuario;
+            mensagemLogin.innerText =
+                erro.message === "Email not confirmed"
+                    ? "Confirme seu e-mail antes de entrar."
+                    : erro.message ||
+                      "Erro ao conectar com o servidor.";
 
-                if (
-                    !usuario ||
-                    !usuario.access_token
-                ) {
-                    throw new Error(
-                        "O login foi realizado, mas o token de autenticação não foi recebido."
-                    );
-                }
+            mensagemLogin.style.color = "red";
 
-                // =================================================
-                // MODIFICADO:
-                // SALVAR USUÁRIO E TOKEN DE AUTENTICAÇÃO
-                // =================================================
+            localStorage.removeItem("usuarioLogado");
 
-                localStorage.setItem(
-                    "usuarioLogado",
-                    JSON.stringify(usuario)
-                );
-
-                mensagemLogin.style.color =
-                    "green";
-
-                mensagemLogin.innerText =
-                    resultado.mensagem ||
-                    "Login realizado com sucesso!";
-
-                // =================================================
-                // REDIRECIONAR PARA O FEED
-                // =================================================
-
-                setTimeout(function() {
-
-                    window.location.href =
-                        "home.html";
-
-                }, 2000);
-
-            } catch (erro) {
-
-                console.error(
-                    "Erro no login:",
-                    erro
-                );
-
-                mensagemLogin.innerText =
-                    erro.message ||
-                    "Erro ao conectar com o servidor.";
-
-                mensagemLogin.style.color =
-                    "red";
-
+        } finally {
+            if (!loginSucesso) {
                 if (loadingOverlay) {
                     loadingOverlay.classList.remove("ativo");
                 }
@@ -330,21 +285,9 @@ if (formLogin) {
                 if (botaoLogin) {
                     botaoLogin.disabled = false;
                 }
-
-            } finally {
-
-                // Se não houve redirecionamento,
-                // libera o botão novamente.
-
-                if (
-                    botaoLogin &&
-                    !localStorage.getItem("usuarioLogado")
-                ) {
-                    botaoLogin.disabled = false;
-                }
             }
         }
-    );
+    });
 }
 
 // =========================================================
