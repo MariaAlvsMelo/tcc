@@ -1,8 +1,12 @@
 
-const API = "http://localhost:3000";
+const API = "";
 
 const avaliacoesContainer = document.getElementById("home-container");
 const btnLoginCabecalho = document.getElementById("btnLoginCabecalho");
+
+// =========================================================
+// USUÁRIO LOGADO
+// =========================================================
 
 function obterUsuarioLogado() {
     try {
@@ -11,6 +15,15 @@ function obterUsuarioLogado() {
         return null;
     }
 }
+
+function obterToken() {
+    const usuario = obterUsuarioLogado();
+    return usuario?.access_token || "";
+}
+
+// =========================================================
+// SEGURANÇA
+// =========================================================
 
 function escaparHTML(valor) {
     return String(valor ?? "").replace(/[&<>"']/g, c => ({
@@ -175,20 +188,26 @@ function atualizarCurtida(botao, curtiu) {
 }
 
 // =========================================================
-// VERIFICAR CURTIDA NO MYSQL
+// VERIFICAR CURTIDA NO SUPABASE
 // =========================================================
 
 async function verificarCurtida(id, botao) {
     const usuario = obterUsuarioLogado();
+    const token = obterToken();
 
-    if (!usuario || !botao) return;
+    if (!usuario || !token || !botao) return;
 
     botao.disabled = true;
 
     try {
         const resposta = await fetch(
             `${API}/usuarios/avaliacoes/${id}/curtiu?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
-            { cache: "no-store" }
+            {
+                cache: "no-store",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
         );
 
         const dados = await resposta.json();
@@ -216,8 +235,9 @@ async function verificarCurtida(id, botao) {
 
 async function curtirAvaliacao(id, botao) {
     const usuario = obterUsuarioLogado();
+    const token = obterToken();
 
-    if (!usuario) {
+    if (!usuario || !token) {
         window.location.href = "login.html";
         return;
     }
@@ -235,7 +255,8 @@ async function curtirAvaliacao(id, botao) {
                 method: estavaCurtido ? "DELETE" : "POST",
 
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
 
                 body: JSON.stringify({
@@ -462,7 +483,7 @@ async function carregarAvaliacoes() {
             .map(a => montarCard(a, usuario))
             .join("");
 
-        if (usuario) {
+        if (usuario?.access_token) {
             const botoes = Array.from(
                 avaliacoesContainer.querySelectorAll(".btn-curtir")
             );

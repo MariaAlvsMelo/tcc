@@ -1,474 +1,506 @@
-const conexao = require("../database/conexao");
 
-const usuarioModel = {
+const { supabase, criarClienteAutenticado } = require("../supabase");
 
-
-    // =====================================================
-    // ADICIONADO: BUSCAR PERFIL PÚBLICO
-    // =====================================================
-
-    buscarPerfilPublico: (id_usuario, callback) => {
-
-        const sql = `
-            SELECT
-                id_usuario,
-                nome_usuario,
-                foto_perfil,
-                biografia
-
-            FROM usuario
-
-            WHERE id_usuario = ?
-
-            LIMIT 1
-        `;
-
-        conexao.query(
-            sql,
-            [id_usuario],
-            callback
-        );
-    },
-
-
-    // =====================================================
-    // ADICIONADO: AVALIAÇÕES DE OUTROS USUÁRIOS
-    // =====================================================
-
-    listarAvaliacoesPublicas: (id_usuario, callback) => {
-
-        const sql = `
-            SELECT
-                a.id,
-                a.id_usuario,
-                a.musica,
-                a.artista,
-                a.comentario,
-                a.nota,
-                a.capa_album,
-                a.id_deezer,
-                a.preview,
-                a.data_avaliacao,
-
-                (
-                    SELECT COUNT(*)
-                    FROM curtidas c
-                    WHERE c.id_avaliacao = a.id
-                ) AS total_curtidas
-
-            FROM avaliacoes a
-
-            WHERE a.id_usuario = ?
-
-            ORDER BY a.data_avaliacao DESC
-        `;
-
-        conexao.query(
-            sql,
-            [id_usuario],
-            callback
-        );
-    },
-
-
-    // =========================================================
-    // MANTIDO:
-    // CADASTRAR USUÁRIO
-    // =========================================================
-
-    cadastrar: (
-        nome,
-        email,
-        senha,
-        callback
-    ) => {
-
-        const sql = `
-            INSERT INTO usuario
-            (
-                nome_usuario,
-                email,
-                senha
-            )
-            VALUES (?, ?, ?)
-        `;
-
-        conexao.query(
-            sql,
-            [
-                nome,
-                email,
-                senha
-            ],
-            callback
-        );
-    },
-
-    login: (
-        email,
-        senha,
-        callback
-    ) => {
-
-        const sql = `
-            SELECT
-                id_usuario,
-                nome_usuario,
-                email,
-                foto_perfil,
-                biografia
-            FROM usuario
-            WHERE email = ?
-            AND senha = ?
-            LIMIT 1
-        `;
-
-        conexao.query(
-            sql,
-            [
-                email,
-                senha
-            ],
-            callback
-        );
-    },
-
-
-    buscarPerfil: (
-        id_usuario,
-        callback
-    ) => {
-
-        const sql = `
-            SELECT
-                id_usuario,
-                nome_usuario,
-                email,
-                foto_perfil,
-                biografia
-            FROM usuario
-            WHERE id_usuario = ?
-            LIMIT 1
-        `;
-
-        conexao.query(
-            sql,
-            [
-                id_usuario
-            ],
-            callback
-        );
-    },
-
-    atualizarPerfil: (
-        id_usuario,
-        nome,
-        email,
-        senha,
-        foto_perfil,
-        biografia,
-        callback
-    ) => {
-
-        let sql;
-        let valores;
-
-
-        if (
-            senha &&
-            senha.trim() !== ""
-        ) {
-
-            sql = `
-                UPDATE usuario
-
-                SET
-                    nome_usuario = ?,
-                    email = ?,
-                    senha = ?,
-                    foto_perfil = ?,
-                    biografia = ?
-
-                WHERE id_usuario = ?
-            `;
-
-            valores = [
-                nome,
-                email,
-                senha,
-                foto_perfil,
-                biografia,
-                id_usuario
-            ];
-
-        } else {
-
-           
-            sql = `
-                UPDATE usuario
-
-                SET
-                    nome_usuario = ?,
-                    email = ?,
-                    foto_perfil = ?,
-                    biografia = ?
-
-                WHERE id_usuario = ?
-            `;
-
-            valores = [
-                nome,
-                email,
-                foto_perfil,
-                biografia,
-                id_usuario
-            ];
-        }
-
-
-        conexao.query(
-            sql,
-            valores,
-            callback
-        );
-    },
-
-
-    avaliar: (
-        id_usuario,
-        musica,
-        artista,
-        comentario,
-        nota,
-        capa_album,
-        id_deezer,
-        id_album,
-        preview,
-        callback
-    ) => {
-
-        const sql = `
-            INSERT INTO avaliacoes
-            (
-                id_usuario,
-                musica,
-                artista,
-                comentario,
-                nota,
-                capa_album,
-                id_deezer,
-                id_album,
-                preview
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-
-        conexao.query(
-            sql,
-            [
-                id_usuario,
-                musica,
-                artista,
-                comentario,
-                nota,
-                capa_album,
-                id_deezer,
-                id_album,
-                preview
-
-            ],
-            callback
-        );
-    },
-
-    listarAvaliacoes: (callback) => {
-
-        const sql = `
-            SELECT
-                a.id,
-                a.musica,
-                a.artista,
-                a.comentario,
-                a.nota,
-                a.capa_album,
-                a.id_deezer,
-                a.id_album,
-                a.preview,
-                a.data_avaliacao,
-                a.id_usuario,
-
-                u.nome_usuario,
-                u.email,
-                u.foto_perfil,
-
-                (
-                    SELECT COUNT(*)
-                    FROM curtidas c
-                    WHERE c.id_avaliacao = a.id
-                ) AS total_curtidas
-
-            FROM avaliacoes a
-
-            LEFT JOIN usuario u
-                ON a.id_usuario = u.id_usuario
-
-            ORDER BY a.data_avaliacao DESC
-        `;
-
-        conexao.query(sql, callback);
-    },
-
-    
-    excluirAvaliacao: (
-        id,
-        id_usuario,
-        callback
-    ) => {
-
-        const sql = `
-            DELETE FROM avaliacoes
-
-            WHERE id = ?
-            AND id_usuario = ?
-        `;
-
-        conexao.query(
-            sql,
-            [
-                id,
-                id_usuario
-            ],
-            callback
-        );
-    },
-
-       
-    curtirAvaliacao: (id_usuario, id_avaliacao, callback) => {
-
-        const sql = `
-            INSERT INTO curtidas
-            (id_usuario, id_avaliacao)
-            VALUES (?, ?)
-        `;
-
-        conexao.query(
-            sql,
-            [id_usuario, id_avaliacao],
-            callback
-        );
-    },
-
-
-    // ==========================================
-    // ===== ADICIONADO: REMOVER CURTIDA =====
-    // ==========================================
-    removerCurtida: (id_usuario, id_avaliacao, callback) => {
-
-        const sql = `
-            DELETE FROM curtidas
-            WHERE id_usuario = ?
-            AND id_avaliacao = ?
-        `;
-
-        conexao.query(
-            sql,
-            [id_usuario, id_avaliacao],
-            callback
-        );
-    },
-
-
-    // ==========================================
-    // ===== ADICIONADO: VERIFICAR CURTIDA =====
-    // ==========================================
-    verificarCurtida: (id_usuario, id_avaliacao, callback) => {
-
-        const sql = `
-            SELECT id_curtida
-            FROM curtidas
-            WHERE id_usuario = ?
-            AND id_avaliacao = ?
-            LIMIT 1
-        `;
-
-        conexao.query(
-            sql,
-            [id_usuario, id_avaliacao],
-            callback
-        );
-    },
-
-
-    // ==========================================
-    // ===== ADICIONADO: CONTAR CURTIDAS =====
-    // ==========================================
-    contarCurtidas: (id_avaliacao, callback) => {
-
-        const sql = `
-            SELECT COUNT(*) AS total
-            FROM curtidas
-            WHERE id_avaliacao = ?
-        `;
-
-        conexao.query(
-            sql,
-            [id_avaliacao],
-            callback
-        );
-    },
-
-    // =====================================================
-// ADICIONADO — BUSCAR AVALIAÇÕES DO USUÁRIO
+// =====================================================
+// CLIENTE E AUTENTICAÇÃO
 // =====================================================
 
-    listarAvaliacoesUsuario: (
-        id_usuario,
-        callback
-    ) => {
+function obterCliente(token) {
+    return token
+        ? criarClienteAutenticado(token)
+        : supabase;
+}
 
-        const sql = `
+async function obterIdUsuario(token) {
+    if (!token) {
+        throw new Error("Usuário não autenticado.");
+    }
 
-            SELECT
+    const cliente = obterCliente(token);
 
-                a.id,
-                a.musica,
-                a.artista,
-                a.comentario,
-                a.nota,
+    const { data: authData, error: authError } =
+        await cliente.auth.getUser();
 
-                a.capa_album,
-                a.id_deezer,
-                a.id_album,
-                a.preview,
+    if (authError || !authData.user) {
+        throw new Error("Sessão inválida ou expirada.");
+    }
 
-                a.data_avaliacao,
-                a.id_usuario,
+    const { data: usuario, error } = await supabase
+        .from("usuarios")
+        .select("id_usuario")
+        .eq("auth_user_id", authData.user.id)
+        .single();
 
-                u.nome_usuario,
-                u.email,
-                u.foto_perfil
+    if (error || !usuario) {
+        throw new Error("Perfil do usuário não encontrado.");
+    }
 
-            FROM avaliacoes a
+    return usuario.id_usuario;
+}
 
-            INNER JOIN usuario u
-                ON a.id_usuario = u.id_usuario
+// =====================================================
+// BUSCAR PERFIL PÚBLICO
+// =====================================================
 
-            WHERE a.id_usuario = ?
+async function buscarPerfilPublico(id_usuario) {
+    const { data, error } = await supabase
+        .from("usuarios")
+        .select(`
+            id_usuario,
+            nome_usuario,
+            foto_perfil,
+            biografia
+        `)
+        .eq("id_usuario", id_usuario)
+        .maybeSingle();
 
-            ORDER BY
-                a.data_avaliacao DESC
+    if (error) throw error;
 
-        `;
+    return data;
+}
 
+// =====================================================
+// LISTAR AVALIAÇÕES PÚBLICAS DE UM USUÁRIO
+// =====================================================
 
-        conexao.query(
-            sql,
-            [id_usuario],
-            callback
-        );
-    },
-        
+async function listarAvaliacoesPublicas(id_usuario) {
+    const { data, error } = await supabase
+        .from("avaliacoes")
+        .select(`
+            id,
+            id_usuario,
+            musica,
+            artista,
+            comentario,
+            nota,
+            capa_album,
+            id_deezer,
+            id_album,
+            preview,
+            data_avaliacao,
+            curtidas(count)
+        `)
+        .eq("id_usuario", id_usuario)
+        .order("data_avaliacao", { ascending: false });
 
+    if (error) throw error;
+
+    return (data || []).map(avaliacao => ({
+        ...avaliacao,
+        total_curtidas: avaliacao.curtidas?.[0]?.count || 0
+    }));
+}
+
+// =====================================================
+// CADASTRAR USUÁRIO - SUPABASE AUTH
+// =====================================================
+
+async function cadastrar(nome, email, senha) {
+    const emailNormalizado = String(email || "")
+        .trim()
+        .toLowerCase();
+
+    const { data, error } = await supabase.auth.signUp({
+        email: emailNormalizado,
+        password: senha,
+        options: {
+            data: {
+                nome_usuario: nome
+            }
+        }
+    });
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+// =====================================================
+// LOGIN - SUPABASE AUTH
+// =====================================================
+
+async function login(email, senha) {
+    const emailNormalizado = String(email || "")
+        .trim()
+        .toLowerCase();
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailNormalizado,
+        password: senha
+    });
+
+    if (error) throw error;
+
+    const cliente = criarClienteAutenticado(
+        data.session.access_token
+    );
+
+    const { data: usuario, error: perfilError } = await cliente
+        .from("usuarios")
+        .select(`
+            id_usuario,
+            nome_usuario,
+            foto_perfil,
+            biografia
+        `)
+        .eq("auth_user_id", data.user.id)
+        .single();
+
+    if (perfilError) throw perfilError;
+
+    return {
+        ...usuario,
+        email: data.user.email,
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token
+    };
+}
+
+// =====================================================
+// BUSCAR PERFIL DO USUÁRIO
+// =====================================================
+
+async function buscarPerfil(id_usuario, token) {
+    const cliente = obterCliente(token);
+
+    const { data: usuario, error } = await cliente
+        .from("usuarios")
+        .select(`
+            id_usuario,
+            nome_usuario,
+            foto_perfil,
+            biografia
+        `)
+        .eq("id_usuario", id_usuario)
+        .single();
+
+    if (error) throw error;
+
+    const { data: authData } = await cliente.auth.getUser();
+
+    return {
+        ...usuario,
+        email: authData?.user?.email || null
+    };
+}
+
+// =====================================================
+// ATUALIZAR PERFIL
+// =====================================================
+
+async function atualizarPerfil(
+    id_usuario,
+    nome,
+    email,
+    senha,
+    foto_perfil,
+    biografia,
+    token
+) {
+    if (!token) {
+        throw new Error("Usuário não autenticado.");
+    }
+
+    const cliente = obterCliente(token);
+
+    // Verifica se a sessão pertence ao usuário solicitado.
+    const idAutenticado = await obterIdUsuario(token);
+
+    if (Number(idAutenticado) !== Number(id_usuario)) {
+        throw new Error("Você não pode alterar outro perfil.");
+    }
+
+    // Atualiza nome, foto e biografia.
+    const { data, error } = await cliente
+        .from("usuarios")
+        .update({
+            nome_usuario: nome,
+            foto_perfil,
+            biografia
+        })
+        .eq("id_usuario", id_usuario)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    // Atualiza e-mail e/ou senha no Supabase Auth.
+    const alteracoesAuth = {};
+
+    if (email && email.trim() !== "") {
+        alteracoesAuth.email = email.trim();
+    }
+
+    if (senha && senha.trim() !== "") {
+        alteracoesAuth.password = senha;
+    }
+
+    if (Object.keys(alteracoesAuth).length > 0) {
+        const { error: authError } =
+            await cliente.auth.updateUser(alteracoesAuth);
+
+        if (authError) throw authError;
+    }
+
+    return data;
+}
+
+// =====================================================
+// CRIAR AVALIAÇÃO
+// =====================================================
+
+async function avaliar(
+    id_usuario,
+    musica,
+    artista,
+    comentario,
+    nota,
+    capa_album,
+    id_deezer,
+    id_album,
+    preview,
+    token
+) {
+    const idAutenticado = await obterIdUsuario(token);
+
+    if (Number(idAutenticado) !== Number(id_usuario)) {
+        throw new Error("Usuário não autorizado.");
+    }
+
+    const cliente = obterCliente(token);
+
+    const { data, error } = await cliente
+        .from("avaliacoes")
+        .insert({
+            id_usuario: idAutenticado,
+            musica,
+            artista,
+            comentario,
+            nota,
+            capa_album,
+            id_deezer,
+            id_album,
+            preview
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}
+
+// =====================================================
+// LISTAR TODAS AS AVALIAÇÕES
+// =====================================================
+
+async function listarAvaliacoes() {
+    const { data, error } = await supabase
+        .from("avaliacoes")
+        .select(`
+            id,
+            musica,
+            artista,
+            comentario,
+            nota,
+            capa_album,
+            id_deezer,
+            id_album,
+            preview,
+            data_avaliacao,
+            id_usuario,
+            usuarios (
+                nome_usuario,
+                foto_perfil
+            ),
+            curtidas(count)
+        `)
+        .order("data_avaliacao", { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(avaliacao => ({
+        ...avaliacao,
+        nome_usuario: avaliacao.usuarios?.nome_usuario || "Usuário",
+        foto_perfil: avaliacao.usuarios?.foto_perfil || null,
+        total_curtidas: avaliacao.curtidas?.[0]?.count || 0
+    }));
+}
+
+// =====================================================
+// EXCLUIR AVALIAÇÃO
+// =====================================================
+
+async function excluirAvaliacao(id, id_usuario, token) {
+    const idAutenticado = await obterIdUsuario(token);
+
+    if (Number(idAutenticado) !== Number(id_usuario)) {
+        throw new Error("Usuário não autorizado.");
+    }
+
+    const cliente = obterCliente(token);
+
+    const { data, error } = await cliente
+        .from("avaliacoes")
+        .delete()
+        .eq("id", id)
+        .eq("id_usuario", idAutenticado)
+        .select();
+
+    if (error) throw error;
+
+    return data;
+}
+
+// =====================================================
+// CURTIR AVALIAÇÃO
+// =====================================================
+
+async function curtirAvaliacao(id_usuario, id_avaliacao, token) {
+    const idAutenticado = await obterIdUsuario(token);
+
+    if (Number(idAutenticado) !== Number(id_usuario)) {
+        throw new Error("Usuário não autorizado.");
+    }
+
+    const cliente = obterCliente(token);
+
+    const { data, error } = await cliente
+        .from("curtidas")
+        .insert({
+            id_usuario: idAutenticado,
+            id_avaliacao
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}
+
+// =====================================================
+// REMOVER CURTIDA
+// =====================================================
+
+async function removerCurtida(id_usuario, id_avaliacao, token) {
+    const idAutenticado = await obterIdUsuario(token);
+
+    if (Number(idAutenticado) !== Number(id_usuario)) {
+        throw new Error("Usuário não autorizado.");
+    }
+
+    const cliente = obterCliente(token);
+
+    const { data, error } = await cliente
+        .from("curtidas")
+        .delete()
+        .eq("id_usuario", idAutenticado)
+        .eq("id_avaliacao", id_avaliacao)
+        .select();
+
+    if (error) throw error;
+
+    return data;
+}
+
+// =====================================================
+// VERIFICAR SE O USUÁRIO CURTIU
+// =====================================================
+
+async function verificarCurtida(id_usuario, id_avaliacao) {
+    const { data, error } = await supabase
+        .from("curtidas")
+        .select("id_curtida")
+        .eq("id_usuario", id_usuario)
+        .eq("id_avaliacao", id_avaliacao)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    return data;
+}
+
+// =====================================================
+// CONTAR CURTIDAS
+// =====================================================
+
+async function contarCurtidas(id_avaliacao) {
+    const { count, error } = await supabase
+        .from("curtidas")
+        .select("*", {
+            count: "exact",
+            head: true
+        })
+        .eq("id_avaliacao", id_avaliacao);
+
+    if (error) throw error;
+
+    return count || 0;
+}
+
+// =====================================================
+// LISTAR AVALIAÇÕES DO PRÓPRIO USUÁRIO
+// =====================================================
+
+async function listarAvaliacoesUsuario(id_usuario, token) {
+    const idAutenticado = await obterIdUsuario(token);
+
+    if (Number(idAutenticado) !== Number(id_usuario)) {
+        throw new Error("Usuário não autorizado.");
+    }
+
+    const cliente = obterCliente(token);
+
+    const { data, error } = await cliente
+        .from("avaliacoes")
+        .select(`
+            id,
+            musica,
+            artista,
+            comentario,
+            nota,
+            capa_album,
+            id_deezer,
+            id_album,
+            preview,
+            data_avaliacao,
+            id_usuario,
+            usuarios (
+                nome_usuario
+            ),
+            curtidas(count)
+        `)
+        .eq("id_usuario", idAutenticado)
+        .order("data_avaliacao", { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(avaliacao => ({
+        ...avaliacao,
+        nome_usuario: avaliacao.usuarios?.nome_usuario || "Usuário",
+        total_curtidas: avaliacao.curtidas?.[0]?.count || 0
+    }));
+}
+
+// =====================================================
+// EXPORTAÇÕES
+// =====================================================
+
+module.exports = {
+    buscarPerfilPublico,
+    listarAvaliacoesPublicas,
+    cadastrar,
+    login,
+    buscarPerfil,
+    atualizarPerfil,
+    avaliar,
+    listarAvaliacoes,
+    excluirAvaliacao,
+    curtirAvaliacao,
+    removerCurtida,
+    verificarCurtida,
+    contarCurtidas,
+    listarAvaliacoesUsuario
 };
-
-module.exports = usuarioModel;

@@ -1,5 +1,5 @@
 
-const API = "http://localhost:3000";
+const API = "";
 
 const mensagem = document.getElementById("mensagemPerfilPublico");
 const cabecalhoPerfil = document.getElementById("cabecalhoPerfilPublico");
@@ -26,6 +26,10 @@ function obterUsuario() {
     } catch {
         return null;
     }
+}
+
+function obterToken() {
+    return obterUsuario()?.access_token || "";
 }
 
 function urlImagemSegura(valor) {
@@ -180,15 +184,21 @@ function pintarCurtida(botao, ativo) {
 
 async function verificarCurtida(id, botao) {
     const usuario = obterUsuario();
+    const token = obterToken();
 
-    if (!usuario || !botao) return;
+    if (!usuario || !token || !botao) return;
 
     botao.disabled = true;
 
     try {
         const resposta = await fetch(
-            `${API}/usuarios/avaliacoes/${id}/curtiu?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
-            { cache: "no-store" }
+            `${API}/usuarios/avaliacoes/${id}/curtida?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
+            {
+                cache: "no-store",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
         );
 
         const dados = await resposta.json();
@@ -214,8 +224,9 @@ async function verificarCurtida(id, botao) {
 
 async function alternarCurtida(botao) {
     const usuario = obterUsuario();
+    const token = obterToken();
 
-    if (!usuario) {
+    if (!usuario || !token) {
         window.location.href = "login.html";
         return;
     }
@@ -234,7 +245,8 @@ async function alternarCurtida(botao) {
                 method: ativo ? "DELETE" : "POST",
 
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
 
                 body: JSON.stringify({

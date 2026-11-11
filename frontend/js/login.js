@@ -1,3 +1,18 @@
+
+// =========================================================
+// CONFIGURAÇÃO DA API
+// =========================================================
+
+// MODIFICADO:
+// Utiliza o mesmo domínio do frontend.
+// Funciona localmente e na Vercel.
+
+const API = "";
+
+// =========================================================
+// ELEMENTOS DA TELA
+// =========================================================
+
 const formLogin =
     document.getElementById("formLogin");
 
@@ -16,60 +31,94 @@ const linkIrCadastro =
 const linkIrLogin =
     document.getElementById("linkIrLogin");
 
-
 // =========================================================
-// ADICIONADO:
 // TELA DE CARREGAMENTO
 // =========================================================
 
 const loadingOverlay =
     document.getElementById("loadingOverlay");
 
+// =========================================================
+// FUNÇÃO AUXILIAR
+// =========================================================
+
+// ADICIONADO:
+// Evita erros quando o servidor retorna uma resposta
+// que não está no formato JSON.
+
+async function obterRespostaJSON(resposta) {
+    try {
+        return await resposta.json();
+    } catch {
+        throw new Error(
+            "O servidor retornou uma resposta inválida."
+        );
+    }
+}
 
 // =========================================================
 // CADASTRO
 // =========================================================
 
-formCadastro.addEventListener(
-    "submit",
-    async function(event) {
+if (formCadastro) {
 
-        event.preventDefault();
+    formCadastro.addEventListener(
+        "submit",
+        async function(event) {
 
-        const nome =
-            document
-                .getElementById("nomeCadastro")
-                .value
-                .trim();
+            event.preventDefault();
 
-        const email =
-            document
-                .getElementById("emailCadastro")
-                .value
-                .trim();
+            const nome =
+                document
+                    .getElementById("nomeCadastro")
+                    .value
+                    .trim();
 
-        const senha =
-            document
-                .getElementById("senhaCadastro")
-                .value;
+            const email =
+                document
+                    .getElementById("emailCadastro")
+                    .value
+                    .trim();
 
-        const mensagemCadastro =
-            document.getElementById(
-                "mensagemCadastro"
-            );
+            const senha =
+                document
+                    .getElementById("senhaCadastro")
+                    .value;
 
+            const mensagemCadastro =
+                document.getElementById(
+                    "mensagemCadastro"
+                );
 
-        try {
+            const botaoCadastro =
+                formCadastro.querySelector(
+                    'button[type="submit"]'
+                );
 
-            const resposta =
-                await fetch(
-                    "http://localhost:3000/usuarios/cadastro",
+            try {
+
+                if (botaoCadastro) {
+                    botaoCadastro.disabled = true;
+                }
+
+                mensagemCadastro.innerText =
+                    "Realizando cadastro...";
+
+                mensagemCadastro.style.color =
+                    "inherit";
+
+                // =================================================
+                // MODIFICADO:
+                // ENDEREÇO DINÂMICO DA API
+                // =================================================
+
+                const resposta = await fetch(
+                    `${API}/usuarios/cadastro`,
                     {
                         method: "POST",
 
                         headers: {
-                            "Content-Type":
-                                "application/json"
+                            "Content-Type": "application/json"
                         },
 
                         body: JSON.stringify({
@@ -80,115 +129,117 @@ formCadastro.addEventListener(
                     }
                 );
 
+                const resultado =
+                    await obterRespostaJSON(resposta);
 
-            const resultado =
-                await resposta.json();
+                mensagemCadastro.innerText =
+                    resultado.mensagem ||
+                    resultado.erro ||
+                    "Não foi possível realizar o cadastro.";
 
+                if (resposta.ok && resultado.sucesso) {
 
-            mensagemCadastro.innerText =
-                resultado.mensagem;
+                    mensagemCadastro.style.color =
+                        "green";
 
+                    formCadastro.reset();
 
-            if (resultado.sucesso) {
+                } else {
 
-                mensagemCadastro.style.color =
-                    "green";
+                    mensagemCadastro.style.color =
+                        "red";
+                }
 
-                formCadastro.reset();
+            } catch (erro) {
 
-            } else {
+                console.error(
+                    "Erro no cadastro:",
+                    erro
+                );
+
+                mensagemCadastro.innerText =
+                    erro.message ||
+                    "Erro ao conectar com o servidor.";
 
                 mensagemCadastro.style.color =
                     "red";
+
+            } finally {
+
+                if (botaoCadastro) {
+                    botaoCadastro.disabled = false;
+                }
             }
-
-
-        } catch (erro) {
-
-            console.error(
-                "Erro no cadastro:",
-                erro
-            );
-
-            mensagemCadastro.innerText =
-                "Erro ao conectar com o servidor.";
-
-            mensagemCadastro.style.color =
-                "red";
         }
-
-    }
-);
-
+    );
+}
 
 // =========================================================
 // LOGIN
 // =========================================================
 
-formLogin.addEventListener(
-    "submit",
-    async function(event) {
+if (formLogin) {
 
-        event.preventDefault();
+    formLogin.addEventListener(
+        "submit",
+        async function(event) {
 
-        const email =
-            document
-                .getElementById("emailLogin")
-                .value
-                .trim();
+            event.preventDefault();
 
-        const senha =
-            document
-                .getElementById("senhaLogin")
-                .value;
+            const email =
+                document
+                    .getElementById("emailLogin")
+                    .value
+                    .trim();
 
-        const mensagemLogin =
-            document.getElementById(
-                "mensagemLogin"
-            );
+            const senha =
+                document
+                    .getElementById("senhaLogin")
+                    .value;
 
-        const botaoLogin =
-            formLogin.querySelector(
-                'button[type="submit"]'
-            );
+            const mensagemLogin =
+                document.getElementById(
+                    "mensagemLogin"
+                );
 
+            const botaoLogin =
+                formLogin.querySelector(
+                    'button[type="submit"]'
+                );
 
-        // =================================================
-        // ADICIONADO:
-        // MOSTRA A TELA DE CARREGAMENTO
-        // =================================================
+            // =================================================
+            // MOSTRAR TELA DE CARREGAMENTO
+            // =================================================
 
-        if (loadingOverlay) {
+            if (loadingOverlay) {
+                loadingOverlay.classList.add("ativo");
+            }
 
-            loadingOverlay.classList.add(
-                "ativo"
-            );
-        }
+            // =================================================
+            // DESATIVAR BOTÃO DURANTE O LOGIN
+            // =================================================
 
+            if (botaoLogin) {
+                botaoLogin.disabled = true;
+            }
 
-        // =================================================
-        // ADICIONADO:
-        // DESATIVA O BOTÃO DURANTE O LOGIN
-        // =================================================
+            try {
 
-        if (botaoLogin) {
+                mensagemLogin.innerText =
+                    "Entrando...";
 
-            botaoLogin.disabled =
-                true;
-        }
+                // =================================================
+                // MODIFICADO:
+                // ENDEREÇO DINÂMICO DA API
+                // =================================================
 
-
-        try {
-
-            const resposta =
-                await fetch(
-                    "http://localhost:3000/usuarios/login",
+                const resposta = await fetch(
+                    `${API}/usuarios/login`,
                     {
                         method: "POST",
 
                         headers: {
-                            "Content-Type":
-                                "application/json"
+                            "Content-Type": "application/json"
                         },
 
                         body: JSON.stringify({
@@ -198,141 +249,146 @@ formLogin.addEventListener(
                     }
                 );
 
+                const resultado =
+                    await obterRespostaJSON(resposta);
 
-            const resultado =
-                await resposta.json();
+                mensagemLogin.innerText =
+                    resultado.mensagem ||
+                    resultado.erro ||
+                    "Não foi possível realizar o login.";
 
+                if (!resposta.ok || !resultado.sucesso) {
 
-            mensagemLogin.innerText =
-                resultado.mensagem;
+                    mensagemLogin.style.color =
+                        "red";
 
+                    return;
+                }
 
-            if (resultado.sucesso) {
+                // =================================================
+                // ADICIONADO:
+                // VALIDAR DADOS RETORNADOS PELO SUPABASE
+                // =================================================
+
+                const usuario = resultado.usuario;
+
+                if (
+                    !usuario ||
+                    !usuario.access_token
+                ) {
+                    throw new Error(
+                        "O login foi realizado, mas o token de autenticação não foi recebido."
+                    );
+                }
+
+                // =================================================
+                // MODIFICADO:
+                // SALVAR USUÁRIO E TOKEN DE AUTENTICAÇÃO
+                // =================================================
+
+                localStorage.setItem(
+                    "usuarioLogado",
+                    JSON.stringify(usuario)
+                );
 
                 mensagemLogin.style.color =
                     "green";
 
-                localStorage.setItem(
-                    "usuarioLogado",
-                    JSON.stringify(
-                        resultado.usuario
-                    )
-                );
-
+                mensagemLogin.innerText =
+                    resultado.mensagem ||
+                    "Login realizado com sucesso!";
 
                 // =================================================
-                // ADICIONADO:
-                // PEQUENO TEMPO PARA EXIBIR O CARREGAMENTO
-                // ANTES DE ENTRAR NO SITE
+                // REDIRECIONAR PARA O FEED
                 // =================================================
 
-                setTimeout(
-                    function() {
+                setTimeout(function() {
 
-                        window.location.href =
-                            "home.html";
+                    window.location.href =
+                        "home.html";
 
-                    },
-                    2000
+                }, 2000);
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro no login:",
+                    erro
                 );
-            } else {
+
+                mensagemLogin.innerText =
+                    erro.message ||
+                    "Erro ao conectar com o servidor.";
 
                 mensagemLogin.style.color =
                     "red";
 
-
-                // =================================================
-                // ADICIONADO:
-                // LOGIN INCORRETO -> REMOVE O CARREGAMENTO
-                // =================================================
-
                 if (loadingOverlay) {
-
-                    loadingOverlay.classList.remove(
-                        "ativo"
-                    );
+                    loadingOverlay.classList.remove("ativo");
                 }
-
 
                 if (botaoLogin) {
+                    botaoLogin.disabled = false;
+                }
 
-                    botaoLogin.disabled =
-                        false;
+            } finally {
+
+                // Se não houve redirecionamento,
+                // libera o botão novamente.
+
+                if (
+                    botaoLogin &&
+                    !localStorage.getItem("usuarioLogado")
+                ) {
+                    botaoLogin.disabled = false;
                 }
             }
-
-
-        } catch (erro) {
-
-            console.error(
-                "Erro no login:",
-                erro
-            );
-
-            mensagemLogin.innerText =
-                "Erro ao conectar com o servidor.";
-
-            mensagemLogin.style.color =
-                "red";
-
-
-            // =================================================
-            // ADICIONADO:
-            // ERRO DE CONEXÃO -> REMOVE O CARREGAMENTO
-            // =================================================
-
-            if (loadingOverlay) {
-
-                loadingOverlay.classList.remove(
-                    "ativo"
-                );
-            }
-
-
-            if (botaoLogin) {
-
-                botaoLogin.disabled =
-                    false;
-            }
         }
-
-    }
-);
-
+    );
+}
 
 // =========================================================
 // ALTERNAR PARA CADASTRO
 // =========================================================
 
-linkIrCadastro.addEventListener(
-    "click",
-    function(event) {
+if (
+    linkIrCadastro &&
+    caixaLogin &&
+    caixaCadastro
+) {
 
-        event.preventDefault();
+    linkIrCadastro.addEventListener(
+        "click",
+        function(event) {
 
-        caixaLogin.style.display =
-            "none";
+            event.preventDefault();
 
-        caixaCadastro.style.display =
-            "block";
-    }
-);
+            caixaLogin.style.display = "none";
 
+            caixaCadastro.style.display = "block";
+        }
+    );
+}
 
 // =========================================================
 // ALTERNAR PARA LOGIN
 // =========================================================
 
-linkIrLogin.addEventListener(
-    "click",
-    function(event) {
+if (
+    linkIrLogin &&
+    caixaLogin &&
+    caixaCadastro
+) {
 
-        event.preventDefault();
+    linkIrLogin.addEventListener(
+        "click",
+        function(event) {
 
-        caixaCadastro.style.display =
-            "none";
+            event.preventDefault();
 
-        caixaLogin.style.display =
-            "block";
-    }
-);
+            caixaCadastro.style.display = "none";
+
+            caixaLogin.style.display = "block";
+        }
+    );
+}

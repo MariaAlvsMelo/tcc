@@ -1,515 +1,565 @@
 
-const API_DEEZER = "http://localhost:3000/deezer";
-
-const formAvaliacao = document.getElementById("formAvaliacao");
-const campoMusica = document.getElementById("musicaAvaliacao");
-const campoArtista = document.getElementById("artistaAvaliacao");
-
-const musicaSelecionada = document.getElementById("musicaSelecionada");
-const capaAlbum = document.getElementById("capaAlbum");
+ // =========================================================
+ // CONFIGURAÇÃO DA API
+ // =========================================================
+
+ // MODIFICADO:
+ // Utiliza o domínio atual do site.
+ // Funciona localmente e na Vercel.
+
+ const API = "";
+ const API_DEEZER = "/deezer";
+
+ const formAvaliacao = document.getElementById("formAvaliacao");
+ const campoMusica = document.getElementById("musicaAvaliacao");
+ const campoArtista = document.getElementById("artistaAvaliacao");
+
+ const musicaSelecionada = document.getElementById("musicaSelecionada");
+ const capaAlbum = document.getElementById("capaAlbum");
+
+ const tituloMusicaSelecionada = document.getElementById(
+     "tituloMusicaSelecionada"
+ );
+
+ const albumMusicaSelecionada = document.getElementById(
+     "albumMusicaSelecionada"
+ );
+
+ const mensagemAvaliacao = document.getElementById(
+     "mensagemAvaliacao"
+ );
+
+ const previewMusica = document.getElementById("previewMusica");
+ const areaPreviewMusica = document.getElementById("areaPreviewMusica");
+ const erroPreviewAvaliar = document.getElementById("erroPreviewAvaliar");
+
+ const listaSugestoesMusica = document.getElementById(
+     "listaSugestoesMusica"
+ );
+
+ const listaSugestoesArtista = document.getElementById(
+     "listaSugestoesArtista"
+ );
+
+ const avaliarSemLogin = document.getElementById("avaliarSemLogin");
+
+ let musicaDeezerSelecionada = null;
+ let tempoBusca = null;
+ let numeroBusca = 0;
+
+ // =========================================================
+ // SEGURANÇA
+ // =========================================================
+
+ function escaparHTML(texto) {
+     const elemento = document.createElement("div");
+     elemento.textContent = texto ?? "";
+     return elemento.innerHTML;
+ }
+
+ function obterUsuario() {
+     try {
+         return JSON.parse(localStorage.getItem("usuarioLogado"));
+     } catch {
+         return null;
+     }
+ }
+
+ // =========================================================
+ // ADICIONADO:
+ // OBTER TOKEN DE AUTENTICAÇÃO
+ // =========================================================
+
+ function obterToken() {
+     const usuario = obterUsuario();
+     return usuario?.access_token || null;
+ }
+
+ // =========================================================
+ // VERIFICAR LOGIN
+ // =========================================================
+
+ const usuarioPagina = obterUsuario();
+
+ if (!usuarioPagina || !usuarioPagina.access_token) {
+     if (formAvaliacao) {
+         formAvaliacao.style.display = "none";
+     }
+
+     if (avaliarSemLogin) {
+         avaliarSemLogin.style.display = "flex";
+     }
+ } else {
+     if (formAvaliacao) {
+         formAvaliacao.style.display = "";
+     }
+
+     if (avaliarSemLogin) {
+         avaliarSemLogin.style.display = "none";
+     }
+ }
+
+ // =========================================================
+ // LIMPAR PLAYER
+ // =========================================================
 
-const tituloMusicaSelecionada = document.getElementById(
-    "tituloMusicaSelecionada"
-);
+ function limparPreview() {
+     if (!previewMusica) return;
 
-const albumMusicaSelecionada = document.getElementById(
-    "albumMusicaSelecionada"
-);
+     previewMusica.pause();
+     previewMusica.removeAttribute("src");
+     previewMusica.load();
 
-const mensagemAvaliacao = document.getElementById(
-    "mensagemAvaliacao"
-);
+     if (areaPreviewMusica) {
+         areaPreviewMusica.style.display = "none";
+     }
 
-const previewMusica = document.getElementById("previewMusica");
-const areaPreviewMusica = document.getElementById("areaPreviewMusica");
-const erroPreviewAvaliar = document.getElementById("erroPreviewAvaliar");
+     if (erroPreviewAvaliar) {
+         erroPreviewAvaliar.hidden = true;
+     }
+ }
 
-const listaSugestoesMusica = document.getElementById(
-    "listaSugestoesMusica"
-);
-
-const listaSugestoesArtista = document.getElementById(
-    "listaSugestoesArtista"
-);
-
-const avaliarSemLogin = document.getElementById("avaliarSemLogin");
-
-let musicaDeezerSelecionada = null;
-let tempoBusca = null;
-let numeroBusca = 0;
-
-// =========================================================
-// SEGURANÇA
-// =========================================================
+ // =========================================================
+ // MOSTRAR PLAYER
+ // =========================================================
 
-function escaparHTML(texto) {
-    const elemento = document.createElement("div");
-    elemento.textContent = texto ?? "";
-    return elemento.innerHTML;
-}
+ function carregarPreview(musica) {
+     limparPreview();
 
-function obterUsuario() {
-    try {
-        return JSON.parse(localStorage.getItem("usuarioLogado"));
-    } catch (erro) {
-        return null;
-    }
-}
+     if (!musica?.id || !previewMusica) {
+         return;
+     }
 
-// =========================================================
-// VERIFICAR LOGIN
-// =========================================================
+     // MODIFICADO:
+     // Obtém a prévia atualizada pela rota do backend.
 
-const usuarioPagina = obterUsuario();
+     const url = `${API}${API_DEEZER}/preview/${encodeURIComponent(musica.id)}`;
 
-if (!usuarioPagina) {
-    formAvaliacao.style.display = "none";
+     previewMusica.src = url;
+     previewMusica.load();
 
-    if (avaliarSemLogin) {
-        avaliarSemLogin.style.display = "flex";
-    }
-} else {
-    formAvaliacao.style.display = "";
+     if (areaPreviewMusica) {
+         areaPreviewMusica.style.display = "block";
+     }
+ }
 
-    if (avaliarSemLogin) {
-        avaliarSemLogin.style.display = "none";
-    }
-}
+ // =========================================================
+ // EVENTOS DO PLAYER
+ // =========================================================
 
-// =========================================================
-// LIMPAR PLAYER
-// =========================================================
+ if (previewMusica) {
+     previewMusica.addEventListener("error", () => {
+         if (erroPreviewAvaliar) {
+             erroPreviewAvaliar.hidden = false;
+         }
+     });
 
-function limparPreview() {
-    previewMusica.pause();
-    previewMusica.removeAttribute("src");
-    previewMusica.load();
+     previewMusica.addEventListener("loadeddata", () => {
+         if (erroPreviewAvaliar) {
+             erroPreviewAvaliar.hidden = true;
+         }
+     });
+ }
 
-    areaPreviewMusica.style.display = "none";
+ // =========================================================
+ // LIMPAR SELEÇÃO DE MÚSICA
+ // =========================================================
 
-    if (erroPreviewAvaliar) {
-        erroPreviewAvaliar.hidden = true;
-    }
-}
+ function limparSelecao() {
+     musicaDeezerSelecionada = null;
 
-// =========================================================
-// MOSTRAR PLAYER
-// =========================================================
+     if (musicaSelecionada) {
+         musicaSelecionada.style.display = "none";
+     }
 
-function carregarPreview(musica) {
-    limparPreview();
+     limparPreview();
+ }
 
-    if (!musica?.id) {
-        return;
-    }
+ // =========================================================
+ // ESCONDER SUGESTÕES
+ // =========================================================
 
-    // MODIFICADO:
-    // Utiliza o ID da faixa para obter uma prévia atualizada.
-    const url = `${API_DEEZER}/preview/${encodeURIComponent(musica.id)}`;
+ function esconderSugestoes() {
+     listaSugestoesMusica.innerHTML = "";
+     listaSugestoesMusica.style.display = "none";
 
-    previewMusica.src = url;
-    previewMusica.load();
+     listaSugestoesArtista.innerHTML = "";
+     listaSugestoesArtista.style.display = "none";
+ }
 
-    areaPreviewMusica.style.display = "block";
-}
+ // =========================================================
+ // PESQUISAR MÚSICAS
+ // =========================================================
 
-// =========================================================
-// EVENTOS DO PLAYER
-// =========================================================
+ campoMusica.addEventListener("input", () => {
+     limparSelecao();
 
-previewMusica.addEventListener("error", () => {
-    if (erroPreviewAvaliar) {
-        erroPreviewAvaliar.hidden = false;
-    }
-});
+     listaSugestoesArtista.innerHTML = "";
+     listaSugestoesArtista.style.display = "none";
 
-previewMusica.addEventListener("loadeddata", () => {
-    if (erroPreviewAvaliar) {
-        erroPreviewAvaliar.hidden = true;
-    }
-});
+     pesquisarDeezer(campoMusica.value.trim(), "musica");
+ });
 
-// =========================================================
-// LIMPAR SELEÇÃO DE MÚSICA
-// =========================================================
+ // =========================================================
+ // PESQUISAR ARTISTAS
+ // =========================================================
 
-function limparSelecao() {
-    musicaDeezerSelecionada = null;
+ campoArtista.addEventListener("input", () => {
+     limparSelecao();
 
-    musicaSelecionada.style.display = "none";
+     listaSugestoesMusica.innerHTML = "";
+     listaSugestoesMusica.style.display = "none";
 
-    limparPreview();
-}
+     pesquisarDeezer(campoArtista.value.trim(), "artista");
+ });
 
-// =========================================================
-// ESCONDER SUGESTÕES
-// =========================================================
+ // =========================================================
+ // DEBOUNCE DA PESQUISA
+ // =========================================================
 
-function esconderSugestoes() {
-    listaSugestoesMusica.innerHTML = "";
-    listaSugestoesMusica.style.display = "none";
+ function pesquisarDeezer(busca, tipoBusca) {
+     clearTimeout(tempoBusca);
 
-    listaSugestoesArtista.innerHTML = "";
-    listaSugestoesArtista.style.display = "none";
-}
+     const listaAtual = tipoBusca === "artista"
+         ? listaSugestoesArtista
+         : listaSugestoesMusica;
 
-// =========================================================
-// PESQUISAR MÚSICAS
-// =========================================================
+     numeroBusca++;
+     const buscaAtual = numeroBusca;
 
-campoMusica.addEventListener("input", () => {
-    limparSelecao();
+     if (busca.length < 2) {
+         listaAtual.innerHTML = "";
+         listaAtual.style.display = "none";
+         return;
+     }
 
-    listaSugestoesArtista.innerHTML = "";
-    listaSugestoesArtista.style.display = "none";
+     tempoBusca = setTimeout(() => {
+         buscarMusicas(busca, tipoBusca, buscaAtual);
+     }, 400);
+ }
 
-    pesquisarDeezer(campoMusica.value.trim(), "musica");
-});
+ // =========================================================
+ // BUSCA NA API DEEZER
+ // =========================================================
 
-// =========================================================
-// PESQUISAR ARTISTAS
-// =========================================================
+ async function buscarMusicas(busca, tipoBusca, buscaAtual) {
+     const listaAtual = tipoBusca === "artista"
+         ? listaSugestoesArtista
+         : listaSugestoesMusica;
 
-campoArtista.addEventListener("input", () => {
-    limparSelecao();
+     try {
+         const resposta = await fetch(
+             `${API}${API_DEEZER}/buscar?q=${encodeURIComponent(busca)}`
+         );
 
-    listaSugestoesMusica.innerHTML = "";
-    listaSugestoesMusica.style.display = "none";
+         if (!resposta.ok) {
+             throw new Error("Erro ao buscar músicas.");
+         }
 
-    pesquisarDeezer(campoArtista.value.trim(), "artista");
-});
+         const dados = await resposta.json();
 
-// =========================================================
-// DEBOUNCE DA PESQUISA
-// =========================================================
+         // Evita mostrar resultados de uma pesquisa antiga.
+         if (buscaAtual !== numeroBusca) return;
 
-function pesquisarDeezer(busca, tipoBusca) {
-    clearTimeout(tempoBusca);
+         mostrarSugestoes(dados.data || [], tipoBusca);
 
-    const listaAtual = tipoBusca === "artista"
-        ? listaSugestoesArtista
-        : listaSugestoesMusica;
+     } catch (erro) {
+         if (buscaAtual !== numeroBusca) return;
 
-    numeroBusca++;
-    const buscaAtual = numeroBusca;
+         console.error("Erro na pesquisa:", erro);
 
-    if (busca.length < 2) {
-        listaAtual.innerHTML = "";
-        listaAtual.style.display = "none";
-        return;
-    }
+         listaAtual.innerHTML = `
+             <div style="padding:12px;color:#ff7777;">
+                 Não foi possível realizar a busca.
+             </div>
+         `;
 
-    tempoBusca = setTimeout(() => {
-        buscarMusicas(busca, tipoBusca, buscaAtual);
-    }, 400);
-}
+         listaAtual.style.display = "block";
+     }
+ }
 
-// =========================================================
-// BUSCA NA API DEEZER
-// =========================================================
+ // =========================================================
+ // EXIBIR SUGESTÕES
+ // =========================================================
 
-async function buscarMusicas(busca, tipoBusca, buscaAtual) {
-    const listaAtual = tipoBusca === "artista"
-        ? listaSugestoesArtista
-        : listaSugestoesMusica;
+ function mostrarSugestoes(musicas, tipoBusca) {
+     const listaAtual = tipoBusca === "artista"
+         ? listaSugestoesArtista
+         : listaSugestoesMusica;
 
-    try {
-        const resposta = await fetch(
-            `${API_DEEZER}/buscar?q=${encodeURIComponent(busca)}`
-        );
+     listaAtual.innerHTML = "";
 
-        if (!resposta.ok) {
-            throw new Error("Erro ao buscar músicas.");
-        }
+     if (!musicas.length) {
+         listaAtual.innerHTML = `
+             <div style="padding:12px;color:#aaa;">
+                 Nenhuma música encontrada.
+             </div>
+         `;
 
-        const dados = await resposta.json();
+         listaAtual.style.display = "block";
+         return;
+     }
 
-        // Evita mostrar resultados de uma pesquisa antiga.
-        if (buscaAtual !== numeroBusca) return;
+     musicas.slice(0, 5).forEach(musica => {
+         const sugestao = document.createElement("div");
+         sugestao.className = "sugestao-musica";
 
-        mostrarSugestoes(dados.data || [], tipoBusca);
+         const capa = musica.album?.cover_medium || "";
+         const titulo = musica.title || "Música sem nome";
+         const artista = musica.artist?.name || "Artista desconhecido";
 
-    } catch (erro) {
-        if (buscaAtual !== numeroBusca) return;
+         sugestao.innerHTML = `
+             <img
+                 src="${escaparHTML(capa)}"
+                 alt="Capa do álbum"
+             >
 
-        console.error("Erro na pesquisa:", erro);
+             <div class="sugestao-info">
+                 <strong>${escaparHTML(titulo)}</strong>
+                 <span>${escaparHTML(artista)}</span>
+             </div>
+         `;
 
-        listaAtual.innerHTML = `
-            <div style="padding:12px;color:#ff7777;">
-                Não foi possível realizar a busca.
-            </div>
-        `;
+         sugestao.addEventListener("click", () => {
+             selecionarMusica(musica);
+         });
 
-        listaAtual.style.display = "block";
-    }
-}
+         listaAtual.appendChild(sugestao);
+     });
 
-// =========================================================
-// EXIBIR SUGESTÕES
-// =========================================================
+     listaAtual.style.display = "block";
+ }
 
-function mostrarSugestoes(musicas, tipoBusca) {
-    const listaAtual = tipoBusca === "artista"
-        ? listaSugestoesArtista
-        : listaSugestoesMusica;
+ // =========================================================
+ // SELECIONAR MÚSICA
+ // =========================================================
 
-    listaAtual.innerHTML = "";
+ function selecionarMusica(musica) {
+     numeroBusca++;
+     clearTimeout(tempoBusca);
 
-    if (!musicas.length) {
-        listaAtual.innerHTML = `
-            <div style="padding:12px;color:#aaa;">
-                Nenhuma música encontrada.
-            </div>
-        `;
+     musicaDeezerSelecionada = musica;
 
-        listaAtual.style.display = "block";
-        return;
-    }
+     campoMusica.value = musica.title || "";
+     campoArtista.value = musica.artist?.name || "";
 
-    musicas.slice(0, 5).forEach(musica => {
-        const sugestao = document.createElement("div");
-        sugestao.className = "sugestao-musica";
+     const capa = musica.album?.cover_medium || "";
 
-        const capa = musica.album?.cover_medium || "";
-        const titulo = musica.title || "Música sem nome";
-        const artista = musica.artist?.name || "Artista desconhecido";
+     if (capa) {
+         capaAlbum.src = capa;
+         capaAlbum.style.display = "block";
+     } else {
+         capaAlbum.removeAttribute("src");
+         capaAlbum.style.display = "none";
+     }
 
-        sugestao.innerHTML = `
-            <img
-                src="${escaparHTML(capa)}"
-                alt="Capa do álbum"
-            >
+     tituloMusicaSelecionada.textContent = musica.title || "";
 
-            <div class="sugestao-info">
-                <strong>${escaparHTML(titulo)}</strong>
-                <span>${escaparHTML(artista)}</span>
-            </div>
-        `;
+     albumMusicaSelecionada.textContent = musica.album?.title
+         ? `Álbum: ${musica.album.title}`
+         : "";
 
-        sugestao.addEventListener("click", () => {
-            selecionarMusica(musica);
-        });
+     musicaSelecionada.style.display = "block";
 
-        listaAtual.appendChild(sugestao);
-    });
+     carregarPreview(musica);
 
-    listaAtual.style.display = "block";
-}
+     esconderSugestoes();
+ }
 
-// =========================================================
-// SELECIONAR MÚSICA
-// =========================================================
+ // =========================================================
+ // FECHAR SUGESTÕES AO CLICAR FORA
+ // =========================================================
 
-function selecionarMusica(musica) {
-    numeroBusca++;
-    clearTimeout(tempoBusca);
+ document.addEventListener("click", event => {
+     const clicouMusica = campoMusica.contains(event.target);
+     const clicouArtista = campoArtista.contains(event.target);
 
-    musicaDeezerSelecionada = musica;
+     const clicouListaMusica = listaSugestoesMusica.contains(
+         event.target
+     );
 
-    campoMusica.value = musica.title || "";
-    campoArtista.value = musica.artist?.name || "";
+     const clicouListaArtista = listaSugestoesArtista.contains(
+         event.target
+     );
 
-    const capa = musica.album?.cover_medium || "";
+     if (
+         !clicouMusica &&
+         !clicouArtista &&
+         !clicouListaMusica &&
+         !clicouListaArtista
+     ) {
+         listaSugestoesMusica.style.display = "none";
+         listaSugestoesArtista.style.display = "none";
+     }
+ });
+
+ // =========================================================
+ // ENVIAR AVALIAÇÃO
+ // =========================================================
 
-    if (capa) {
-        capaAlbum.src = capa;
-        capaAlbum.style.display = "block";
-    } else {
-        capaAlbum.removeAttribute("src");
-        capaAlbum.style.display = "none";
-    }
+ formAvaliacao.addEventListener("submit", async event => {
+     event.preventDefault();
 
-    tituloMusicaSelecionada.textContent = musica.title || "";
+     const overlay = document.getElementById("loadingOverlay");
+
+     const botaoSubmit = formAvaliacao.querySelector(
+         'button[type="submit"]'
+     );
+
+     const musica = campoMusica.value.trim();
+     const artista = campoArtista.value.trim();
 
-    albumMusicaSelecionada.textContent = musica.album?.title
-        ? `Álbum: ${musica.album.title}`
-        : "";
+     const comentario = document.getElementById(
+         "comentarioAvaliacao"
+     ).value.trim();
 
-    musicaSelecionada.style.display = "block";
+     const notaSelecionada = document.querySelector(
+         'input[name="nota"]:checked'
+     );
 
-    // MODIFICADO: carregar player atualizado.
-    carregarPreview(musica);
+     const nota = notaSelecionada
+         ? Number(notaSelecionada.value)
+         : null;
 
-    esconderSugestoes();
-}
+     // =====================================================
+     // VALIDAÇÃO
+     // =====================================================
 
-// =========================================================
-// FECHAR SUGESTÕES AO CLICAR FORA
-// =========================================================
+     if (!musica || !artista || !comentario || !nota) {
+         mensagemAvaliacao.textContent = !nota
+             ? "Clique em uma estrela para dar sua nota!"
+             : "Preencha todos os campos!";
 
-document.addEventListener("click", event => {
-    const clicouMusica = campoMusica.contains(event.target);
-    const clicouArtista = campoArtista.contains(event.target);
+         mensagemAvaliacao.style.color = "#ff5c7c";
+         return;
+     }
 
-    const clicouListaMusica = listaSugestoesMusica.contains(
-        event.target
-    );
+     const usuario = obterUsuario();
+     const token = obterToken();
 
-    const clicouListaArtista = listaSugestoesArtista.contains(
-        event.target
-    );
-
-    if (
-        !clicouMusica &&
-        !clicouArtista &&
-        !clicouListaMusica &&
-        !clicouListaArtista
-    ) {
-        listaSugestoesMusica.style.display = "none";
-        listaSugestoesArtista.style.display = "none";
-    }
-});
+     if (!usuario || !token) {
+         mensagemAvaliacao.textContent =
+             "Sua sessão expirou. Faça login novamente.";
 
-// =========================================================
-// ENVIAR AVALIAÇÃO
-// =========================================================
+         mensagemAvaliacao.style.color = "#ff5c7c";
+         return;
+     }
 
-formAvaliacao.addEventListener("submit", async event => {
-    event.preventDefault();
+     try {
+         if (overlay) {
+             overlay.classList.add("ativo");
+         }
 
-    const overlay = document.getElementById("loadingOverlay");
-    const botaoSubmit = formAvaliacao.querySelector(
-        'button[type="submit"]'
-    );
+         if (botaoSubmit) {
+             botaoSubmit.disabled = true;
+         }
 
-    const musica = campoMusica.value.trim();
-    const artista = campoArtista.value.trim();
+         // =================================================
+         // MODIFICADO:
+         // ENVIO DO TOKEN DO SUPABASE
+         // =================================================
 
-    const comentario = document.getElementById(
-        "comentarioAvaliacao"
-    ).value.trim();
+         const resposta = await fetch(
+             `${API}/usuarios/avaliacoes`,
+             {
+                 method: "POST",
 
-    const notaSelecionada = document.querySelector(
-        'input[name="nota"]:checked'
-    );
+                 headers: {
+                     "Content-Type": "application/json",
+                     "Authorization": `Bearer ${token}`
+                 },
 
-    const nota = notaSelecionada
-        ? Number(notaSelecionada.value)
-        : null;
+                 body: JSON.stringify({
+                     id_usuario: usuario.id_usuario,
+                     musica,
+                     artista,
+                     comentario,
+                     nota,
 
-    // VALIDAÇÃO
-    if (!musica || !artista || !comentario || !nota) {
-        mensagemAvaliacao.textContent = !nota
-            ? "Clique em uma estrela para dar sua nota!"
-            : "Preencha todos os campos!";
+                     capa_album:
+                         musicaDeezerSelecionada?.album?.cover_medium ||
+                         null,
 
-        mensagemAvaliacao.style.color = "#ff5c7c";
-        return;
-    }
+                     id_deezer:
+                         musicaDeezerSelecionada?.id || null,
 
-    const usuario = obterUsuario();
+                     id_album:
+                         musicaDeezerSelecionada?.album?.id ||
+                         null,
 
-    if (!usuario) {
-        mensagemAvaliacao.textContent =
-            "Faça login para enviar uma avaliação.";
+                     preview:
+                         musicaDeezerSelecionada?.preview || null
+                 })
+             }
+         );
 
-        mensagemAvaliacao.style.color = "#ff5c7c";
-        return;
-    }
+         const resultado = await resposta.json();
 
-    try {
-        if (overlay) {
-            overlay.classList.add("ativo");
-        }
+         if (!resposta.ok || !resultado.sucesso) {
+             throw new Error(
+                 resultado.mensagem ||
+                 resultado.erro ||
+                 "Erro ao enviar avaliação."
+             );
+         }
 
-        if (botaoSubmit) {
-            botaoSubmit.disabled = true;
-        }
+         mensagemAvaliacao.textContent =
+             resultado.mensagem || "Avaliação enviada!";
 
-        const resposta = await fetch(
-            "http://localhost:3000/usuarios/avaliacoes",
-            {
-                method: "POST",
+         mensagemAvaliacao.style.color = "#54d98b";
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+         formAvaliacao.reset();
 
-                body: JSON.stringify({
-                    id_usuario: usuario.id_usuario,
-                    musica,
-                    artista,
-                    comentario,
-                    nota,
+         musicaDeezerSelecionada = null;
+         musicaSelecionada.style.display = "none";
 
-                    capa_album:
-                        musicaDeezerSelecionada?.album?.cover_medium ||
-                        null,
+         capaAlbum.removeAttribute("src");
 
-                    id_deezer:
-                        musicaDeezerSelecionada?.id || null,
+         limparPreview();
+         esconderSugestoes();
 
-                    id_album:
-                        musicaDeezerSelecionada?.album?.id ||
-                        null,
+         // =================================================
+         // REDIRECIONAR PARA O FEED
+         // =================================================
 
-                    preview:
-                        musicaDeezerSelecionada?.preview || null
-                })
-            }
-        );
+         setTimeout(() => {
+             window.location.href = "home.html";
+         }, 2000);
 
-        const resultado = await resposta.json();
+     } catch (erro) {
+         console.error("Erro ao enviar avaliação:", erro);
 
-        if (!resposta.ok || !resultado.sucesso) {
-            throw new Error(
-                resultado.mensagem || "Erro ao enviar avaliação."
-            );
-        }
+         mensagemAvaliacao.textContent =
+             erro.message ||
+             "Erro de conexão com o servidor.";
 
-        mensagemAvaliacao.textContent =
-            resultado.mensagem || "Avaliação enviada!";
+         mensagemAvaliacao.style.color = "#ff5c7c";
 
-        mensagemAvaliacao.style.color = "#54d98b";
+         if (overlay) {
+             overlay.classList.remove("ativo");
+         }
 
-        formAvaliacao.reset();
+         if (botaoSubmit) {
+             botaoSubmit.disabled = false;
+         }
+     }
+ });
 
-        musicaDeezerSelecionada = null;
-        musicaSelecionada.style.display = "none";
+ // =========================================================
+ // CABEÇALHO AO ROLAR
+ // =========================================================
 
-        capaAlbum.removeAttribute("src");
+ const cabecalho = document.querySelector(".cabecalho");
+ let ultimaRolagem = window.scrollY;
 
-        limparPreview();
-        esconderSugestoes();
+ if (cabecalho) {
+     window.addEventListener("scroll", () => {
+         if (window.scrollY > ultimaRolagem) {
+             cabecalho.classList.add("cabecalho--hidden");
+         } else {
+             cabecalho.classList.remove("cabecalho--hidden");
+         }
 
-        // Mantém o carregamento antes de retornar ao Feed.
-        setTimeout(() => {
-            window.location.href = "home.html";
-        }, 2000);
-
-    } catch (erro) {
-        console.error("Erro ao enviar avaliação:", erro);
-
-        mensagemAvaliacao.textContent = erro.message ||
-            "Erro de conexão com o servidor.";
-
-        mensagemAvaliacao.style.color = "#ff5c7c";
-
-        if (overlay) {
-            overlay.classList.remove("ativo");
-        }
-
-        if (botaoSubmit) {
-            botaoSubmit.disabled = false;
-        }
-    }
-});
-
-// =========================================================
-// CABEÇALHO AO ROLAR
-// =========================================================
-
-const cabecalho = document.querySelector(".cabecalho");
-let ultimaRolagem = window.scrollY;
-
-if (cabecalho) {
-    window.addEventListener("scroll", () => {
-        if (window.scrollY > ultimaRolagem) {
-            cabecalho.classList.add("cabecalho--hidden");
-        } else {
-            cabecalho.classList.remove("cabecalho--hidden");
-        }
-
-        ultimaRolagem = window.scrollY;
-    });
-}
+         ultimaRolagem = window.scrollY;
+     });
+ }

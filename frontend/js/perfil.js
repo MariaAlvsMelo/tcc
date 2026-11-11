@@ -1,5 +1,5 @@
 
-const API = "http://localhost:3000";
+const API = "";
 
 const $ = id => document.getElementById(id);
 
@@ -10,6 +10,15 @@ const obterUsuario = () => {
         return null;
     }
 };
+
+const obterToken = () => obterUsuario()?.access_token || "";
+
+const headersAutenticacao = (adicionais = {}) => ({
+    ...adicionais,
+    ...(obterToken()
+        ? { Authorization: `Bearer ${obterToken()}` }
+        : {})
+});
 
 // =========================================================
 // FUNÇÕES AUXILIARES
@@ -182,11 +191,15 @@ function preencherPerfil(usuario) {
 async function carregarPerfil() {
     const usuario = obterUsuario();
 
-    if (!usuario?.id_usuario) return;
+    if (!usuario?.id_usuario || !obterToken()) return;
 
     try {
         const resposta = await fetch(
-            `${API}/usuarios/perfil/${usuario.id_usuario}`
+            `${API}/usuarios/perfil/${usuario.id_usuario}`,
+            {
+                headers: headersAutenticacao(),
+                cache: "no-store"
+            }
         );
 
         const dados = await resposta.json();
@@ -305,7 +318,7 @@ $("formPerfil")?.addEventListener("submit", async event => {
 
     const usuario = obterUsuario();
 
-    if (!usuario) return;
+    if (!usuario || !obterToken()) return;
 
     const nome = $("nomePerfilInput")?.value.trim();
     const email = $("emailPerfilInput")?.value.trim();
@@ -324,9 +337,9 @@ $("formPerfil")?.addEventListener("submit", async event => {
             {
                 method: "PUT",
 
-                headers: {
+                headers: headersAutenticacao({
                     "Content-Type": "application/json"
-                },
+                }),
 
                 body: JSON.stringify({
                     nome,
@@ -435,14 +448,17 @@ function pintarCurtida(botao, ativo) {
 async function verificarCurtida(id, botao) {
     const usuario = obterUsuario();
 
-    if (!usuario || !botao) return;
+    if (!usuario || !obterToken() || !botao) return;
 
     botao.disabled = true;
 
     try {
         const resposta = await fetch(
             `${API}/usuarios/avaliacoes/${id}/curtiu?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
-            { cache: "no-store" }
+            {
+                cache: "no-store",
+                headers: headersAutenticacao()
+            }
         );
 
         const dados = await resposta.json();
@@ -465,7 +481,7 @@ async function verificarCurtida(id, botao) {
 async function alternarCurtida(botao) {
     const usuario = obterUsuario();
 
-    if (!usuario || botao.disabled) return;
+    if (!usuario || !obterToken() || botao.disabled) return;
 
     const id = Number(botao.dataset.id);
     const ativo = botao.classList.contains("curtido");
@@ -478,9 +494,9 @@ async function alternarCurtida(botao) {
             {
                 method: ativo ? "DELETE" : "POST",
 
-                headers: {
+                headers: headersAutenticacao({
                     "Content-Type": "application/json"
-                },
+                }),
 
                 body: JSON.stringify({
                     id_usuario: usuario.id_usuario
@@ -620,12 +636,15 @@ async function carregarMinhasAvaliacoes() {
     const usuario = obterUsuario();
     const container = $("listaMinhasAvaliacoes");
 
-    if (!usuario?.id_usuario || !container) return;
+    if (!usuario?.id_usuario || !obterToken() || !container) return;
 
     try {
         const resposta = await fetch(
             `${API}/usuarios/avaliacoes/usuario/${usuario.id_usuario}`,
-            { cache: "no-store" }
+            {
+                cache: "no-store",
+                headers: headersAutenticacao()
+            }
         );
 
         const dados = await resposta.json();
@@ -723,6 +742,7 @@ async function excluirAvaliacao(id) {
 
     if (
         !usuario ||
+        !obterToken() ||
         !confirm("Tem certeza que deseja excluir esta avaliação?")
     ) {
         return;
@@ -734,9 +754,9 @@ async function excluirAvaliacao(id) {
             {
                 method: "DELETE",
 
-                headers: {
+                headers: headersAutenticacao({
                     "Content-Type": "application/json"
-                },
+                }),
 
                 body: JSON.stringify({
                     id_usuario: usuario.id_usuario
