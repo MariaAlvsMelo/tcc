@@ -1,6 +1,5 @@
 
-const API = "";
-
+const API = "https://entre-notas-api.onrender.com";
 const avaliacoesContainer = document.getElementById("home-container");
 const btnLoginCabecalho = document.getElementById("btnLoginCabecalho");
 

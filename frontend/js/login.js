@@ -7,8 +7,7 @@
 // Utiliza o mesmo domínio do frontend.
 // Funciona localmente e na Vercel.
 
-const API = "";
-
+const API = "https://entre-notas-api.onrender.com";
 // =========================================================
 // ELEMENTOS DA TELA
 // =========================================================
@@ -261,8 +260,8 @@ if (formLogin) {
 
             mensagemLogin.style.color = "green";
 
-            window.location.href = "home.html";
-
+            window.location.href = "/html/home.html";
+            
         } catch (erro) {
             console.error("Erro no login:", erro);
 
@@ -335,3 +334,101 @@ if (
         }
     );
 }
+
+
+// =========================================================
+// LOGIN E CADASTRO COM GOOGLE
+// =========================================================
+
+const btnGoogleLogin = document.getElementById("btnGoogleLogin");
+const btnGoogleCadastro = document.getElementById("btnGoogleCadastro");
+
+async function entrarComGoogle(botao) {
+    try {
+        if (botao) {
+            botao.disabled = true;
+            botao.innerText = "Conectando ao Google...";
+        }
+
+        const { error } = await supabaseFrontend.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: `${window.location.origin}/html/login.html`
+            }
+        });
+
+        if (error) {
+            throw error;
+        }
+
+    } catch (erro) {
+        console.error("Erro no login com Google:", erro);
+
+        alert("Não foi possível conectar com o Google. Tente novamente.");
+
+        if (botao) {
+            botao.disabled = false;
+            botao.innerText = botao.id === "btnGoogleLogin"
+                ? "Continuar com Google"
+                : "Cadastrar com Google";
+        }
+    }
+}
+
+if (btnGoogleLogin) {
+    btnGoogleLogin.addEventListener("click", () => {
+        entrarComGoogle(btnGoogleLogin);
+    });
+}
+
+if (btnGoogleCadastro) {
+    btnGoogleCadastro.addEventListener("click", () => {
+        entrarComGoogle(btnGoogleCadastro);
+    });
+}
+
+// =========================================================
+// FINALIZAR AUTENTICAÇÃO APÓS RETORNO DO GOOGLE
+// =========================================================
+
+async function verificarLoginGoogle() {
+    try {
+        const { data, error } =
+            await supabaseFrontend.auth.getSession();
+
+        if (error) throw error;
+
+        const sessao = data.session;
+
+        if (!sessao) return;
+
+        const { data: perfil, error: erroPerfil } =
+            await supabaseFrontend
+                .from("usuarios")
+                .select("id_usuario, nome_usuario, foto_perfil, biografia")
+                .eq("auth_user_id", sessao.user.id)
+                .single();
+
+        if (erroPerfil) throw erroPerfil;
+
+        const usuarioLogado = {
+            ...perfil,
+            email: sessao.user.email,
+            access_token: sessao.access_token,
+            refresh_token: sessao.refresh_token
+        };
+
+        localStorage.setItem(
+            "usuarioLogado",
+            JSON.stringify(usuarioLogado)
+        );
+
+        window.location.replace("home.html");
+
+    } catch (erro) {
+        console.error("Erro ao finalizar login Google:", erro);
+        alert("Não foi possível carregar seu perfil. Tente novamente.");
+    }
+}
+
+verificarLoginGoogle();

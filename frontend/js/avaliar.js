@@ -7,8 +7,7 @@
  // Utiliza o domínio atual do site.
  // Funciona localmente e na Vercel.
 
- const API = "";
- const API_DEEZER = "/deezer";
+const API = "https://entre-notas-api.onrender.com"; const API_DEEZER = "/deezer";
 
  const formAvaliacao = document.getElementById("formAvaliacao");
  const campoMusica = document.getElementById("musicaAvaliacao");

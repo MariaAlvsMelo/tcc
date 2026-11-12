@@ -211,7 +211,7 @@ async function atualizarPerfil(
         throw new Error("Você não pode alterar outro perfil.");
     }
 
-    // Atualiza nome, foto e biografia.
+    // Atualiza os dados do perfil no Supabase.
     const { data, error } = await cliente
         .from("usuarios")
         .update({
@@ -225,22 +225,29 @@ async function atualizarPerfil(
 
     if (error) throw error;
 
-    // Atualiza e-mail e/ou senha no Supabase Auth.
-    const alteracoesAuth = {};
+    // Verifica o e-mail atual da conta.
+    const { data: authData, error: authError } =
+        await cliente.auth.getUser();
 
-    if (email && email.trim() !== "") {
-        alteracoesAuth.email = email.trim();
+    if (authError || !authData.user) {
+        throw new Error("Não foi possível verificar sua conta.");
     }
 
+    const emailAtual = authData.user.email?.trim().toLowerCase();
+    const novoEmail = email?.trim().toLowerCase();
+
+    // Só tenta atualizar o e-mail se ele realmente mudou.
+    if (novoEmail && novoEmail !== emailAtual) {
+        throw new Error(
+            "A alteração de e-mail precisa ser configurada separadamente."
+        );
+    }
+
+    // A alteração de senha será configurada separadamente.
     if (senha && senha.trim() !== "") {
-        alteracoesAuth.password = senha;
-    }
-
-    if (Object.keys(alteracoesAuth).length > 0) {
-        const { error: authError } =
-            await cliente.auth.updateUser(alteracoesAuth);
-
-        if (authError) throw authError;
+        throw new Error(
+            "A alteração de senha precisa ser configurada separadamente."
+        );
     }
 
     return data;

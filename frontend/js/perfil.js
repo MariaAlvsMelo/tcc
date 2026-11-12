@@ -1,6 +1,5 @@
 
-const API = "";
-
+const API = "https://entre-notas-api.onrender.com";
 const $ = id => document.getElementById(id);
 
 const obterUsuario = () => {
@@ -394,14 +393,30 @@ $("formPerfil")?.addEventListener("submit", async event => {
 // SAIR DA CONTA
 // =========================================================
 
-$("btnSairConta")?.addEventListener("click", () => {
+
+$("btnSairConta")?.addEventListener("click", async () => {
     if (!confirm("Deseja realmente sair da sua conta?")) {
         return;
     }
 
-    localStorage.removeItem("usuarioLogado");
+    try {
+        // Encerra a sessão do Supabase
+        const { error } = await supabaseFrontend.auth.signOut();
 
-    window.location.href = "login.html";
+        if (error) {
+            throw error;
+        }
+
+        // Remove os dados locais do usuário
+        localStorage.removeItem("usuarioLogado");
+
+        // Volta para a tela de login
+        window.location.replace("login.html");
+
+    } catch (erro) {
+        console.error("Erro ao sair da conta:", erro);
+        alert("Não foi possível sair da conta. Tente novamente.");
+    }
 });
 
 // =========================================================

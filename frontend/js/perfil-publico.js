@@ -1,6 +1,5 @@
 
-const API = "";
-
+const API = "https://entre-notas-api.onrender.com";
 const mensagem = document.getElementById("mensagemPerfilPublico");
 const cabecalhoPerfil = document.getElementById("cabecalhoPerfilPublico");
 const secaoAvaliacoes = document.getElementById("secaoAvaliacoesPublicas");
@@ -182,6 +181,11 @@ function pintarCurtida(botao, ativo) {
 // VERIFICAR CURTIDA SALVA
 // =========================================================
 
+
+// =========================================================
+// VERIFICAR CURTIDA SALVA
+// =========================================================
+
 async function verificarCurtida(id, botao) {
     const usuario = obterUsuario();
     const token = obterToken();
@@ -192,7 +196,7 @@ async function verificarCurtida(id, botao) {
 
     try {
         const resposta = await fetch(
-            `${API}/usuarios/avaliacoes/${id}/curtida?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
+            `${API}/usuarios/avaliacoes/${id}/curtiu?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
             {
                 cache: "no-store",
                 headers: {
@@ -210,13 +214,16 @@ async function verificarCurtida(id, botao) {
         }
 
         pintarCurtida(botao, Boolean(dados.curtiu));
-        botao.disabled = false;
 
     } catch (erro) {
-        console.error(erro);
+        console.error("Erro ao verificar curtida:", erro);
         botao.title = "Erro ao verificar curtida.";
+
+    } finally {
+        botao.disabled = false;
     }
 }
+
 
 // =========================================================
 // CURTIR / DESCURTIR
