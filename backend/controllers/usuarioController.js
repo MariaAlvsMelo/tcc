@@ -642,6 +642,93 @@ const UsuarioController = {
         }
     },
 
+
+    // =====================================================
+    // ADICIONADO: CADASTRAR RESPOSTA A UMA AVALIAÇÃO
+    // =====================================================
+
+    cadastrarResposta: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { resposta } = req.body;
+            const token = obterToken(req);
+
+            if (!idValido(id)) {
+                return res.status(400).json({
+                    sucesso: false,
+                    mensagem: "ID da avaliação inválido."
+                });
+            }
+
+            if (!resposta || !resposta.trim() || resposta.trim().length > 500) {
+                return res.status(400).json({
+                    sucesso: false,
+                    mensagem: "A resposta deve ter entre 1 e 500 caracteres."
+                });
+            }
+
+            if (!token) {
+                return res.status(401).json({
+                    sucesso: false,
+                    mensagem: "É necessário fazer login para responder."
+                });
+            }
+
+            const resultado = await usuarioModel.cadastrarResposta(
+                id,
+                resposta,
+                token
+            );
+
+            return res.status(201).json({
+                sucesso: true,
+                mensagem: "Resposta publicada com sucesso!",
+                resposta: resultado
+            });
+
+        } catch (erro) {
+            console.error("Erro ao cadastrar resposta:", erro);
+
+            return res.status(500).json({
+                sucesso: false,
+                mensagem: "Erro ao publicar resposta."
+            });
+        }
+    },
+
+    // =====================================================
+    // ADICIONADO: LISTAR RESPOSTAS DE UMA AVALIAÇÃO
+    // =====================================================
+
+    listarRespostas: async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            if (!idValido(id)) {
+                return res.status(400).json({
+                    sucesso: false,
+                    mensagem: "ID da avaliação inválido."
+                });
+            }
+
+            const resultados = await usuarioModel.listarRespostas(id);
+
+            return res.json({
+                sucesso: true,
+                respostas: resultados
+            });
+
+        } catch (erro) {
+            console.error("Erro ao listar respostas:", erro);
+
+            return res.status(500).json({
+                sucesso: false,
+                mensagem: "Erro ao carregar respostas."
+            });
+        }
+    },
+
+
     // =====================================================
     // EXCLUIR AVALIAÇÃO
     // =====================================================

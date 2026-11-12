@@ -63,6 +63,17 @@ router.delete(
     usuarioController.excluirAvaliacao
 );
 
+router.post(
+    "/avaliacoes/:id/respostas",
+    usuarioController.cadastrarResposta
+);
+
+router.get(
+    "/avaliacoes/:id/respostas",
+    usuarioController.listarRespostas
+);
+
+
 // =====================================================
 // CURTIDAS
 // =====================================================

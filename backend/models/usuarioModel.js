@@ -491,6 +491,62 @@ async function listarAvaliacoesUsuario(id_usuario, token) {
     }));
 }
 
+
+// =====================================================
+// ADICIONADO: CADASTRAR RESPOSTA A UMA AVALIAÇÃO
+// =====================================================
+
+async function cadastrarResposta(id_avaliacao, resposta, token) {
+    const idAutenticado = await obterIdUsuario(token);
+
+    const cliente = obterCliente(token);
+
+    const { data, error } = await cliente
+        .from("respostas_comentarios")
+        .insert({
+            id_avaliacao,
+            id_usuario: idAutenticado,
+            resposta: resposta.trim()
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return data;
+}
+
+// =====================================================
+// ADICIONADO: LISTAR RESPOSTAS DE UMA AVALIAÇÃO
+// =====================================================
+
+async function listarRespostas(id_avaliacao) {
+    const { data, error } = await supabase
+        .from("respostas_comentarios")
+        .select(`
+            id_resposta,
+            id_avaliacao,
+            id_usuario,
+            resposta,
+            data_resposta,
+            usuarios (
+                nome_usuario,
+                foto_perfil
+            )
+        `)
+        .eq("id_avaliacao", id_avaliacao)
+        .order("data_resposta", { ascending: true });
+
+    if (error) throw error;
+
+    return (data || []).map(item => ({
+        ...item,
+        nome_usuario: item.usuarios?.nome_usuario || "Usuário",
+        foto_perfil: item.usuarios?.foto_perfil || null
+    }));
+}
+
+
 // =====================================================
 // EXPORTAÇÕES
 // =====================================================
@@ -509,5 +565,8 @@ module.exports = {
     removerCurtida,
     verificarCurtida,
     contarCurtidas,
-    listarAvaliacoesUsuario
+    listarAvaliacoesUsuario,
+        listarAvaliacoesUsuario,
+    cadastrarResposta, 
+    listarRespostas 
 };
