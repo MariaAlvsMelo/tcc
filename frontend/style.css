@@ -2157,3 +2157,241 @@ body {font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Ari
     cursor: wait;
     transform: none;
 }
+
+
+/* =====================================================
+   ADICIONADO: RESPOSTAS ÀS AVALIAÇÕES
+===================================================== */
+
+.area-respostas {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(124, 60, 255, 0.20);
+}
+
+.btn-toggle-respostas {
+    background: transparent;
+    border: none;
+    color: #a987ff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 0;
+}
+
+.btn-toggle-respostas:hover {
+    color: #c5aaff;
+}
+
+.lista-respostas {
+    display: none;
+    margin-top: 10px;
+}
+
+.lista-respostas.visivel {
+    display: block;
+}
+
+.card-resposta {
+    background: #0d0a1b;
+    border: 1px solid rgba(124, 60, 255, 0.18);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.card-resposta strong {
+    color: #b99aff;
+    font-size: 14px;
+}
+
+.card-resposta p {
+    color: #f2efff;
+    font-size: 14px;
+    margin: 7px 0;
+    overflow-wrap: anywhere;
+}
+
+.card-resposta small {
+    color: #77738e;
+    font-size: 11px;
+}
+
+.sem-respostas,
+.carregando-respostas,
+.aviso-login-resposta {
+    color: #9992b5;
+    font-size: 13px;
+    margin: 10px 0;
+}
+
+.aviso-login-resposta a {
+    color: #a987ff;
+}
+
+.form-resposta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.form-resposta textarea {
+    width: 100%;
+    min-height: 65px;
+    resize: vertical;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(124, 60, 255, 0.3);
+    background: #0d0a1b;
+    color: #f2efff;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.form-resposta textarea:focus {
+    outline: none;
+    border-color: #7c3cff;
+}
+
+.form-resposta button {
+    align-self: flex-end;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #7c3cff;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.form-resposta button:hover {
+    background: #5423bd;
+}
+
+.form-resposta button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   ADICIONADO: TELA COMPLETA DE COMENTÁRIOS
+========================================= */
+
+.tela-comentarios {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    overflow-y: auto;
+    background: #080613;
+    padding: 24px 16px;
+    box-sizing: border-box;
+}
+
+.tela-comentarios.aberta {
+    display: block;
+}
+
+.conteudo-tela-comentarios {
+    width: 100%;
+    max-width: 900px;
+    min-height: calc(100vh - 48px);
+    margin: 0 auto;
+    padding: 24px;
+    box-sizing: border-box;
+
+    background: #10152d;
+    border: 1px solid rgba(124, 60, 255, 0.25);
+    border-radius: 14px;
+
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+}
+
+.btn-voltar-comentarios {
+    background: transparent;
+    border: none;
+    color: #b99aff;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 8px 0;
+}
+
+.btn-voltar-comentarios:hover {
+    color: #ffffff;
+}
+
+.conteudo-tela-comentarios h2 {
+    color: #f2efff;
+    margin: 20px 0;
+}
+
+.avaliacao-em-comentarios {
+    background: #0d0a1b;
+    border: 1px solid rgba(124, 60, 255, 0.25);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.avaliacao-em-comentarios .autor-avaliacao {
+    margin-bottom: 15px;
+    color: #f2efff;
+}
+
+.avaliacao-em-comentarios .comentario-avaliacao {
+    color: #d5d0e8;
+    line-height: 1.6;
+    margin-top: 12px;
+    overflow-wrap: anywhere;
+}
+
+.secao-lista-comentarios {
+    margin-top: 28px;
+}
+
+.secao-lista-comentarios h3 {
+    color: #f2efff;
+    margin-bottom: 18px;
+}
+
+.secao-lista-comentarios #lista-comentarios-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-comentario-modal {
+    margin-top: 28px;
+}
+
+.form-comentario-modal label {
+    display: block;
+    color: #f2efff;
+    margin-bottom: 10px;
+}
+
+.form-comentario-modal textarea {
+    width: 100%;
+    min-height: 110px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+body.comentarios-abertos {
+    overflow: hidden;
+}
+
+/* ADICIONADO: adaptação para celulares */
+@media (max-width: 600px) {
+    .tela-comentarios {
+        padding: 0;
+    }
+
+    .conteudo-tela-comentarios {
+        min-height: 100vh;
+        border-radius: 0;
+        border: none;
+        padding: 20px 14px;
+    }
+}

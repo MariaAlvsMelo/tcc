@@ -1,7 +1,12 @@
 
-const API = "https://entre-notas-api.onrender.com";
-const avaliacoesContainer = document.getElementById("home-container");
+const API = (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+)
+    ? "http://localhost:3000"
+    : "https://entre-notas-api.onrender.com";const avaliacoesContainer = document.getElementById("home-container");
 const btnLoginCabecalho = document.getElementById("btnLoginCabecalho");
+const avaliacoesPorId = new Map();
 
 // =========================================================
 // USUÁRIO LOGADO
@@ -438,10 +443,268 @@ function montarCard(avaliacao, usuario) {
                         ${gerarPreview(avaliacao)}
                     </div>
 
-                </div>
+                                </div>
             </div>
+
+                    <!-- ADICIONADO: ACESSO AOS COMENTÁRIOS -->
+            <section class="area-respostas" data-id-avaliacao="${id}">
+                <button
+                    type="button"
+                    class="btn-toggle-respostas"
+                    data-id="${id}"
+                >
+                    💬 Comentários
+                </button>
+            </section>
         </article>
     `;
+}
+
+
+// =========================================================
+// ADICIONADO: CARREGAR RESPOSTAS
+// =========================================================
+
+
+async function carregarRespostas(id) {
+    const lista = document.getElementById("lista-comentarios-modal");
+
+    if (!lista) return;
+
+    lista.innerHTML = `
+        <p class="carregando-respostas">
+            Carregando comentários...
+        </p>
+    `;
+
+    try {
+        const resposta = await fetch(
+            `${API}/usuarios/avaliacoes/${id}/respostas`
+        );
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.sucesso) {
+            throw new Error(dados.mensagem || "Erro ao carregar comentários.");
+        }
+
+        const comentarios = dados.respostas || [];
+
+        if (!comentarios.length) {
+            lista.innerHTML = `
+                <p class="sem-respostas">
+                    Ainda não há comentários. Seja o primeiro a comentar!
+                </p>
+            `;
+            return;
+        }
+
+        lista.innerHTML = comentarios.map(item => `
+            <article class="card-resposta">
+                <strong>${escaparHTML(item.nome_usuario)}</strong>
+                <p>${escaparHTML(item.resposta)}</p>
+                <small>${escaparHTML(formatoData(item.data_resposta))}</small>
+            </article>
+        `).join("");
+
+    } catch (erro) {
+        console.error("Erro ao carregar comentários:", erro);
+
+        lista.innerHTML = `
+            <p class="sem-respostas">
+                Não foi possível carregar os comentários.
+            </p>
+        `;
+    }
+}
+
+
+function abrirTelaComentarios(id) {
+    const avaliacao = avaliacoesPorId.get(Number(id));
+
+    if (!avaliacao) {
+        alert("Não foi possível encontrar esta avaliação.");
+        return;
+    }
+
+    let tela = document.getElementById("tela-comentarios");
+
+    if (!tela) {
+        tela = document.createElement("div");
+        tela.id = "tela-comentarios";
+        tela.className = "tela-comentarios";
+
+        document.body.appendChild(tela);
+    }
+
+    const capa = urlImagemSegura(avaliacao.capa_album);
+
+    tela.innerHTML = `
+        <div class="conteudo-tela-comentarios">
+
+            <button type="button" class="btn-voltar-comentarios">
+                ← Voltar ao Feed
+            </button>
+
+            <h2>Comentários</h2>
+
+            <article class="avaliacao-em-comentarios">
+                <div class="autor-avaliacao">
+                    <strong>${escaparHTML(avaliacao.nome_usuario || "Usuário")}</strong>
+                </div>
+
+                <div class="conteudo-card-musica">
+                    ${capa ? `
+                        <img
+                            class="capa-musica-feed"
+                            src="${escaparHTML(capa)}"
+                            alt="Capa do álbum"
+                        >
+                    ` : ""}
+
+                    <div class="informacoes-musica">
+                        <h3>${escaparHTML(avaliacao.musica)}</h3>
+
+                        <p>
+                            <strong>Artista:</strong>
+                            ${escaparHTML(avaliacao.artista)}
+                        </p>
+
+                        <p class="comentario-avaliacao">
+                            ${escaparHTML(avaliacao.comentario)}
+                        </p>
+
+                        ${gerarEstrelas(avaliacao.nota)}
+
+                        <p class="data-postagem">
+                            ${escaparHTML(formatoData(avaliacao.data_avaliacao))}
+                        </p>
+                    </div>
+                </div>
+            </article>
+
+            <section class="secao-lista-comentarios">
+                <h3>Comentários publicados</h3>
+
+                <div id="lista-comentarios-modal">
+                    <p>Carregando comentários...</p>
+                </div>
+            </section>
+
+            ${obterToken() ? `
+                <form class="form-resposta form-comentario-modal" data-id="${id}">
+                    <label for="campo-comentario-modal">
+                        Escreva seu comentário
+                    </label>
+
+                    <textarea
+                        id="campo-comentario-modal"
+                        name="resposta"
+                        maxlength="500"
+                        placeholder="Compartilhe sua opinião..."
+                        required
+                    ></textarea>
+
+                    <button type="submit">Publicar comentário</button>
+                </form>
+            ` : `
+                <p class="aviso-login-resposta">
+                    Faça login para comentar.
+                    <a href="login.html">Entrar</a>
+                </p>
+            `}
+        </div>
+    `;
+
+    tela.classList.add("aberta");
+    document.body.classList.add("comentarios-abertos");
+
+// ADICIONADO: botão para voltar ao Feed
+const botaoVoltar = tela.querySelector(".btn-voltar-comentarios");
+
+botaoVoltar.addEventListener("click", fecharTelaComentarios);
+
+// ADICIONADO: envio do comentário pelo formulário da tela
+const formulario = tela.querySelector(".form-comentario-modal");
+
+if (formulario) {
+    formulario.addEventListener("submit", event => {
+        event.preventDefault();
+        publicarResposta(id, formulario);
+    });
+}
+
+// Carregar comentários publicados
+carregarRespostas(id);}
+
+// ADICIONADO: fechar a tela de comentários
+function fecharTelaComentarios() {
+    const tela = document.getElementById("tela-comentarios");
+
+    if (tela) {
+        tela.classList.remove("aberta");
+    }
+
+    document.body.classList.remove("comentarios-abertos");
+}
+
+
+// =========================================================
+// ADICIONADO: PUBLICAR RESPOSTA
+// =========================================================
+
+async function publicarResposta(id, formulario) {
+    const campo = formulario.querySelector("textarea");
+    const botao = formulario.querySelector("button");
+    const resposta = campo.value.trim();
+    const token = obterToken();
+
+    if (!token) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    if (!resposta || resposta.length > 500) {
+        alert("Digite uma resposta de até 500 caracteres.");
+        return;
+    }
+
+    botao.disabled = true;
+    botao.textContent = "Enviando...";
+
+    try {
+        const requisicao = await fetch(
+            `${API}/usuarios/avaliacoes/${id}/respostas`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ resposta })
+            }
+        );
+
+        const dados = await requisicao.json();
+
+        if (!requisicao.ok || !dados.sucesso) {
+            throw new Error(
+                dados.mensagem || "Não foi possível publicar."
+            );
+        }
+
+        formulario.reset();
+
+        await carregarRespostas(id);
+
+    } catch (erro) {
+        console.error("Erro ao publicar resposta:", erro);
+        alert(erro.message || "Erro ao publicar resposta.");
+
+    } finally {
+        botao.disabled = false;
+        botao.textContent = "Publicar comentário";
+    }
 }
 
 // =========================================================
@@ -466,6 +729,13 @@ async function carregarAvaliacoes() {
         }
 
         const avaliacoes = dados.avaliacoes || [];
+
+        // ADICIONADO: guardar avaliações para abrir seus comentários
+    avaliacoesPorId.clear();
+
+    avaliacoes.forEach(avaliacao => {
+        avaliacoesPorId.set(Number(avaliacao.id), avaliacao);
+    });
 
         if (!avaliacoes.length) {
             avaliacoesContainer.innerHTML = `
@@ -509,6 +779,7 @@ async function carregarAvaliacoes() {
     }
 }
 
+
 // =========================================================
 // INICIAR EVENTOS
 // =========================================================
@@ -519,7 +790,21 @@ if (btnLoginCabecalho) {
 }
 
 if (avaliacoesContainer) {
+
+    // ADICIONADO: eventos de clique do Feed
     avaliacoesContainer.addEventListener("click", event => {
+
+        const botaoRespostas = event.target.closest(
+            ".btn-toggle-respostas"
+        );
+
+        if (botaoRespostas) {
+            const id = Number(botaoRespostas.dataset.id);
+
+            abrirTelaComentarios(id);
+            return;
+        }
+
         const botao = event.target.closest(".btn-curtir");
 
         if (botao) {
@@ -530,6 +815,7 @@ if (avaliacoesContainer) {
         }
     });
 
+    // ADICIONADO: detectar erros nas prévias musicais
     avaliacoesContainer.addEventListener(
         "error",
         event => {
@@ -547,6 +833,7 @@ if (avaliacoesContainer) {
     );
 }
 
+// ADICIONADO: carregar avaliações do Feed
 carregarAvaliacoes();
 
 // =========================================================
