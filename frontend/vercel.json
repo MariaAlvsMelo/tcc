@@ -1,14 +1,16 @@
 
 {
   "version": 2,
-  "rewrites": [
+  "redirects": [
     {
       "source": "/",
-      "destination": "/html/home.html"
+      "destination": "/html/home.html",
+      "permanent": false
     },
     {
       "source": "/home.html",
-      "destination": "/html/home.html"
+      "destination": "/html/home.html",
+      "permanent": false
     }
   ]
 }
