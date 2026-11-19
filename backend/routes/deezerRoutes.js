@@ -19,9 +19,26 @@ router.get("/buscar", async (req, res) => {
             });
         }
 
-        const resposta = await fetch(
-            `${API_DEEZER}/search?q=${encodeURIComponent(busca)}`
+            const resposta = await fetch(
+            `${API_DEEZER}/search?q=${encodeURIComponent(busca)}`,
+            {
+                headers: {
+                    "User-Agent": "EntreNotas/1.0",
+                    "Accept": "application/json"
+                },
+                signal: AbortSignal.timeout(15000)
+            }
         );
+
+        console.log("Status Deezer:", resposta.status);
+
+        if (!resposta.ok) {
+            const detalhe = await resposta.text();
+
+            console.error("Resposta da Deezer:", detalhe);
+
+            throw new Error(`Erro HTTP: ${resposta.status}`);
+        }
 
         if (!resposta.ok) {
             throw new Error(
