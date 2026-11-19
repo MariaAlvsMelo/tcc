@@ -2170,18 +2170,26 @@ body {font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Ari
 }
 
 .btn-toggle-respostas {
-    background: transparent;
-    border: none;
-    color: #a987ff;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 8px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: #a987ff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.btn-toggle-respostas img {
+  display: block;
 }
 
 .btn-toggle-respostas:hover {
-    color: #c5aaff;
+  color: #c5aaff;
 }
+
 
 .lista-respostas {
     display: none;
