@@ -453,7 +453,8 @@ function montarCard(avaliacao, usuario) {
                     class="btn-toggle-respostas"
                     data-id="${id}"
                 >
-                    💬 Comentários
+                     <img src="../img/comentario.png" alt="Feed" width="20" height="20">
+                     Comentários
                 </button>
             </section>
         </article>
