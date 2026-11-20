@@ -78,7 +78,7 @@ function gerarPreview(avaliacao) {
 
     const src =
         /^\d{1,20}$/.test(id) && Number(id) > 0
-            ? `${API}/deezer/preview/${id}`
+            ? `/api/deezer-preview?id=${id}`
             : /^https:\/\//i.test(String(avaliacao.preview || ""))
                 ? String(avaliacao.preview)
                 : "";

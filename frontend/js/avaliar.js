@@ -132,8 +132,7 @@ const API = "https://entre-notas-api.onrender.com"; const API_DEEZER = "/deezer"
      // MODIFICADO:
      // Obtém a prévia atualizada pela rota do backend.
 
-     const url = `${API}${API_DEEZER}/preview/${encodeURIComponent(musica.id)}`;
-
+const url = `/api/deezer-preview?id=${encodeURIComponent(musica.id)}`;
      previewMusica.src = url;
      previewMusica.load();
 
@@ -247,15 +246,22 @@ const API = "https://entre-notas-api.onrender.com"; const API_DEEZER = "/deezer"
          : listaSugestoesMusica;
 
      try {
-         const resposta = await fetch(
-             `${API}${API_DEEZER}/buscar?q=${encodeURIComponent(busca)}`
-         );
+         // Busca pela função da Vercel (mesmo domínio do site).
+// Se falhar, tenta o backend do Render como reserva.
+        let resposta = await fetch(
+            `/api/deezer?q=${encodeURIComponent(busca)}`
+        ).catch(() => null);
 
-         if (!resposta.ok) {
-             throw new Error("Erro ao buscar músicas.");
-         }
+        if (!resposta || !resposta.ok) {
+            resposta = await fetch(
+                `${API}${API_DEEZER}/buscar?q=${encodeURIComponent(busca)}`
+            );
+        }
 
-         const dados = await resposta.json();
+        if (!resposta.ok) {
+            throw new Error("Erro ao buscar músicas.");
+        }
+                const dados = await resposta.json();
 
          // Evita mostrar resultados de uma pesquisa antiga.
          if (buscaAtual !== numeroBusca) return;
