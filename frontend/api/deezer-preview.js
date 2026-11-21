@@ -1,5 +1,8 @@
-// GET /api/deezer-preview?id=123  ->  redireciona para a prévia (MP3) atualizada.
+// GET /api/deezer-preview?id=123  ->  entrega o MP3 da prévia (30s).
+// A função baixa o áudio e repassa ao player; se não conseguir, redireciona.
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const UA = "Mozilla/5.0 (compatible; EntreNotas/1.0)";
 
 async function consultarDeezer(caminho, tentativas = 3) {
     let ultimoErro;
@@ -7,10 +10,7 @@ async function consultarDeezer(caminho, tentativas = 3) {
     for (let i = 0; i < tentativas; i++) {
         try {
             const resposta = await fetch(`https://api.deezer.com${caminho}`, {
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (compatible; EntreNotas/1.0)",
-                    "Accept": "application/json"
-                },
+                headers: { "User-Agent": UA, "Accept": "application/json" },
                 signal: AbortSignal.timeout(8000)
             });
 
@@ -58,6 +58,46 @@ module.exports = async function handler(req, res) {
             throw new Error("URL de áudio inválida.");
         }
 
+        // 1) Tenta baixar o áudio pelo servidor e entregar ao player.
+        try {
+            const headers = { "User-Agent": UA, "Accept": "*/*" };
+
+            // Permite avançar/voltar no player.
+            if (req.headers.range) {
+                headers.Range = req.headers.range;
+            }
+
+            const audio = await fetch(url.toString(), {
+                headers,
+                signal: AbortSignal.timeout(10000)
+            });
+
+            if (audio.ok || audio.status === 206) {
+                const buffer = Buffer.from(await audio.arrayBuffer());
+
+                res.statusCode = audio.status;
+                res.setHeader(
+                    "Content-Type",
+                    audio.headers.get("content-type") || "audio/mpeg"
+                );
+                res.setHeader("Accept-Ranges", "bytes");
+                res.setHeader("Content-Length", buffer.length);
+                res.setHeader("Cache-Control", "private, max-age=600");
+
+                const faixa = audio.headers.get("content-range");
+                if (faixa) {
+                    res.setHeader("Content-Range", faixa);
+                }
+
+                return res.end(buffer);
+            }
+
+            console.error("Áudio recusado pela Deezer:", audio.status);
+        } catch (erroAudio) {
+            console.error("Falha ao baixar o áudio:", erroAudio.message);
+        }
+
+        // 2) Reserva: deixa o navegador tentar direto na Deezer.
         res.setHeader("Cache-Control", "no-store, max-age=0");
         return res.redirect(302, url.toString());
     } catch (erro) {
