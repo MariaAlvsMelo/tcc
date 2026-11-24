@@ -17,11 +17,22 @@ function obterToken(req) {
 }
 
 // ADICIONADO: Formata a data das avaliações.
+// Converte o valor do banco em Date. Quando vier sem fuso horário,
+// considera UTC (padrão do Supabase).
+function paraDataUTC(valor) {
+    const texto = String(valor);
+    const semFuso = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(texto);
+
+    return new Date(semFuso ? texto.replace(" ", "T") + "Z" : texto);
+}
+
+// ADICIONADO: Formata a data das avaliações (horário de Brasília).
 function formatarAvaliacoes(avaliacoes) {
     return (avaliacoes || []).map(item => ({
         ...item,
         data_avaliacao: item.data_avaliacao
-            ? new Date(item.data_avaliacao).toLocaleString("pt-BR", {
+            ? paraDataUTC(item.data_avaliacao).toLocaleString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
                 day: "2-digit",
                 month: "2-digit",
                 year: "numeric",

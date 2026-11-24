@@ -102,6 +102,14 @@ function gerarPreview(avaliacao) {
         : "";
 }
 
+// Converte o valor do banco em Date. Sem fuso horário, considera UTC.
+function paraDataUTC(valor) {
+    const texto = String(valor);
+    const semFuso = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(texto);
+
+    return new Date(semFuso ? texto.replace(" ", "T") + "Z" : texto);
+}
+
 function formatarData(data) {
     if (!data) return "";
 
@@ -109,11 +117,11 @@ function formatarData(data) {
         return String(data);
     }
 
-    const d = new Date(data);
+    const d = paraDataUTC(data);
 
     return Number.isNaN(d.getTime())
         ? String(data)
-        : d.toLocaleString("pt-BR");
+        : d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
 
 // =========================================================

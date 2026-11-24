@@ -71,6 +71,14 @@ function gerarEstrelas(nota) {
 // DATA
 // =========================================================
 
+// Converte o valor do banco em Date. Sem fuso horário, considera UTC.
+function paraDataUTC(valor) {
+    const texto = String(valor);
+    const semFuso = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(texto);
+
+    return new Date(semFuso ? texto.replace(" ", "T") + "Z" : texto);
+}
+
 function formatarData(valor) {
     if (!valor) return "";
 
@@ -78,11 +86,11 @@ function formatarData(valor) {
         return String(valor);
     }
 
-    const data = new Date(valor);
+    const data = paraDataUTC(valor);
 
     return Number.isNaN(data.getTime())
         ? String(valor)
-        : data.toLocaleString("pt-BR");
+        : data.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
 
 // =========================================================
