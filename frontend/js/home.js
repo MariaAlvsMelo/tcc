@@ -244,6 +244,56 @@ async function verificarCurtida(id, botao) {
 // =========================================================
 // CURTIR E DESCURTIR
 // =========================================================
+async function carregarCurtidasDoUsuario(botoes) {
+    const usuario = obterUsuarioLogado();
+    const token = obterToken();
+
+    if (!usuario || !token || !botoes.length) return;
+
+    botoes.forEach(botao => {
+        botao.disabled = true;
+    });
+
+    try {
+        const resposta = await fetch(
+            `${API}/usuarios/avaliacoes/curtidas/minhas?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
+            {
+                cache: "no-store",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.sucesso) {
+            throw new Error(
+                dados.mensagem || "Erro ao consultar curtidas"
+            );
+        }
+
+        const curtidas = new Set(
+            (dados.curtidas || []).map(Number)
+        );
+
+        botoes.forEach(botao => {
+            atualizarCurtida(
+                botao,
+                curtidas.has(Number(botao.dataset.id))
+            );
+            botao.disabled = false;
+        });
+
+    } catch (erro) {
+        console.error("Falha ao consultar curtidas:", erro);
+
+        botoes.forEach(botao => {
+            botao.title =
+                "Não foi possível consultar suas curtidas. Atualize a página.";
+        });
+    }
+}
 
 async function curtirAvaliacao(id, botao) {
     const usuario = obterUsuarioLogado();
@@ -766,14 +816,7 @@ async function carregarAvaliacoes() {
                 avaliacoesContainer.querySelectorAll(".btn-curtir")
             );
 
-            await Promise.all(
-                botoes.map(botao =>
-                    verificarCurtida(
-                        Number(botao.dataset.id),
-                        botao
-                    )
-                )
-            );
+             await carregarCurtidasDoUsuario(botoes);
         }
 
     } catch (erro) {

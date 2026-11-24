@@ -468,6 +468,53 @@ function pintarCurtida(botao, ativo) {
         ativo ? "♥" : "♡";
 }
 
+async function carregarCurtidasDoUsuario(botoes) {
+    const usuario = obterUsuario();
+
+    if (!usuario || !obterToken() || !botoes.length) return;
+
+    botoes.forEach(botao => {
+        botao.disabled = true;
+    });
+
+    try {
+        const resposta = await fetch(
+            `${API}/usuarios/avaliacoes/curtidas/minhas?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
+            {
+                cache: "no-store",
+                headers: headersAutenticacao()
+            }
+        );
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.sucesso) {
+            throw new Error(
+                dados.mensagem || "Erro ao verificar curtidas"
+            );
+        }
+
+        const curtidas = new Set(
+            (dados.curtidas || []).map(Number)
+        );
+
+        botoes.forEach(botao => {
+            pintarCurtida(
+                botao,
+                curtidas.has(Number(botao.dataset.id))
+            );
+            botao.disabled = false;
+        });
+
+    } catch (erro) {
+        console.error(erro);
+
+        botoes.forEach(botao => {
+            botao.title = "Não foi possível verificar as curtidas.";
+        });
+    }
+}
+
 async function verificarCurtida(id, botao) {
     const usuario = obterUsuario();
 
@@ -698,34 +745,7 @@ async function carregarMinhasAvaliacoes() {
         }
 
         // Recuperar contagens atualizadas do Feed.
-        try {
-            const respostaFeed = await fetch(
-                `${API}/usuarios/avaliacoes`,
-                { cache: "no-store" }
-            );
-
-            const dadosFeed = await respostaFeed.json();
-
-            if (respostaFeed.ok && dadosFeed.sucesso) {
-                const contagens = new Map(
-                    (dadosFeed.avaliacoes || []).map(a => [
-                        Number(a.id),
-                        Number(a.total_curtidas) || 0
-                    ])
-                );
-
-                minhas.forEach(a => {
-                    if (contagens.has(Number(a.id))) {
-                        a.total_curtidas = contagens.get(
-                            Number(a.id)
-                        );
-                    }
-                });
-            }
-
-        } catch (erro) {
-            console.warn("Contagens indisponíveis:", erro);
-        }
+                      await carregarCurtidasDoUsuario(botoes);
 
         container.innerHTML = minhas
             .map(montarMinhaAvaliacao)
@@ -735,14 +755,7 @@ async function carregarMinhasAvaliacoes() {
             container.querySelectorAll(".btn-curtir")
         );
 
-        await Promise.all(
-            botoes.map(botao =>
-                verificarCurtida(
-                    Number(botao.dataset.id),
-                    botao
-                )
-            )
-        );
+        await carregarCurtidasDoUsuario(botoes);
 
     } catch (erro) {
         console.error(

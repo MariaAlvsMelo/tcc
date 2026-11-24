@@ -285,7 +285,40 @@ const UsuarioController = {
     // =====================================================
     // CADASTRAR USUÁRIO
     // =====================================================
+        // =====================================================
+    // LISTAR TODAS AS CURTIDAS DO USUÁRIO (1 requisição só)
+    // =====================================================
 
+    listarCurtidasUsuario: async (req, res) => {
+        try {
+            const { id_usuario } = req.query;
+
+            if (!idValido(id_usuario)) {
+                return res.status(400).json({
+                    sucesso: false,
+                    mensagem: "Usuário não informado."
+                });
+            }
+
+            const curtidas = await usuarioModel.listarIdsCurtidos(
+                id_usuario
+            );
+
+            return res.json({
+                sucesso: true,
+                curtidas
+            });
+
+        } catch (erro) {
+            console.error("Erro ao listar curtidas:", erro);
+
+            return res.status(500).json({
+                sucesso: false,
+                mensagem: "Erro ao listar curtidas."
+            });
+        }
+    },
+    
     cadastrar: async (req, res) => {
         try {
             const { nome, email, senha } = req.body;

@@ -81,7 +81,8 @@ async function listarAvaliacoesPublicas(id_usuario) {
             curtidas(count)
         `)
         .eq("id_usuario", id_usuario)
-        .order("data_avaliacao", { ascending: false });
+        .order("data_avaliacao", { ascending: false })
+        .limit(50);
 
     if (error) throw error;
 
@@ -323,7 +324,8 @@ async function listarAvaliacoes() {
             ),
             curtidas(count)
         `)
-        .order("data_avaliacao", { ascending: false });
+        .order("data_avaliacao", { ascending: false })
+        .limit(50);
 
     if (error) throw error;
 
@@ -432,6 +434,20 @@ async function verificarCurtida(id_usuario, id_avaliacao) {
 // =====================================================
 // CONTAR CURTIDAS
 // =====================================================
+// =====================================================
+// LISTAR IDS DAS AVALIAÇÕES CURTIDAS PELO USUÁRIO (1 consulta só)
+// =====================================================
+
+async function listarIdsCurtidos(id_usuario) {
+    const { data, error } = await supabase
+        .from("curtidas")
+        .select("id_avaliacao")
+        .eq("id_usuario", id_usuario);
+
+    if (error) throw error;
+
+    return (data || []).map(item => item.id_avaliacao);
+}
 
 async function contarCurtidas(id_avaliacao) {
     const { count, error } = await supabase
@@ -480,7 +496,8 @@ async function listarAvaliacoesUsuario(id_usuario, token) {
             curtidas(count)
         `)
         .eq("id_usuario", idAutenticado)
-        .order("data_avaliacao", { ascending: false });
+        .order("data_avaliacao", { ascending: false })
+        .limit(50);
 
     if (error) throw error;
 
@@ -535,7 +552,8 @@ async function listarRespostas(id_avaliacao) {
             )
         `)
         .eq("id_avaliacao", id_avaliacao)
-        .order("data_resposta", { ascending: true });
+        .order("data_resposta", { ascending: true })
+        .limit(50);
 
     if (error) throw error;
 
