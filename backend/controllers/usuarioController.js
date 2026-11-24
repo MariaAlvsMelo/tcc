@@ -1,11 +1,10 @@
-
 const usuarioModel = require("../models/usuarioModel");
 
 // =====================================================
 // FUNÇÕES AUXILIARES
 // =====================================================
 
-// ADICIONADO: Obtém o token enviado pelo frontend.
+// Obtém o token enviado pelo frontend.
 function obterToken(req) {
     const autorizacao = req.headers.authorization;
 
@@ -16,7 +15,6 @@ function obterToken(req) {
     return autorizacao.substring(7);
 }
 
-// ADICIONADO: Formata a data das avaliações.
 // Converte o valor do banco em Date. Quando vier sem fuso horário,
 // considera UTC (padrão do Supabase).
 function paraDataUTC(valor) {
@@ -26,7 +24,7 @@ function paraDataUTC(valor) {
     return new Date(semFuso ? texto.replace(" ", "T") + "Z" : texto);
 }
 
-// ADICIONADO: Formata a data das avaliações (horário de Brasília).
+// Formata a data das avaliações (horário de Brasília).
 function formatarAvaliacoes(avaliacoes) {
     return (avaliacoes || []).map(item => ({
         ...item,
@@ -43,7 +41,7 @@ function formatarAvaliacoes(avaliacoes) {
     }));
 }
 
-// ADICIONADO: Valida se o ID é um número inteiro positivo.
+// Valida se o ID é um número inteiro positivo.
 function idValido(id) {
     const numero = Number(id);
 
@@ -181,7 +179,7 @@ const UsuarioController = {
         } catch (erro) {
             console.error("Erro ao curtir avaliação:", erro);
 
-            // MODIFICADO: Código de duplicidade do PostgreSQL/Supabase.
+            // Código de duplicidade do PostgreSQL/Supabase.
             if (erro.code === "23505") {
                 return res.status(400).json({
                     sucesso: false,
@@ -262,7 +260,7 @@ const UsuarioController = {
                 id
             );
 
-            // MODIFICADO: Compatível com retorno booleano ou lista.
+            // Compatível com retorno booleano ou lista.
             const curtiu = Array.isArray(resultado)
                 ? resultado.length > 0
                 : Boolean(resultado);
@@ -283,9 +281,54 @@ const UsuarioController = {
     },
 
     // =====================================================
-    // CADASTRAR USUÁRIO
+    // FOTO DE PERFIL COMO IMAGEM (o navegador guarda em cache)
     // =====================================================
-        // =====================================================
+
+    fotoUsuario: async (req, res) => {
+        try {
+            const id_usuario = Number(req.params.id_usuario);
+
+            if (!idValido(id_usuario)) {
+                return res.status(400).end();
+            }
+
+            const foto = await usuarioModel.buscarFotoUsuario(
+                id_usuario
+            );
+
+            if (!foto) {
+                return res.status(404).end();
+            }
+
+            const dataUrl = /^data:(image\/(?:png|jpe?g|webp|gif));base64,/i
+                .exec(foto);
+
+            if (dataUrl) {
+                const imagem = Buffer.from(
+                    foto.slice(dataUrl[0].length),
+                    "base64"
+                );
+
+                res.set("Content-Type", dataUrl[1].toLowerCase());
+                res.set("Cache-Control", "public, max-age=600");
+
+                return res.send(imagem);
+            }
+
+            if (/^https:\/\//i.test(foto)) {
+                return res.redirect(302, foto);
+            }
+
+            return res.status(404).end();
+
+        } catch (erro) {
+            console.error("Erro ao buscar foto:", erro);
+
+            return res.status(500).end();
+        }
+    },
+
+    // =====================================================
     // LISTAR TODAS AS CURTIDAS DO USUÁRIO (1 requisição só)
     // =====================================================
 
@@ -318,7 +361,11 @@ const UsuarioController = {
             });
         }
     },
-    
+
+    // =====================================================
+    // CADASTRAR USUÁRIO
+    // =====================================================
+
     cadastrar: async (req, res) => {
         try {
             const { nome, email, senha } = req.body;
@@ -343,7 +390,7 @@ const UsuarioController = {
                 senha
             );
 
-            // MODIFICADO: O Supabase pode exigir confirmação por e-mail.
+            // O Supabase pode exigir confirmação por e-mail.
             const sessao = resultado?.session || null;
 
             return res.status(201).json({
@@ -686,9 +733,8 @@ const UsuarioController = {
         }
     },
 
-
     // =====================================================
-    // ADICIONADO: CADASTRAR RESPOSTA A UMA AVALIAÇÃO
+    // CADASTRAR RESPOSTA A UMA AVALIAÇÃO
     // =====================================================
 
     cadastrarResposta: async (req, res) => {
@@ -741,7 +787,7 @@ const UsuarioController = {
     },
 
     // =====================================================
-    // ADICIONADO: LISTAR RESPOSTAS DE UMA AVALIAÇÃO
+    // LISTAR RESPOSTAS DE UMA AVALIAÇÃO
     // =====================================================
 
     listarRespostas: async (req, res) => {
@@ -771,7 +817,6 @@ const UsuarioController = {
             });
         }
     },
-
 
     // =====================================================
     // EXCLUIR AVALIAÇÃO

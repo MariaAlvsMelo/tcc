@@ -1,4 +1,3 @@
-
 const express = require("express");
 
 const router = express.Router();
@@ -35,6 +34,12 @@ router.get(
     usuarioController.buscarPerfilPublico
 );
 
+// Foto de perfil como imagem (com cache no navegador).
+router.get(
+    "/foto/:id_usuario",
+    usuarioController.fotoUsuario
+);
+
 // =====================================================
 // AVALIAÇÕES
 // =====================================================
@@ -49,6 +54,12 @@ router.post(
 router.get(
     "/avaliacoes",
     usuarioController.listarAvaliacoes
+);
+
+// Listar todas as curtidas do usuário (usada no Feed e nos Perfis).
+router.get(
+    "/avaliacoes/curtidas/minhas",
+    usuarioController.listarCurtidasUsuario
 );
 
 // Listar avaliações de um usuário.
@@ -73,15 +84,9 @@ router.get(
     usuarioController.listarRespostas
 );
 
-
 // =====================================================
 // CURTIDAS
 // =====================================================
-// Listar todas as curtidas do usuário (usada no Feed e nos Perfis).
-router.get(
-    "/avaliacoes/curtidas/minhas",
-    usuarioController.listarCurtidasUsuario
-);
 
 // Curtir avaliação.
 router.post(

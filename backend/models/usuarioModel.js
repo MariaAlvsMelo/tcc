@@ -1,4 +1,3 @@
-
 const { supabase, criarClienteAutenticado } = require("../supabase");
 
 // =====================================================
@@ -116,6 +115,7 @@ async function cadastrar(nome, email, senha) {
 
     return data;
 }
+
 // =====================================================
 // LOGIN - SUPABASE AUTH
 // =====================================================
@@ -299,7 +299,7 @@ async function avaliar(
 }
 
 // =====================================================
-// LISTAR TODAS AS AVALIAÇÕES
+// LISTAR TODAS AS AVALIAÇÕES (FEED - SEM A FOTO, QUE É PESADA)
 // =====================================================
 
 async function listarAvaliacoes() {
@@ -318,8 +318,7 @@ async function listarAvaliacoes() {
             data_avaliacao,
             id_usuario,
             usuarios (
-                nome_usuario,
-                foto_perfil
+                nome_usuario
             ),
             curtidas(count)
         `)
@@ -331,9 +330,24 @@ async function listarAvaliacoes() {
     return (data || []).map(avaliacao => ({
         ...avaliacao,
         nome_usuario: avaliacao.usuarios?.nome_usuario || "Usuário",
-        foto_perfil: avaliacao.usuarios?.foto_perfil || null,
         total_curtidas: avaliacao.curtidas?.[0]?.count || 0
     }));
+}
+
+// =====================================================
+// BUSCAR SÓ A FOTO DE UM USUÁRIO
+// =====================================================
+
+async function buscarFotoUsuario(id_usuario) {
+    const { data, error } = await supabase
+        .from("usuarios")
+        .select("foto_perfil")
+        .eq("id_usuario", id_usuario)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    return data?.foto_perfil || null;
 }
 
 // =====================================================
@@ -431,9 +445,6 @@ async function verificarCurtida(id_usuario, id_avaliacao) {
 }
 
 // =====================================================
-// CONTAR CURTIDAS
-// =====================================================
-// =====================================================
 // LISTAR IDS DAS AVALIAÇÕES CURTIDAS PELO USUÁRIO (1 consulta só)
 // =====================================================
 
@@ -447,6 +458,10 @@ async function listarIdsCurtidos(id_usuario) {
 
     return (data || []).map(item => item.id_avaliacao);
 }
+
+// =====================================================
+// CONTAR CURTIDAS
+// =====================================================
 
 async function contarCurtidas(id_avaliacao) {
     const { count, error } = await supabase
@@ -506,9 +521,8 @@ async function listarAvaliacoesUsuario(id_usuario, token) {
     }));
 }
 
-
 // =====================================================
-// ADICIONADO: CADASTRAR RESPOSTA A UMA AVALIAÇÃO
+// CADASTRAR RESPOSTA A UMA AVALIAÇÃO
 // =====================================================
 
 async function cadastrarResposta(id_avaliacao, resposta, token) {
@@ -532,7 +546,7 @@ async function cadastrarResposta(id_avaliacao, resposta, token) {
 }
 
 // =====================================================
-// ADICIONADO: LISTAR RESPOSTAS DE UMA AVALIAÇÃO
+// LISTAR RESPOSTAS DE UMA AVALIAÇÃO (SEM A FOTO, QUE É PESADA)
 // =====================================================
 
 async function listarRespostas(id_avaliacao) {
@@ -545,21 +559,19 @@ async function listarRespostas(id_avaliacao) {
             resposta,
             data_resposta,
             usuarios (
-                nome_usuario,
-                foto_perfil
+                nome_usuario
             )
         `)
         .eq("id_avaliacao", id_avaliacao)
         .order("data_resposta", { ascending: true });
+
     if (error) throw error;
 
     return (data || []).map(item => ({
         ...item,
-        nome_usuario: item.usuarios?.nome_usuario || "Usuário",
-        foto_perfil: item.usuarios?.foto_perfil || null
+        nome_usuario: item.usuarios?.nome_usuario || "Usuário"
     }));
 }
-
 
 // =====================================================
 // EXPORTAÇÕES
@@ -579,6 +591,7 @@ module.exports = {
     removerCurtida,
     verificarCurtida,
     listarIdsCurtidos,
+    buscarFotoUsuario,
     contarCurtidas,
     listarAvaliacoesUsuario,
     cadastrarResposta,
