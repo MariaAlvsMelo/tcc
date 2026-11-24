@@ -200,6 +200,13 @@ async function carregarPerfil() {
 
     if (!usuario?.id_usuario || !obterToken()) return;
 
+        // Mostra na hora os dados já salvos neste navegador.
+    try {
+        preencherPerfil(usuario);
+    } catch {
+        // Faltou algum dado salvo: aguarda o servidor.
+    }
+
     try {
         const resposta = await fetch(
             `${API}/usuarios/perfil/${usuario.id_usuario}`,
@@ -701,12 +708,70 @@ function montarMinhaAvaliacao(avaliacao) {
 // =========================================================
 // CARREGAR MINHAS AVALIAÇÕES
 // =========================================================
+const CHAVE_CACHE_MINHAS = "entreNotas_minhas";
 
-async function carregarMinhasAvaliacoes() {
+function lerCacheMinhas(idUsuario) {
+    try {
+        const salvo = JSON.parse(
+            localStorage.getItem(CHAVE_CACHE_MINHAS)
+        );
+
+        return salvo && Number(salvo.id_usuario) === Number(idUsuario)
+            ? salvo.avaliacoes
+            : null;
+    } catch {
+        return null;
+    }
+}
+
+function salvarCacheMinhas(idUsuario, avaliacoes) {
+    try {
+        localStorage.setItem(
+            CHAVE_CACHE_MINHAS,
+            JSON.stringify({ id_usuario: idUsuario, avaliacoes })
+        );
+    } catch {
+        // Sem espaço no navegador: segue sem cache.
+    }
+}
+
+function renderizarMinhas(container, minhas) {
+    if ($("contadorAvaliacoes")) {
+        $("contadorAvaliacoes").textContent = `
+            ${minhas.length}
+            ${minhas.length === 1 ? "avaliação" : "avaliações"}
+        `;
+    }
+
+    if (!minhas.length) {
+        container.innerHTML = `
+            <div class="sem-avaliacoes">
+                <p>Você ainda não fez nenhuma avaliação.</p>
+                <a href="avaliar.html">Fazer uma avaliação</a>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = minhas
+        .map(montarMinhaAvaliacao)
+        .join("");
+}
+
+async function carregarMinhasAvaliacoes(usarCache = true) {
     const usuario = obterUsuario();
     const container = $("listaMinhasAvaliacoes");
 
     if (!usuario?.id_usuario || !obterToken() || !container) return;
+
+    // Mostra na hora o que foi salvo da última visita.
+    const emCache = usarCache
+        ? lerCacheMinhas(usuario.id_usuario)
+        : null;
+
+    if (emCache) {
+        renderizarMinhas(container, emCache);
+    }
 
     try {
         const resposta = await fetch(
@@ -727,35 +792,20 @@ async function carregarMinhasAvaliacoes() {
 
         const minhas = dados.avaliacoes || [];
 
-        if ($("contadorAvaliacoes")) {
-            $("contadorAvaliacoes").textContent = `
-                ${minhas.length}
-                ${minhas.length === 1 ? "avaliação" : "avaliações"}
-            `;
+        salvarCacheMinhas(usuario.id_usuario, minhas);
+
+        // Só redesenha se algo mudou.
+        if (!emCache || JSON.stringify(emCache) !== JSON.stringify(minhas)) {
+            renderizarMinhas(container, minhas);
         }
-
-        if (!minhas.length) {
-            container.innerHTML = `
-                <div class="sem-avaliacoes">
-                    <p>Você ainda não fez nenhuma avaliação.</p>
-                    <a href="avaliar.html">Fazer uma avaliação</a>
-                </div>
-            `;
-            return;
-        }
-
-        // Recuperar contagens atualizadas do Feed.
-                      await carregarCurtidasDoUsuario(botoes);
-
-        container.innerHTML = minhas
-            .map(montarMinhaAvaliacao)
-            .join("");
 
         const botoes = Array.from(
             container.querySelectorAll(".btn-curtir")
         );
 
-        await carregarCurtidasDoUsuario(botoes);
+        if (botoes.length) {
+            await carregarCurtidasDoUsuario(botoes);
+        }
 
     } catch (erro) {
         console.error(
@@ -763,9 +813,11 @@ async function carregarMinhasAvaliacoes() {
             erro
         );
 
-        container.innerHTML = `
-            <p>Erro ao carregar suas avaliações.</p>
-        `;
+        if (!emCache) {
+            container.innerHTML = `
+                <p>Erro ao carregar suas avaliações.</p>
+            `;
+        }
     }
 }
 
@@ -808,7 +860,9 @@ async function excluirAvaliacao(id) {
             );
         }
 
-        await carregarMinhasAvaliacoes();
+        localStorage.removeItem("entreNotas_feedCache");
+
+        await carregarMinhasAvaliacoes(false);
 
     } catch (erro) {
         console.error(erro);

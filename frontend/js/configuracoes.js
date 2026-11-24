@@ -1,4 +1,8 @@
-
+// Acorda o servidor (Render) assim que a página abre.
+fetch("https://entre-notas-api.onrender.com/health", {
+    mode: "no-cors",
+    cache: "no-store"
+}).catch(() => {});
 /* =========================================================
    ENTRE NOTAS - CONFIGURAÇÕES
 ========================================================= */

@@ -30,9 +30,8 @@ app.get("/", (req, res) => {
 app.use("/usuarios", usuarioRoutes);
 app.use("/deezer", deezerRoutes);
 
-// Mesmas funções usadas na Vercel (frontend/api), para funcionar também localmente.
-app.get("/api/deezer", require("../frontend/api/deezer"));
-app.get("/api/deezer-preview", require("../frontend/api/deezer-preview"));
+// Rota leve usada para "acordar" o servidor (Render) e monitoramento.
+app.get("/health", (req, res) => res.send("ok"));
 
 // Inicializa o servidor localmente.
 // Na Vercel, a plataforma executa a aplicação.

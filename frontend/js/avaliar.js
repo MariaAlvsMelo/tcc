@@ -528,6 +528,8 @@ const url = `/api/deezer-preview?id=${encodeURIComponent(musica.id)}`;
          // =================================================
 
          setTimeout(() => {
+            localStorage.removeItem("entreNotas_feedCache");
+            localStorage.removeItem("entreNotas_minhas");
              window.location.href = "home.html";
          }, 2000);
 

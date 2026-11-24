@@ -36,7 +36,7 @@
             rgba(8, 6, 19, 0.35),
             rgba(8, 6, 19, 0.35)
         ),
-        url("img/fundo.png");  background-size: cover;
+        url("img/fundo.jpg");  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;

@@ -81,8 +81,7 @@ async function listarAvaliacoesPublicas(id_usuario) {
             curtidas(count)
         `)
         .eq("id_usuario", id_usuario)
-        .order("data_avaliacao", { ascending: false })
-        .limit(50);
+        .order("data_avaliacao", { ascending: false });
 
     if (error) throw error;
 
@@ -496,8 +495,7 @@ async function listarAvaliacoesUsuario(id_usuario, token) {
             curtidas(count)
         `)
         .eq("id_usuario", idAutenticado)
-        .order("data_avaliacao", { ascending: false })
-        .limit(50);
+        .order("data_avaliacao", { ascending: false });
 
     if (error) throw error;
 
@@ -552,9 +550,7 @@ async function listarRespostas(id_avaliacao) {
             )
         `)
         .eq("id_avaliacao", id_avaliacao)
-        .order("data_resposta", { ascending: true })
-        .limit(50);
-
+        .order("data_resposta", { ascending: true });
     if (error) throw error;
 
     return (data || []).map(item => ({
@@ -582,9 +578,9 @@ module.exports = {
     curtirAvaliacao,
     removerCurtida,
     verificarCurtida,
+    listarIdsCurtidos,
     contarCurtidas,
     listarAvaliacoesUsuario,
-        listarAvaliacoesUsuario,
-    cadastrarResposta, 
-    listarRespostas 
+    cadastrarResposta,
+    listarRespostas
 };

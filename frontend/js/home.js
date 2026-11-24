@@ -525,55 +525,84 @@ function montarCard(avaliacao, usuario) {
 // =========================================================
 
 
+const respostasCache = new Map();
+
+function renderizarRespostas(lista, comentarios) {
+    if (!comentarios.length) {
+        lista.innerHTML = `
+            <p class="sem-respostas">
+                Ainda não há comentários. Seja o primeiro a comentar!
+            </p>
+        `;
+        return;
+    }
+
+    lista.innerHTML = comentarios.map(item => `
+        <article class="card-resposta">
+            <strong>${escaparHTML(item.nome_usuario)}</strong>
+            <p>${escaparHTML(item.resposta)}</p>
+            <small>${escaparHTML(formatoData(item.data_resposta))}</small>
+        </article>
+    `).join("");
+}
+
+async function buscarRespostas(id) {
+    const resposta = await fetch(
+        `${API}/usuarios/avaliacoes/${id}/respostas`
+    );
+
+    const dados = await resposta.json();
+
+    if (!resposta.ok || !dados.sucesso) {
+        throw new Error(dados.mensagem || "Erro ao carregar comentários.");
+    }
+
+    const comentarios = dados.respostas || [];
+
+    respostasCache.set(Number(id), comentarios);
+
+    return comentarios;
+}
+
+// Busca os comentários antes do clique (ao passar o mouse/encostar).
+function preCarregarRespostas(id) {
+    if (respostasCache.has(Number(id))) return;
+
+    buscarRespostas(id).catch(() => {});
+}
+
 async function carregarRespostas(id) {
     const lista = document.getElementById("lista-comentarios-modal");
 
     if (!lista) return;
 
-    lista.innerHTML = `
-        <p class="carregando-respostas">
-            Carregando comentários...
-        </p>
-    `;
+    const emCache = respostasCache.get(Number(id));
+
+    if (emCache) {
+        renderizarRespostas(lista, emCache);
+    } else {
+        lista.innerHTML = `
+            <p class="carregando-respostas">
+                Carregando comentários...
+            </p>
+        `;
+    }
 
     try {
-        const resposta = await fetch(
-            `${API}/usuarios/avaliacoes/${id}/respostas`
-        );
+        const comentarios = await buscarRespostas(id);
 
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            throw new Error(dados.mensagem || "Erro ao carregar comentários.");
-        }
-
-        const comentarios = dados.respostas || [];
-
-        if (!comentarios.length) {
-            lista.innerHTML = `
-                <p class="sem-respostas">
-                    Ainda não há comentários. Seja o primeiro a comentar!
-                </p>
-            `;
-            return;
-        }
-
-        lista.innerHTML = comentarios.map(item => `
-            <article class="card-resposta">
-                <strong>${escaparHTML(item.nome_usuario)}</strong>
-                <p>${escaparHTML(item.resposta)}</p>
-                <small>${escaparHTML(formatoData(item.data_resposta))}</small>
-            </article>
-        `).join("");
+        renderizarRespostas(lista, comentarios);
 
     } catch (erro) {
         console.error("Erro ao carregar comentários:", erro);
 
-        lista.innerHTML = `
-            <p class="sem-respostas">
-                Não foi possível carregar os comentários.
-            </p>
-        `;
+        if (!emCache) {
+            lista.innerHTML = `
+                <p class="sem-respostas">
+                    Não foi possível carregar os comentários.
+                </p>
+            `;
+        }
     }
 }
 
@@ -770,8 +799,67 @@ async function publicarResposta(id, formulario) {
 // CARREGAR AVALIAÇÕES
 // =========================================================
 
+const CHAVE_CACHE_FEED = "entreNotas_feedCache";
+
+function lerCacheFeed() {
+    try {
+        const salvo = JSON.parse(localStorage.getItem(CHAVE_CACHE_FEED));
+        return Array.isArray(salvo) ? salvo : null;
+    } catch {
+        return null;
+    }
+}
+
+function salvarCacheFeed(avaliacoes) {
+    try {
+        localStorage.setItem(
+            CHAVE_CACHE_FEED,
+            JSON.stringify(avaliacoes)
+        );
+    } catch {
+        // Sem espaço no navegador: segue sem cache.
+    }
+}
+
+function renderizarFeed(avaliacoes) {
+    // Guarda as avaliações para abrir seus comentários.
+    avaliacoesPorId.clear();
+
+    avaliacoes.forEach(avaliacao => {
+        avaliacoesPorId.set(Number(avaliacao.id), avaliacao);
+    });
+
+    if (!avaliacoes.length) {
+        avaliacoesContainer.innerHTML = `
+            <p class="mensagem-lista-vazia">
+                Nenhuma avaliação encontrada ainda.
+            </p>
+        `;
+        return;
+    }
+
+    const usuario = obterUsuarioLogado();
+
+    avaliacoesContainer.innerHTML = avaliacoes
+        .map(a => montarCard(a, usuario))
+        .join("");
+}
+
 async function carregarAvaliacoes() {
     if (!avaliacoesContainer) return;
+
+    // Mostra na hora o último feed salvo (enquanto o servidor responde).
+    const emCache = lerCacheFeed();
+
+    if (emCache && emCache.length) {
+        renderizarFeed(emCache);
+    } else {
+        avaliacoesContainer.innerHTML = `
+            <p class="mensagem-lista-vazia">
+                Carregando avaliações...
+            </p>
+        `;
+    }
 
     try {
         const resposta = await fetch(
@@ -789,45 +877,37 @@ async function carregarAvaliacoes() {
 
         const avaliacoes = dados.avaliacoes || [];
 
-        // ADICIONADO: guardar avaliações para abrir seus comentários
-    avaliacoesPorId.clear();
+        salvarCacheFeed(avaliacoes);
 
-    avaliacoes.forEach(avaliacao => {
-        avaliacoesPorId.set(Number(avaliacao.id), avaliacao);
-    });
+        // Só redesenha se algo mudou (evita cortar uma prévia tocando).
+        const mudou =
+            !emCache ||
+            JSON.stringify(emCache) !== JSON.stringify(avaliacoes);
 
-        if (!avaliacoes.length) {
-            avaliacoesContainer.innerHTML = `
-                <p class="mensagem-lista-vazia">
-                    Nenhuma avaliação encontrada ainda.
-                </p>
-            `;
-            return;
+        if (mudou) {
+            renderizarFeed(avaliacoes);
         }
 
-        const usuario = obterUsuarioLogado();
-
-        avaliacoesContainer.innerHTML = avaliacoes
-            .map(a => montarCard(a, usuario))
-            .join("");
-
-        if (usuario?.access_token) {
+        if (obterUsuarioLogado()?.access_token) {
             const botoes = Array.from(
                 avaliacoesContainer.querySelectorAll(".btn-curtir")
             );
 
-             await carregarCurtidasDoUsuario(botoes);
+            await carregarCurtidasDoUsuario(botoes);
         }
 
     } catch (erro) {
         console.error("Erro no Feed:", erro);
 
-        avaliacoesContainer.innerHTML = `
-            <p class="mensagem-lista-vazia">
-                Não foi possível carregar o Feed.
-                Verifique o servidor.
-            </p>
-        `;
+        // Se já há feed salvo na tela, mantém ele.
+        if (!emCache || !emCache.length) {
+            avaliacoesContainer.innerHTML = `
+                <p class="mensagem-lista-vazia">
+                    Não foi possível carregar o Feed.
+                    Tente novamente em instantes.
+                </p>
+            `;
+        }
     }
 }
 
@@ -865,6 +945,23 @@ if (avaliacoesContainer) {
                 botao
             );
         }
+    });
+
+        // Pré-carrega os comentários antes do clique.
+    ["mouseover", "touchstart"].forEach(tipo => {
+        avaliacoesContainer.addEventListener(
+            tipo,
+            event => {
+                const botao = event.target.closest(
+                    ".btn-toggle-respostas"
+                );
+
+                if (botao) {
+                    preCarregarRespostas(Number(botao.dataset.id));
+                }
+            },
+            { passive: true }
+        );
     });
 
     // ADICIONADO: detectar erros nas prévias musicais

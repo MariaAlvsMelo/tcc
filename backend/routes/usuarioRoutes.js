@@ -77,6 +77,11 @@ router.get(
 // =====================================================
 // CURTIDAS
 // =====================================================
+// Listar todas as curtidas do usuário (usada no Feed e nos Perfis).
+router.get(
+    "/avaliacoes/curtidas/minhas",
+    usuarioController.listarCurtidasUsuario
+);
 
 // Curtir avaliação.
 router.post(
