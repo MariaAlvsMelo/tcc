@@ -39,19 +39,52 @@ function escaparHTML(valor) {
     })[c]);
 }
 
-function urlImagemSegura(valor) {
-    const str = String(valor || "");
 
+function urlImagemSegura(valor) {
+    const str = String(valor ?? "").trim();
+
+    if (!str) return "";
+
+    // URLs HTTPS, imagens locais e caminhos públicos relativos.
     if (
         /^https:\/\//i.test(str) ||
         /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(str) ||
-        /^\.\.\/img\//.test(str)
+        /^blob:/i.test(str) ||
+        /^(?:\.\.\/|\.\/|\/)/.test(str) ||
+        /^storage\/v1\/object\/public\//i.test(str)
     ) {
         return str;
     }
 
     return "";
 }
+
+function obterImagemUsuario(dados) {
+    const valores = [
+        dados?.foto_perfil,
+        dados?.usuario?.foto_perfil,
+        dados?.perfil?.foto_perfil,
+        dados?.autor?.foto_perfil,
+        dados?.avatar_url,
+        dados?.foto
+    ];
+
+    return valores.map(urlImagemSegura).find(Boolean) || "";
+}
+
+function obterCapaAlbum(avaliacao) {
+    const valores = [
+        avaliacao?.capa_album,
+        avaliacao?.album?.cover_medium,
+        avaliacao?.album?.cover,
+        avaliacao?.cover_medium,
+        avaliacao?.cover,
+        avaliacao?.imagem_album
+    ];
+
+    return valores.map(urlImagemSegura).find(Boolean) || "";
+}
+
 
 // =========================================================
 // ESTRELAS PADRONIZADAS
@@ -402,8 +435,10 @@ function montarCard(avaliacao, usuario) {
     const nome = avaliacao.nome_usuario || "Usuário";
     const email = avaliacao.email || "";
 
-    const foto = urlImagemSegura(avaliacao.foto_perfil);
-    const capa = urlImagemSegura(avaliacao.capa_album);
+
+    const foto = obterImagemUsuario(avaliacao);
+    const capa = obterCapaAlbum(avaliacao);
+
 
     const avatar = foto
         ? `
@@ -625,8 +660,7 @@ function abrirTelaComentarios(id) {
         document.body.appendChild(tela);
     }
 
-    const capa = urlImagemSegura(avaliacao.capa_album);
-
+    const capa = obterCapaAlbum(avaliacao);
     tela.innerHTML = `
         <div class="conteudo-tela-comentarios">
 
