@@ -1,9 +1,12 @@
-
 const API = "https://entre-notas-api.onrender.com";
+
 const mensagem = document.getElementById("mensagemPerfilPublico");
 const cabecalhoPerfil = document.getElementById("cabecalhoPerfilPublico");
 const secaoAvaliacoes = document.getElementById("secaoAvaliacoesPublicas");
 const listaAvaliacoes = document.getElementById("listaAvaliacoesPublicas");
+
+const CACHE_CURTIDAS_PREFIX = "entreNotas_curtidas_";
+const curtidasInteragidasDuranteConsulta = new Set();
 
 // =========================================================
 // AUXILIARES
@@ -32,13 +35,27 @@ function obterToken() {
 }
 
 function urlImagemSegura(valor) {
-    const str = String(valor || "");
+    const str = String(valor || "").trim();
 
     return (
         /^https:\/\//i.test(str) ||
         /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(str) ||
-        /^\.\.\/img\//.test(str)
+        /^\.\.\/img\//.test(str) ||
+        /^\/img\//.test(str)
     ) ? str : "";
+}
+
+// Aceita os formatos de nome de imagem usados pela API e pelos caches.
+function obterImagem(objeto, campos) {
+    if (!objeto || typeof objeto !== "object") return "";
+
+    for (const campo of campos) {
+        const imagem = urlImagemSegura(objeto[campo]);
+
+        if (imagem) return imagem;
+    }
+
+    return "";
 }
 
 // =========================================================
@@ -74,9 +91,14 @@ function gerarEstrelas(nota) {
 // Converte o valor do banco em Date. Sem fuso horário, considera UTC.
 function paraDataUTC(valor) {
     const texto = String(valor);
-    const semFuso = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(texto);
 
-    return new Date(semFuso ? texto.replace(" ", "T") + "Z" : texto);
+    const semFuso =
+        /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/
+            .test(texto);
+
+    return new Date(
+        semFuso ? texto.replace(" ", "T") + "Z" : texto
+    );
 }
 
 function formatarData(valor) {
@@ -90,7 +112,9 @@ function formatarData(valor) {
 
     return Number.isNaN(data.getTime())
         ? String(valor)
-        : data.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+        : data.toLocaleString("pt-BR", {
+            timeZone: "America/Sao_Paulo"
+        });
 }
 
 // =========================================================
@@ -186,30 +210,62 @@ function pintarCurtida(botao, ativo) {
 }
 
 // =========================================================
-// VERIFICAR CURTIDA SALVA
+// CACHE DE CURTIDAS
 // =========================================================
 
+function lerCacheCurtidas(idUsuario) {
+    try {
+        const valor = JSON.parse(
+            localStorage.getItem(
+                `${CACHE_CURTIDAS_PREFIX}${idUsuario}`
+            )
+        );
 
-// =========================================================
-// VERIFICAR CURTIDA SALVA
-// =========================================================
+        return Array.isArray(valor)
+            ? new Set(valor.map(Number))
+            : null;
+
+    } catch {
+        return null;
+    }
+}
+
+function salvarCacheCurtidas(idUsuario, ids) {
+    try {
+        localStorage.setItem(
+            `${CACHE_CURTIDAS_PREFIX}${idUsuario}`,
+            JSON.stringify([...ids].map(Number))
+        );
+    } catch {}
+}
+
 async function carregarCurtidasDoUsuario(botoes) {
     const usuario = obterUsuario();
     const token = obterToken();
 
     if (!usuario || !token || !botoes.length) return;
 
-    botoes.forEach(botao => {
-        botao.disabled = true;
-    });
+    const cache = lerCacheCurtidas(usuario.id_usuario);
+
+    if (cache) {
+        botoes.forEach(botao => {
+            pintarCurtida(
+                botao,
+                cache.has(Number(botao.dataset.id))
+            );
+
+            botao.disabled = false;
+        });
+    } else {
+        botoes.forEach(botao => botao.disabled = true);
+    }
 
     try {
         const resposta = await fetch(
             `${API}/usuarios/avaliacoes/curtidas/minhas?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
             {
-                cache: "no-store",
                 headers: {
-                    "Authorization": `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
             }
         );
@@ -227,10 +283,38 @@ async function carregarCurtidasDoUsuario(botoes) {
         );
 
         botoes.forEach(botao => {
-            pintarCurtida(
-                botao,
-                curtidas.has(Number(botao.dataset.id))
-            );
+            const id = Number(botao.dataset.id);
+
+            if (
+                curtidasInteragidasDuranteConsulta.has(id) ||
+                botao.dataset.acaoEmAndamento
+            ) {
+                if (botao.classList.contains("curtido")) {
+                    curtidas.add(id);
+                } else {
+                    curtidas.delete(id);
+                }
+            }
+        });
+
+        salvarCacheCurtidas(
+            usuario.id_usuario,
+            curtidas
+        );
+
+        botoes.forEach(botao => {
+            const id = Number(botao.dataset.id);
+
+            if (
+                !curtidasInteragidasDuranteConsulta.has(id) &&
+                !botao.dataset.acaoEmAndamento
+            ) {
+                pintarCurtida(
+                    botao,
+                    curtidas.has(id)
+                );
+            }
+
             botao.disabled = false;
         });
 
@@ -238,11 +322,15 @@ async function carregarCurtidasDoUsuario(botoes) {
         console.error("Erro ao verificar curtidas:", erro);
 
         botoes.forEach(botao => {
-            botao.title = "Erro ao verificar curtidas.";
             botao.disabled = false;
+            botao.title = "Erro ao verificar curtidas.";
         });
     }
 }
+
+// =========================================================
+// VERIFICAR CURTIDA SALVA
+// =========================================================
 
 async function verificarCurtida(id, botao) {
     const usuario = obterUsuario();
@@ -282,7 +370,6 @@ async function verificarCurtida(id, botao) {
     }
 }
 
-
 // =========================================================
 // CURTIR / DESCURTIR
 // =========================================================
@@ -302,6 +389,7 @@ async function alternarCurtida(botao) {
     const ativo = botao.classList.contains("curtido");
 
     botao.disabled = true;
+    botao.dataset.acaoEmAndamento = "1";
 
     try {
         const resposta = await fetch(
@@ -348,6 +436,22 @@ async function alternarCurtida(botao) {
 
         pintarCurtida(botao, !ativo);
 
+        const idsSalvos =
+            lerCacheCurtidas(usuario.id_usuario) || new Set();
+
+        if (ativo) {
+            idsSalvos.delete(id);
+        } else {
+            idsSalvos.add(id);
+        }
+
+        salvarCacheCurtidas(
+            usuario.id_usuario,
+            idsSalvos
+        );
+
+        curtidasInteragidasDuranteConsulta.add(id);
+
         const contador = botao.querySelector(
             ".quantidade-curtidas"
         );
@@ -363,6 +467,7 @@ async function alternarCurtida(botao) {
         alert("Não foi possível alterar a curtida.");
 
     } finally {
+        delete botao.dataset.acaoEmAndamento;
         botao.disabled = false;
     }
 }
@@ -378,7 +483,17 @@ function montarCard(avaliacao) {
         return "";
     }
 
-    const capa = urlImagemSegura(avaliacao.capa_album);
+    // CAPA DO ÁLBUM
+    const capa = obterImagem(avaliacao, [
+        "capa_album",
+        "album_cover",
+        "album_cover_url",
+        "cover_url",
+        "capa",
+        "cover",
+        "imagem_album",
+        "album_image"
+    ]);
 
     const capaHTML = capa
         ? `
@@ -414,12 +529,16 @@ function montarCard(avaliacao) {
                     ${escaparHTML(avaliacao.artista)}
                 </p>
 
-                <p class="perfil-publico-comentario comentario-avaliacao">${escaparHTML(avaliacao.comentario)}</p>
+                <p class="perfil-publico-comentario comentario-avaliacao">
+                    ${escaparHTML(avaliacao.comentario)}
+                </p>
 
                 ${gerarEstrelas(avaliacao.nota)}
 
                 <p class="data-postagem">
-                    ${escaparHTML(formatarData(avaliacao.data_avaliacao))}
+                    ${escaparHTML(
+                        formatarData(avaliacao.data_avaliacao)
+                    )}
                 </p>
 
                 <div class="area-preview-feed">
@@ -438,6 +557,73 @@ function montarCard(avaliacao) {
 // =========================================================
 // CARREGAR PERFIL PÚBLICO
 // =========================================================
+
+function exibirPerfilPublico(usuario, avaliacoes, id) {
+    document.title = `${usuario.nome_usuario || "Usuário"} | Entre Notas`;
+
+    document.getElementById("nomePerfilPublico").textContent =
+        usuario.nome_usuario || "Usuário";
+
+    document.getElementById("biografiaPerfilPublico").textContent =
+        usuario.biografia ||
+        "Este usuário ainda não adicionou uma biografia.";
+
+    document.getElementById("totalAvaliacoesPublicas").textContent =
+        `${avaliacoes.length} ${
+            avaliacoes.length === 1
+                ? "avaliação"
+                : "avaliações"
+        }`;
+
+    // FOTO DO PERFIL PÚBLICO
+    const foto = obterImagem(usuario, [
+        "foto_perfil",
+        "avatar_url",
+        "foto_usuario",
+        "imagem_perfil",
+        "avatar",
+        "profile_picture",
+        "profile_photo"
+    ]);
+
+    const elementoFoto = document.getElementById(
+        "fotoPerfilPublico"
+    );
+
+    if (elementoFoto) {
+        elementoFoto.src = foto || "../img/logo.png";
+    }
+
+    listaAvaliacoes.innerHTML = avaliacoes.length
+        ? avaliacoes.map(montarCard).join("")
+        : `
+            <p class="perfil-publico-vazio">
+                Este usuário ainda não publicou avaliações.
+            </p>
+        `;
+
+    if (cabecalhoPerfil) {
+        cabecalhoPerfil.style.display = "";
+    }
+
+    if (secaoAvaliacoes) {
+        secaoAvaliacoes.style.display = "";
+    }
+
+    if (mensagem) {
+        mensagem.textContent = "";
+    }
+
+    const usuarioLogado = obterUsuario();
+
+    if (usuarioLogado?.access_token) {
+        carregarCurtidasDoUsuario(
+            Array.from(
+                listaAvaliacoes.querySelectorAll(".btn-curtir")
+            )
+        );
+    }
+}
 
 async function carregarPerfilPublico() {
     const id = Number(
@@ -458,10 +644,39 @@ async function carregarPerfilPublico() {
         return;
     }
 
+    const chaveCache = `entreNotas_perfilPublico_${id}`;
+
+    let cache = null;
+
+    try {
+        cache = JSON.parse(
+            localStorage.getItem(chaveCache)
+        );
+
+        if (
+            cache &&
+            Date.now() - cache.timestamp < 5 * 60 * 1000
+        ) {
+            exibirPerfilPublico(
+                cache.usuario || {},
+                cache.avaliacoes || [],
+                id
+            );
+        } else {
+            cache = null;
+        }
+
+    } catch {
+        cache = null;
+    }
+
+    if (!cache && mensagem) {
+        mensagem.textContent = "Carregando perfil...";
+    }
+
     try {
         const resposta = await fetch(
-            `${API}/usuarios/perfil-publico/${id}`,
-            { cache: "no-store" }
+            `${API}/usuarios/perfil-publico/${id}`
         );
 
         const dados = await resposta.json();
@@ -475,70 +690,32 @@ async function carregarPerfilPublico() {
         const usuario = dados.usuario || {};
         const avaliacoes = dados.avaliacoes || [];
 
-        document.title = `
-            ${usuario.nome_usuario || "Usuário"} | Entre Notas
-        `;
+        try {
+            localStorage.setItem(
+                chaveCache,
+                JSON.stringify({
+                    timestamp: Date.now(),
+                    usuario,
+                    avaliacoes
+                })
+            );
+        } catch {}
 
-        document.getElementById(
-            "nomePerfilPublico"
-        ).textContent = usuario.nome_usuario || "Usuário";
+        const mudou =
+            !cache ||
+            JSON.stringify(cache.usuario) !== JSON.stringify(usuario) ||
+            JSON.stringify(cache.avaliacoes) !== JSON.stringify(avaliacoes);
 
-        document.getElementById(
-            "biografiaPerfilPublico"
-        ).textContent =
-            usuario.biografia ||
-            "Este usuário ainda não adicionou uma biografia.";
-
-        document.getElementById(
-            "totalAvaliacoesPublicas"
-        ).textContent = `
-            ${avaliacoes.length}
-            ${avaliacoes.length === 1 ? "avaliação" : "avaliações"}
-        `;
-
-        const foto = urlImagemSegura(usuario.foto_perfil);
-
-        if (foto) {
-            document.getElementById(
-                "fotoPerfilPublico"
-            ).src = foto;
+        if (mudou) {
+            exibirPerfilPublico(usuario, avaliacoes, id);
         }
-
-        listaAvaliacoes.innerHTML = avaliacoes.length
-            ? avaliacoes.map(montarCard).join("")
-            : `
-                <p class="perfil-publico-vazio">
-                    Este usuário ainda não publicou avaliações.
-                </p>
-            `;
-
-        if (mensagem) {
-            mensagem.hidden = true;
-        }
-
-        if (cabecalhoPerfil) {
-            cabecalhoPerfil.hidden = false;
-        }
-
-        if (secaoAvaliacoes) {
-            secaoAvaliacoes.hidden = false;
-        }
-
-        const botoes = Array.from(
-            listaAvaliacoes.querySelectorAll(".btn-curtir")
-        );
-
-                await carregarCurtidasDoUsuario(botoes);
 
     } catch (erro) {
-        console.error(
-            "Erro ao carregar perfil público:",
-            erro
-        );
+        console.error("Erro ao carregar perfil público:", erro);
 
-        if (mensagem) {
+        if (!cache && mensagem) {
             mensagem.textContent =
-                erro.message || "Erro ao buscar perfil.";
+                erro.message || "Não foi possível carregar o perfil.";
         }
     }
 }
