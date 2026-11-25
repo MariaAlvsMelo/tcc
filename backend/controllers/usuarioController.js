@@ -69,24 +69,23 @@ const UsuarioController = {
                 });
             }
 
-            const usuario = await usuarioModel.buscarPerfilPublico(id_usuario);
+            const [usuario, avaliacoes] = await Promise.all([
+            usuarioModel.buscarPerfilPublico(id_usuario),
+            usuarioModel.listarAvaliacoesPublicas(id_usuario)
+        ]);
 
-            if (!usuario) {
-                return res.status(404).json({
-                    sucesso: false,
-                    mensagem: "Usuário não encontrado."
-                });
-            }
-
-            const avaliacoes =
-                await usuarioModel.listarAvaliacoesPublicas(id_usuario);
-
-            return res.json({
-                sucesso: true,
-                usuario,
-                avaliacoes: formatarAvaliacoes(avaliacoes)
+        if (!usuario) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: "Usuário não encontrado."
             });
+        }
 
+        return res.json({
+            sucesso: true,
+            usuario,
+            avaliacoes: formatarAvaliacoes(avaliacoes)
+        });
         } catch (erro) {
             console.error("Erro ao consultar perfil público:", erro);
 

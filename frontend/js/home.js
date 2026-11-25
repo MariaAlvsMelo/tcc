@@ -442,14 +442,19 @@ function montarCard(avaliacao, usuario) {
     const foto = obterImagemUsuario(avaliacao);
     const capa = obterCapaAlbum(avaliacao);
 
+    const prioridadeFoto = indice < 3 ? "eager" : "lazy";
+    const prioridadeBusca = indice < 3 ? "high" : "auto";
 
     const avatar = foto
         ? `
             <img
-                class="foto-autor-avaliacao"
-                src="${escaparHTML(foto)}"
-                alt="Foto do usuário"
-            >
+            class="foto-autor-avaliacao"
+            src="${escaparHTML(foto)}"
+            alt="Foto do usuário"
+            loading="${prioridadeFoto}"
+            fetchpriority="${prioridadeBusca}"
+            decoding="async"
+        >
         `
         : `
             <span
@@ -878,8 +883,8 @@ function renderizarFeed(avaliacoes) {
     const usuario = obterUsuarioLogado();
 
     avaliacoesContainer.innerHTML = avaliacoes
-        .map(a => montarCard(a, usuario))
-        .join("");
+    .map((a, indice) => montarCard(a, usuario, indice))
+    .join("");
 }
 
 async function carregarAvaliacoes() {
