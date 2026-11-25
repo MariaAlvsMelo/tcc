@@ -1,16 +1,12 @@
+
 const API = (
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1"
 )
     ? "http://localhost:3000"
-    : "https://entre-notas-api.onrender.com";
-
-const avaliacoesContainer = document.getElementById("home-container");
+    : "https://entre-notas-api.onrender.com";const avaliacoesContainer = document.getElementById("home-container");
 const btnLoginCabecalho = document.getElementById("btnLoginCabecalho");
 const avaliacoesPorId = new Map();
-const CACHE_CURTIDAS_PREFIX = "entreNotas_curtidas_";
-const curtidasInteragidasDuranteConsulta = new Set();
-const respostasEmAndamento = new Map();
 
 // =========================================================
 // USUÁRIO LOGADO
@@ -44,27 +40,14 @@ function escaparHTML(valor) {
 }
 
 function urlImagemSegura(valor) {
-    const str = String(valor || "").trim();
+    const str = String(valor || "");
 
     if (
         /^https:\/\//i.test(str) ||
         /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(str) ||
-        /^\.\.\/img\//.test(str) ||
-        /^\/img\//.test(str)
+        /^\.\.\/img\//.test(str)
     ) {
         return str;
-    }
-
-    return "";
-}
-
-// Compatibilidade com diferentes nomes de campos enviados pela API/cache.
-function obterImagem(objeto, campos) {
-    if (!objeto || typeof objeto !== "object") return "";
-
-    for (const campo of campos) {
-        const imagem = urlImagemSegura(objeto[campo]);
-        if (imagem) return imagem;
     }
 
     return "";
@@ -142,14 +125,9 @@ function gerarPreview(avaliacao) {
 // Converte o valor do banco em Date. Sem fuso horário, considera UTC.
 function paraDataUTC(valor) {
     const texto = String(valor);
+    const semFuso = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(texto);
 
-    const semFuso =
-        /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/
-            .test(texto);
-
-    return new Date(
-        semFuso ? texto.replace(" ", "T") + "Z" : texto
-    );
+    return new Date(semFuso ? texto.replace(" ", "T") + "Z" : texto);
 }
 
 function formatoData(data) {
@@ -163,9 +141,7 @@ function formatoData(data) {
 
     return Number.isNaN(d.getTime())
         ? String(data)
-        : d.toLocaleString("pt-BR", {
-            timeZone: "America/Sao_Paulo"
-        });
+        : d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
 
 // =========================================================
@@ -174,10 +150,7 @@ function formatoData(data) {
 
 function renderizarCurtida(avaliacao, usuario) {
     const id = Number(avaliacao.id);
-    const total = Math.max(
-        0,
-        Number(avaliacao.total_curtidas) || 0
-    );
+    const total = Math.max(0, Number(avaliacao.total_curtidas) || 0);
 
     if (!usuario) {
         return `
@@ -261,10 +234,7 @@ async function verificarCurtida(id, botao) {
         botao.disabled = false;
 
     } catch (erro) {
-        console.error(
-            "Falha na verificação da curtida:",
-            erro
-        );
+        console.error("Falha na verificação da curtida:", erro);
 
         botao.title =
             "Não foi possível consultar esta curtida. Atualize a página.";
@@ -274,59 +244,21 @@ async function verificarCurtida(id, botao) {
 // =========================================================
 // CURTIR E DESCURTIR
 // =========================================================
-
-function lerCacheCurtidas(idUsuario) {
-    try {
-        const valor = JSON.parse(
-            localStorage.getItem(
-                `${CACHE_CURTIDAS_PREFIX}${idUsuario}`
-            )
-        );
-
-        return Array.isArray(valor)
-            ? new Set(valor.map(Number))
-            : null;
-
-    } catch {
-        return null;
-    }
-}
-
-function salvarCacheCurtidas(idUsuario, ids) {
-    try {
-        localStorage.setItem(
-            `${CACHE_CURTIDAS_PREFIX}${idUsuario}`,
-            JSON.stringify(Array.from(ids).map(Number))
-        );
-    } catch {}
-}
-
 async function carregarCurtidasDoUsuario(botoes) {
     const usuario = obterUsuarioLogado();
     const token = obterToken();
 
     if (!usuario || !token || !botoes.length) return;
 
-    const cache = lerCacheCurtidas(usuario.id_usuario);
-
-    if (cache) {
-        botoes.forEach(botao => {
-            atualizarCurtida(
-                botao,
-                cache.has(Number(botao.dataset.id))
-            );
-
-            botao.disabled = false;
-        });
-
-    } else {
-        botoes.forEach(botao => botao.disabled = true);
-    }
+    botoes.forEach(botao => {
+        botao.disabled = true;
+    });
 
     try {
         const resposta = await fetch(
             `${API}/usuarios/avaliacoes/curtidas/minhas?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
             {
+                cache: "no-store",
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
@@ -346,54 +278,23 @@ async function carregarCurtidasDoUsuario(botoes) {
         );
 
         botoes.forEach(botao => {
-            const id = Number(botao.dataset.id);
-
-            if (
-                curtidasInteragidasDuranteConsulta.has(id) ||
-                botao.dataset.acaoEmAndamento
-            ) {
-                if (botao.classList.contains("curtido")) {
-                    curtidas.add(id);
-                } else {
-                    curtidas.delete(id);
-                }
-            }
-        });
-
-        salvarCacheCurtidas(
-            usuario.id_usuario,
-            curtidas
-        );
-
-        botoes.forEach(botao => {
-            const id = Number(botao.dataset.id);
-
-            // Não sobrescreve o estado se o usuário
-            // clicou enquanto a consulta estava ativa.
-            if (!curtidasInteragidasDuranteConsulta.has(id)) {
-                atualizarCurtida(
-                    botao,
-                    curtidas.has(id)
-                );
-            }
-
+            atualizarCurtida(
+                botao,
+                curtidas.has(Number(botao.dataset.id))
+            );
             botao.disabled = false;
         });
 
     } catch (erro) {
-        console.error(
-            "Falha ao consultar curtidas:",
-            erro
-        );
+        console.error("Falha ao consultar curtidas:", erro);
 
         botoes.forEach(botao => {
-            botao.disabled = false;
-
             botao.title =
                 "Não foi possível consultar suas curtidas. Atualize a página.";
         });
     }
 }
+
 async function curtirAvaliacao(id, botao) {
     const usuario = obterUsuarioLogado();
     const token = obterToken();
@@ -408,7 +309,6 @@ async function curtirAvaliacao(id, botao) {
     const estavaCurtido = botao.classList.contains("curtido");
 
     botao.disabled = true;
-    botao.dataset.acaoEmAndamento = "1";
 
     try {
         const resposta = await fetch(
@@ -468,28 +368,11 @@ async function curtirAvaliacao(id, botao) {
             );
         }
 
-        const idsSalvos =
-            lerCacheCurtidas(usuario.id_usuario) || new Set();
-
-        if (estavaCurtido) {
-            idsSalvos.delete(Number(id));
-        } else {
-            idsSalvos.add(Number(id));
-        }
-
-        salvarCacheCurtidas(
-            usuario.id_usuario,
-            idsSalvos
-        );
-
-        curtidasInteragidasDuranteConsulta.add(Number(id));
-
     } catch (erro) {
         console.error("Falha ao alterar curtida:", erro);
         alert("Não foi possível alterar a curtida.");
 
     } finally {
-        delete botao.dataset.acaoEmAndamento;
         botao.disabled = false;
     }
 }
@@ -519,28 +402,8 @@ function montarCard(avaliacao, usuario) {
     const nome = avaliacao.nome_usuario || "Usuário";
     const email = avaliacao.email || "";
 
-    // FOTO DE PERFIL
-    const foto = obterImagem(avaliacao, [
-        "foto_perfil",
-        "avatar_url",
-        "foto_usuario",
-        "imagem_perfil",
-        "avatar",
-        "profile_picture",
-        "profile_photo"
-    ]);
-
-    // CAPA DO ÁLBUM
-    const capa = obterImagem(avaliacao, [
-        "capa_album",
-        "album_cover",
-        "album_cover_url",
-        "cover_url",
-        "capa",
-        "cover",
-        "imagem_album",
-        "album_image"
-    ]);
+    const foto = urlImagemSegura(avaliacao.foto_perfil);
+    const capa = urlImagemSegura(avaliacao.capa_album);
 
     const avatar = foto
         ? `
@@ -626,50 +489,41 @@ function montarCard(avaliacao, usuario) {
                         ${escaparHTML(avaliacao.artista)}
                     </p>
 
-                    <p class="comentario-avaliacao">
-                        ${escaparHTML(avaliacao.comentario)}
-                    </p>
+                    <p class="comentario-avaliacao">${escaparHTML(avaliacao.comentario)}</p>
 
                     ${gerarEstrelas(avaliacao.nota)}
 
                     <p class="data-postagem">
-                        ${escaparHTML(
-                            formatoData(avaliacao.data_avaliacao)
-                        )}
+                        ${escaparHTML(formatoData(avaliacao.data_avaliacao))}
                     </p>
 
                     <div class="area-preview-feed">
                         ${gerarPreview(avaliacao)}
                     </div>
 
-                </div>
+                                </div>
             </div>
 
-            <section
-                class="area-respostas"
-                data-id-avaliacao="${id}"
-            >
+                    <!-- ADICIONADO: ACESSO AOS COMENTÁRIOS -->
+            <section class="area-respostas" data-id-avaliacao="${id}">
                 <button
                     type="button"
                     class="btn-toggle-respostas"
                     data-id="${id}"
                 >
-                    <img
-                        src="../img/comentario.png"
-                        alt="Feed"
-                        width="20"
-                        height="20"
-                    >
-                    Comentários
+                     <img src="../img/comentario.png" alt="Feed" width="20" height="20">
+                     Comentários
                 </button>
             </section>
         </article>
     `;
 }
 
+
 // =========================================================
-// CARREGAR RESPOSTAS / COMENTÁRIOS
+// ADICIONADO: CARREGAR RESPOSTAS
 // =========================================================
+
 
 const respostasCache = new Map();
 
@@ -687,51 +541,27 @@ function renderizarRespostas(lista, comentarios) {
         <article class="card-resposta">
             <strong>${escaparHTML(item.nome_usuario)}</strong>
             <p>${escaparHTML(item.resposta)}</p>
-            <small>
-                ${escaparHTML(formatoData(item.data_resposta))}
-            </small>
+            <small>${escaparHTML(formatoData(item.data_resposta))}</small>
         </article>
     `).join("");
 }
 
 async function buscarRespostas(id) {
-    const chave = Number(id);
+    const resposta = await fetch(
+        `${API}/usuarios/avaliacoes/${id}/respostas`
+    );
 
-    if (respostasCache.has(chave)) {
-        return respostasCache.get(chave);
+    const dados = await resposta.json();
+
+    if (!resposta.ok || !dados.sucesso) {
+        throw new Error(dados.mensagem || "Erro ao carregar comentários.");
     }
 
-    if (respostasEmAndamento.has(chave)) {
-        return respostasEmAndamento.get(chave);
-    }
+    const comentarios = dados.respostas || [];
 
-    const requisicao = (async () => {
-        const resposta = await fetch(
-            `${API}/usuarios/avaliacoes/${id}/respostas`
-        );
+    respostasCache.set(Number(id), comentarios);
 
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            throw new Error(
-                dados.mensagem || "Erro ao carregar comentários."
-            );
-        }
-
-        const comentarios = dados.respostas || [];
-
-        respostasCache.set(chave, comentarios);
-
-        return comentarios;
-    })();
-
-    respostasEmAndamento.set(chave, requisicao);
-
-    try {
-        return await requisicao;
-    } finally {
-        respostasEmAndamento.delete(chave);
-    }
+    return comentarios;
 }
 
 // Busca os comentários antes do clique (ao passar o mouse/encostar).
@@ -742,9 +572,7 @@ function preCarregarRespostas(id) {
 }
 
 async function carregarRespostas(id) {
-    const lista = document.getElementById(
-        "lista-comentarios-modal"
-    );
+    const lista = document.getElementById("lista-comentarios-modal");
 
     if (!lista) return;
 
@@ -777,6 +605,8 @@ async function carregarRespostas(id) {
         }
     }
 }
+
+
 function abrirTelaComentarios(id) {
     const avaliacao = avaliacoesPorId.get(Number(id));
 
@@ -795,24 +625,12 @@ function abrirTelaComentarios(id) {
         document.body.appendChild(tela);
     }
 
-    const capa = obterImagem(avaliacao, [
-        "capa_album",
-        "album_cover",
-        "album_cover_url",
-        "cover_url",
-        "capa",
-        "cover",
-        "imagem_album",
-        "album_image"
-    ]);
+    const capa = urlImagemSegura(avaliacao.capa_album);
 
     tela.innerHTML = `
         <div class="conteudo-tela-comentarios">
 
-            <button
-                type="button"
-                class="btn-voltar-comentarios"
-            >
+            <button type="button" class="btn-voltar-comentarios">
                 ← Voltar ao Feed
             </button>
 
@@ -820,9 +638,7 @@ function abrirTelaComentarios(id) {
 
             <article class="avaliacao-em-comentarios">
                 <div class="autor-avaliacao">
-                    <strong>
-                        ${escaparHTML(avaliacao.nome_usuario || "Usuário")}
-                    </strong>
+                    <strong>${escaparHTML(avaliacao.nome_usuario || "Usuário")}</strong>
                 </div>
 
                 <div class="conteudo-card-musica">
@@ -849,9 +665,7 @@ function abrirTelaComentarios(id) {
                         ${gerarEstrelas(avaliacao.nota)}
 
                         <p class="data-postagem">
-                            ${escaparHTML(
-                                formatoData(avaliacao.data_avaliacao)
-                            )}
+                            ${escaparHTML(formatoData(avaliacao.data_avaliacao))}
                         </p>
                     </div>
                 </div>
@@ -866,10 +680,7 @@ function abrirTelaComentarios(id) {
             </section>
 
             ${obterToken() ? `
-                <form
-                    class="form-resposta form-comentario-modal"
-                    data-id="${id}"
-                >
+                <form class="form-resposta form-comentario-modal" data-id="${id}">
                     <label for="campo-comentario-modal">
                         Escreva seu comentário
                     </label>
@@ -882,9 +693,7 @@ function abrirTelaComentarios(id) {
                         required
                     ></textarea>
 
-                    <button type="submit">
-                        Publicar comentário
-                    </button>
+                    <button type="submit">Publicar comentário</button>
                 </form>
             ` : `
                 <p class="aviso-login-resposta">
@@ -898,33 +707,25 @@ function abrirTelaComentarios(id) {
     tela.classList.add("aberta");
     document.body.classList.add("comentarios-abertos");
 
-    const botaoVoltar = tela.querySelector(
-        ".btn-voltar-comentarios"
-    );
+// ADICIONADO: botão para voltar ao Feed
+const botaoVoltar = tela.querySelector(".btn-voltar-comentarios");
 
-    botaoVoltar.addEventListener(
-        "click",
-        fecharTelaComentarios
-    );
+botaoVoltar.addEventListener("click", fecharTelaComentarios);
 
-    const formulario = tela.querySelector(
-        ".form-comentario-modal"
-    );
+// ADICIONADO: envio do comentário pelo formulário da tela
+const formulario = tela.querySelector(".form-comentario-modal");
 
-    if (formulario) {
-        formulario.addEventListener("submit", event => {
-            event.preventDefault();
-            publicarResposta(id, formulario);
-        });
-    }
-
-    carregarRespostas(id);
+if (formulario) {
+    formulario.addEventListener("submit", event => {
+        event.preventDefault();
+        publicarResposta(id, formulario);
+    });
 }
 
-// =========================================================
-// FECHAR TELA DE COMENTÁRIOS
-// =========================================================
+// Carregar comentários publicados
+carregarRespostas(id);}
 
+// ADICIONADO: fechar a tela de comentários
 function fecharTelaComentarios() {
     const tela = document.getElementById("tela-comentarios");
 
@@ -935,8 +736,9 @@ function fecharTelaComentarios() {
     document.body.classList.remove("comentarios-abertos");
 }
 
+
 // =========================================================
-// PUBLICAR COMENTÁRIO
+// ADICIONADO: PUBLICAR RESPOSTA
 // =========================================================
 
 async function publicarResposta(id, formulario) {
@@ -1001,12 +803,8 @@ const CHAVE_CACHE_FEED = "entreNotas_feedCache";
 
 function lerCacheFeed() {
     try {
-        const salvo = JSON.parse(
-            localStorage.getItem(CHAVE_CACHE_FEED)
-        );
-
+        const salvo = JSON.parse(localStorage.getItem(CHAVE_CACHE_FEED));
         return Array.isArray(salvo) ? salvo : null;
-
     } catch {
         return null;
     }
@@ -1028,10 +826,7 @@ function renderizarFeed(avaliacoes) {
     avaliacoesPorId.clear();
 
     avaliacoes.forEach(avaliacao => {
-        avaliacoesPorId.set(
-            Number(avaliacao.id),
-            avaliacao
-        );
+        avaliacoesPorId.set(Number(avaliacao.id), avaliacao);
     });
 
     if (!avaliacoes.length) {
@@ -1116,6 +911,7 @@ async function carregarAvaliacoes() {
     }
 }
 
+
 // =========================================================
 // INICIAR EVENTOS
 // =========================================================
@@ -1127,7 +923,7 @@ if (btnLoginCabecalho) {
 
 if (avaliacoesContainer) {
 
-    // Eventos de clique do Feed
+    // ADICIONADO: eventos de clique do Feed
     avaliacoesContainer.addEventListener("click", event => {
 
         const botaoRespostas = event.target.closest(
@@ -1151,7 +947,7 @@ if (avaliacoesContainer) {
         }
     });
 
-    // Pré-carrega os comentários antes do clique.
+        // Pré-carrega os comentários antes do clique.
     ["mouseover", "touchstart"].forEach(tipo => {
         avaliacoesContainer.addEventListener(
             tipo,
@@ -1161,16 +957,14 @@ if (avaliacoesContainer) {
                 );
 
                 if (botao) {
-                    preCarregarRespostas(
-                        Number(botao.dataset.id)
-                    );
+                    preCarregarRespostas(Number(botao.dataset.id));
                 }
             },
             { passive: true }
         );
     });
 
-    // Detectar erros nas prévias musicais
+    // ADICIONADO: detectar erros nas prévias musicais
     avaliacoesContainer.addEventListener(
         "error",
         event => {
@@ -1188,7 +982,7 @@ if (avaliacoesContainer) {
     );
 }
 
-// Carregar avaliações do Feed
+// ADICIONADO: carregar avaliações do Feed
 carregarAvaliacoes();
 
 // =========================================================

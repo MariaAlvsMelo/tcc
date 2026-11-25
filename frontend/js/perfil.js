@@ -1,3 +1,4 @@
+
 const API = "https://entre-notas-api.onrender.com";
 const $ = id => document.getElementById(id);
 
@@ -10,8 +11,6 @@ const obterUsuario = () => {
 };
 
 const obterToken = () => obterUsuario()?.access_token || "";
-const CACHE_CURTIDAS_PREFIX = "entreNotas_curtidas_";
-const curtidasInteragidasDuranteConsulta = new Set();
 
 const headersAutenticacao = (adicionais = {}) => ({
     ...adicionais,
@@ -201,7 +200,7 @@ async function carregarPerfil() {
 
     if (!usuario?.id_usuario || !obterToken()) return;
 
-    // Mostra na hora os dados já salvos neste navegador.
+        // Mostra na hora os dados já salvos neste navegador.
     try {
         preencherPerfil(usuario);
     } catch {
@@ -237,7 +236,8 @@ async function carregarPerfil() {
 
     } catch (erro) {
         console.error("Erro ao carregar perfil:", erro);
-            if ($("mensagemPerfil")) {
+
+        if ($("mensagemPerfil")) {
             $("mensagemPerfil").textContent =
                 "Erro ao conectar com o servidor.";
         }
@@ -408,6 +408,7 @@ $("formPerfil")?.addEventListener("submit", async event => {
 // SAIR DA CONTA
 // =========================================================
 
+
 $("btnSairConta")?.addEventListener("click", async () => {
     if (!confirm("Deseja realmente sair da sua conta?")) {
         return;
@@ -474,85 +475,48 @@ function pintarCurtida(botao, ativo) {
         ativo ? "♥" : "♡";
 }
 
-function lerCacheCurtidas(idUsuario) {
-        try {
-        const valor = JSON.parse(localStorage.getItem(`${CACHE_CURTIDAS_PREFIX}${idUsuario}`));
-        return Array.isArray(valor) ? new Set(valor.map(Number)) : null;
-    } catch { return null; }
-}
-
-function salvarCacheCurtidas(idUsuario, ids) {
-    try {
-        localStorage.setItem(
-            `${CACHE_CURTIDAS_PREFIX}${idUsuario}`,
-            JSON.stringify([...ids].map(Number))
-        );
-    } catch {}
-}
-
 async function carregarCurtidasDoUsuario(botoes) {
     const usuario = obterUsuario();
-    const token = obterToken();
 
-    if (!usuario || !token || !botoes.length) return;
+    if (!usuario || !obterToken() || !botoes.length) return;
 
-    const cache = lerCacheCurtidas(usuario.id_usuario);
-
-    if (cache) {
-        botoes.forEach(botao => {
-            pintarCurtida(botao, cache.has(Number(botao.dataset.id)));
-            botao.disabled = false;
-        });
-    } else {
-        botoes.forEach(botao => botao.disabled = true);
-    }
+    botoes.forEach(botao => {
+        botao.disabled = true;
+    });
 
     try {
         const resposta = await fetch(
             `${API}/usuarios/avaliacoes/curtidas/minhas?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
-            { headers: headersAutenticacao() }
+            {
+                cache: "no-store",
+                headers: headersAutenticacao()
+            }
         );
 
         const dados = await resposta.json();
 
         if (!resposta.ok || !dados.sucesso) {
-            throw new Error(dados.mensagem || "Erro ao verificar curtidas");
+            throw new Error(
+                dados.mensagem || "Erro ao verificar curtidas"
+            );
         }
 
-        const curtidas = new Set((dados.curtidas || []).map(Number));
+        const curtidas = new Set(
+            (dados.curtidas || []).map(Number)
+        );
 
         botoes.forEach(botao => {
-            const id = Number(botao.dataset.id);
-
-            if (
-                curtidasInteragidasDuranteConsulta.has(id) ||
-                botao.dataset.acaoEmAndamento
-            ) {
-                if (botao.classList.contains("curtido")) curtidas.add(id);
-                else curtidas.delete(id);
-            }
-        });
-
-        salvarCacheCurtidas(usuario.id_usuario, curtidas);
-
-        botoes.forEach(botao => {
-            const id = Number(botao.dataset.id);
-
-            if (
-                !curtidasInteragidasDuranteConsulta.has(id) &&
-                !botao.dataset.acaoEmAndamento
-            ) {
-                pintarCurtida(botao, curtidas.has(id));
-            }
-
+            pintarCurtida(
+                botao,
+                curtidas.has(Number(botao.dataset.id))
+            );
             botao.disabled = false;
         });
 
     } catch (erro) {
-        console.error("Erro ao verificar curtidas:", erro);
+        console.error(erro);
 
         botoes.forEach(botao => {
-            botao.disabled = false;
             botao.title = "Não foi possível verificar as curtidas.";
         });
     }
@@ -600,7 +564,6 @@ async function alternarCurtida(botao) {
     const ativo = botao.classList.contains("curtido");
 
     botao.disabled = true;
-    botao.dataset.acaoEmAndamento = "1";
 
     try {
         const resposta = await fetch(
@@ -646,14 +609,6 @@ async function alternarCurtida(botao) {
 
         pintarCurtida(botao, !ativo);
 
-        const idsSalvos = lerCacheCurtidas(usuario.id_usuario) || new Set();
-
-        if (ativo) idsSalvos.delete(id);
-        else idsSalvos.add(id);
-
-        salvarCacheCurtidas(usuario.id_usuario, idsSalvos);
-        curtidasInteragidasDuranteConsulta.add(id);
-
         const contador = botao.querySelector(
             ".quantidade-curtidas"
         );
@@ -669,7 +624,6 @@ async function alternarCurtida(botao) {
         alert("Erro ao alterar curtida.");
 
     } finally {
-        delete botao.dataset.acaoEmAndamento;
         botao.disabled = false;
     }
 }
@@ -754,7 +708,6 @@ function montarMinhaAvaliacao(avaliacao) {
 // =========================================================
 // CARREGAR MINHAS AVALIAÇÕES
 // =========================================================
-
 const CHAVE_CACHE_MINHAS = "entreNotas_minhas";
 
 function lerCacheMinhas(idUsuario) {
