@@ -59,9 +59,11 @@ function urlImagemSegura(valor) {
     return "";
 }
 
+
 function obterImagemUsuario(dados) {
     const valores = [
         dados?.foto_perfil,
+        dados?.usuarios?.foto_perfil,
         dados?.usuario?.foto_perfil,
         dados?.perfil?.foto_perfil,
         dados?.autor?.foto_perfil,
@@ -71,6 +73,7 @@ function obterImagemUsuario(dados) {
 
     return valores.map(urlImagemSegura).find(Boolean) || "";
 }
+
 
 function obterCapaAlbum(avaliacao) {
     const valores = [

@@ -62,6 +62,7 @@ async function buscarPerfilPublico(id_usuario) {
 // LISTAR AVALIAÇÕES PÚBLICAS DE UM USUÁRIO
 // =====================================================
 
+
 async function listarAvaliacoesPublicas(id_usuario) {
     const { data, error } = await supabase
         .from("avaliacoes")
@@ -77,6 +78,10 @@ async function listarAvaliacoesPublicas(id_usuario) {
             id_album,
             preview,
             data_avaliacao,
+            usuarios (
+                nome_usuario,
+                foto_perfil
+            ),
             curtidas(count)
         `)
         .eq("id_usuario", id_usuario)
@@ -86,9 +91,12 @@ async function listarAvaliacoesPublicas(id_usuario) {
 
     return (data || []).map(avaliacao => ({
         ...avaliacao,
+        nome_usuario: avaliacao.usuarios?.nome_usuario || "Usuário",
+        foto_perfil: avaliacao.usuarios?.foto_perfil || null,
         total_curtidas: avaliacao.curtidas?.[0]?.count || 0
     }));
 }
+
 
 // =====================================================
 // CADASTRAR USUÁRIO - SUPABASE AUTH
@@ -302,6 +310,7 @@ async function avaliar(
 // LISTAR TODAS AS AVALIAÇÕES (FEED - SEM A FOTO, QUE É PESADA)
 // =====================================================
 
+
 async function listarAvaliacoes() {
     const { data, error } = await supabase
         .from("avaliacoes")
@@ -318,7 +327,8 @@ async function listarAvaliacoes() {
             data_avaliacao,
             id_usuario,
             usuarios (
-                nome_usuario
+                nome_usuario,
+                foto_perfil
             ),
             curtidas(count)
         `)
@@ -330,6 +340,7 @@ async function listarAvaliacoes() {
     return (data || []).map(avaliacao => ({
         ...avaliacao,
         nome_usuario: avaliacao.usuarios?.nome_usuario || "Usuário",
+        foto_perfil: avaliacao.usuarios?.foto_perfil || null,
         total_curtidas: avaliacao.curtidas?.[0]?.count || 0
     }));
 }
