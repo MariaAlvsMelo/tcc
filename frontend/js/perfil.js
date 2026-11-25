@@ -1,114 +1,97 @@
+(() => {
+"use strict";
 
-const API = "https://entre-notas-api.onrender.com";
+const API = ["localhost", "127.0.0.1"].includes(location.hostname)
+    ? "http://localhost:3000"
+    : "https://entre-notas-api.onrender.com";
+
 const $ = id => document.getElementById(id);
+const PREFIXO_CURTIDAS = "entreNotas_curtidas_";
+const CHAVE_CACHE_MINHAS = "entreNotas_minhas";
+const alteracoesLocais = new Map();
+let curtidas = null;
+
+// =========================================================
+// AUXILIARES
+// =========================================================
+const esperar = ms => new Promise(r => setTimeout(r, ms));
 
 const obterUsuario = () => {
-    try {
-        return JSON.parse(localStorage.getItem("usuarioLogado"));
-    } catch {
-        return null;
-    }
+    try { return JSON.parse(localStorage.getItem("usuarioLogado")); }
+    catch { return null; }
 };
 
 const obterToken = () => obterUsuario()?.access_token || "";
 
 const headersAutenticacao = (adicionais = {}) => ({
     ...adicionais,
-    ...(obterToken()
-        ? { Authorization: `Bearer ${obterToken()}` }
-        : {})
+    ...(obterToken() ? { Authorization: `Bearer ${obterToken()}` } : {})
 });
-
-// =========================================================
-// FUNÇÕES AUXILIARES
-// =========================================================
 
 function escaparHTML(valor) {
     return String(valor ?? "").replace(/[&<>"']/g, c => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     })[c]);
 }
 
-
 function urlImagemSegura(valor) {
-    const str = String(valor ?? "").trim();
-
-    if (!str) return "";
-
-    // URLs HTTPS, imagens locais e caminhos públicos relativos.
-    if (
+    const str = String(valor || "");
+    return (
         /^https:\/\//i.test(str) ||
-        /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(str) ||
-        /^blob:/i.test(str) ||
-        /^(?:\.\.\/|\.\/|\/)/.test(str) ||
-        /^storage\/v1\/object\/public\//i.test(str)
-    ) {
-        return str;
+        /^data:image\/(png|jpe?g|webp|gif|avif);base64,/i.test(str) ||
+        /^\.\.\/img\//.test(str)
+    ) ? str : "";
+}
+
+function mostrarMensagem(texto, cor = "") {
+    const el = $("mensagemPerfil");
+    if (!el) return;
+    el.textContent = texto;
+    el.style.color = cor;
+}
+
+// fetch com tempo limite e novas tentativas (o Render demora para "acordar").
+async function buscarJSON(url, opcoes = {}, { tentativas = 3, timeout = 25000 } = {}) {
+    let ultimoErro;
+
+    for (let i = 0; i < tentativas; i++) {
+        const controle = new AbortController();
+        const relogio = setTimeout(() => controle.abort(), timeout);
+
+        try {
+            const resposta = await fetch(url, { ...opcoes, signal: controle.signal });
+            let dados = null;
+            try { dados = await resposta.json(); } catch {}
+
+            if (resposta.ok && dados?.sucesso) return dados;
+
+            const erro = new Error(dados?.mensagem || "Servidor indisponível no momento.");
+            erro.definitivo = Boolean(dados) && resposta.status < 500;
+            throw erro;
+        } catch (erro) {
+            ultimoErro = erro;
+            if (erro.definitivo) break;
+        } finally {
+            clearTimeout(relogio);
+        }
+
+        if (i < tentativas - 1) await esperar(1500 * (i + 1));
     }
 
-    return "";
+    throw ultimoErro;
 }
-
-function obterImagemUsuario(dados) {
-    const valores = [
-        dados?.foto_perfil,
-        dados?.usuario?.foto_perfil,
-        dados?.perfil?.foto_perfil,
-        dados?.autor?.foto_perfil,
-        dados?.avatar_url,
-        dados?.foto
-    ];
-
-    return valores.map(urlImagemSegura).find(Boolean) || "";
-}
-
-function obterCapaAlbum(avaliacao) {
-    const valores = [
-        avaliacao?.capa_album,
-        avaliacao?.album?.cover_medium,
-        avaliacao?.album?.cover,
-        avaliacao?.cover_medium,
-        avaliacao?.cover,
-        avaliacao?.imagem_album
-    ];
-
-    return valores.map(urlImagemSegura).find(Boolean) || "";
-}
-
-
-// =========================================================
-// ESTRELAS PADRONIZADAS
-// =========================================================
 
 function gerarEstrelas(nota) {
-    const n = Math.max(
-        0,
-        Math.min(5, Math.round(Number(nota) || 0))
-    );
+    const n = Math.max(0, Math.min(5, Math.round(Number(nota) || 0)));
 
     return `
-        <div
-            class="estrelas-avaliacao"
-            role="img"
-            aria-label="Nota ${n} de 5 estrelas"
-        >
-            ${Array.from({ length: 5 }, (_, i) => `
-                <span
-                    class="estrela ${i < n ? "ativa" : ""}"
-                    aria-hidden="true"
-                >★</span>
-            `).join("")}
+        <div class="estrelas-avaliacao" role="img" aria-label="Nota ${n} de 5 estrelas">
+            ${Array.from({ length: 5 }, (_, i) =>
+                `<span class="estrela ${i < n ? "ativa" : ""}" aria-hidden="true">★</span>`
+            ).join("")}
         </div>
     `;
 }
-
-// =========================================================
-// PRÉVIA MUSICAL
-// =========================================================
 
 function gerarPreview(avaliacao) {
     const id = String(avaliacao.id_deezer ?? "");
@@ -123,36 +106,22 @@ function gerarPreview(avaliacao) {
     return src
         ? `
             <div class="preview-avaliacao">
-
-                <span class="preview-titulo">
-                    Prévia da música
-                </span>
-
-                <audio
-                    controls
-                    preload="none"
-                    src="${escaparHTML(src)}"
-                ></audio>
-
+                <span class="preview-titulo">Prévia da música</span>
+                <audio controls preload="none" src="${escaparHTML(src)}"></audio>
             </div>
         `
         : "";
 }
 
-// Converte o valor do banco em Date. Sem fuso horário, considera UTC.
 function paraDataUTC(valor) {
     const texto = String(valor);
     const semFuso = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(texto);
-
     return new Date(semFuso ? texto.replace(" ", "T") + "Z" : texto);
 }
 
 function formatarData(data) {
     if (!data) return "";
-
-    if (String(data).includes("/")) {
-        return String(data);
-    }
+    if (String(data).includes("/")) return String(data);
 
     const d = paraDataUTC(data);
 
@@ -161,214 +130,141 @@ function formatarData(data) {
         : d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
 
-// =========================================================
-// VERIFICAR LOGIN
-// =========================================================
+// Reduz a foto para 256x256 (JPEG) antes de enviar: ~20 KB em vez de MBs.
+// Isso deixa o feed leve, porque a foto viaja junto com as avaliações.
+function reduzirImagem(arquivo, lado = 256, qualidade = 0.82) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(arquivo);
+        const img = new Image();
 
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+
+            const menor = Math.min(img.width, img.height);
+            const canvas = document.createElement("canvas");
+            canvas.width = canvas.height = lado;
+
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0, 0, lado, lado);
+            // recorte quadrado centralizado
+            ctx.drawImage(
+                img,
+                (img.width - menor) / 2, (img.height - menor) / 2, menor, menor,
+                0, 0, lado, lado
+            );
+
+            resolve(canvas.toDataURL("image/jpeg", qualidade));
+        };
+
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error("Não foi possível ler a imagem."));
+        };
+
+        img.src = url;
+    });
+}
+
+// =========================================================
+// LOGIN
+// =========================================================
 const usuarioLogado = obterUsuario();
 
-const conteudoPerfil = $("perfil-container");
-const perfilSemLogin = $("perfilSemLogin");
-
-if (conteudoPerfil) {
-    conteudoPerfil.style.display = usuarioLogado ? "" : "none";
-}
-
-if (perfilSemLogin) {
-    perfilSemLogin.style.display = usuarioLogado ? "none" : "flex";
-}
-
-const btnLoginCabecalho = $("btnLoginCabecalho");
-
-if (btnLoginCabecalho) {
-    btnLoginCabecalho.style.display =
-        usuarioLogado ? "none" : "inline-flex";
-}
+if ($("perfil-container")) $("perfil-container").style.display = usuarioLogado ? "" : "none";
+if ($("perfilSemLogin")) $("perfilSemLogin").style.display = usuarioLogado ? "none" : "flex";
+if ($("btnLoginCabecalho")) $("btnLoginCabecalho").style.display = usuarioLogado ? "none" : "inline-flex";
 
 // =========================================================
-// PREENCHER PERFIL
+// PERFIL
 // =========================================================
-
 function preencherPerfil(usuario) {
-    if ($("nomePerfil")) {
-        $("nomePerfil").textContent =
-            usuario.nome_usuario || "Usuário";
-    }
+    const texto = (id, valor) => { if ($(id)) $(id).textContent = valor; };
+    const campo = (id, valor) => { if ($(id)) $(id).value = valor; };
 
-    if ($("emailPerfil")) {
-        $("emailPerfil").textContent = usuario.email || "";
-    }
+    texto("nomePerfil", usuario.nome_usuario || "Usuário");
+    texto("emailPerfil", usuario.email || "");
+    texto("biografiaPerfil", usuario.biografia || "Adicione uma biografia ao seu perfil.");
 
-    if ($("biografiaPerfil")) {
-        $("biografiaPerfil").textContent =
-            usuario.biografia ||
-            "Adicione uma biografia ao seu perfil.";
-    }
-
-    if ($("nomePerfilInput")) {
-        $("nomePerfilInput").value = usuario.nome_usuario || "";
-    }
-
-    if ($("emailPerfilInput")) {
-        $("emailPerfilInput").value = usuario.email || "";
-    }
-
-    if ($("biografiaInput")) {
-        $("biografiaInput").value = usuario.biografia || "";
-    }
-
-    if ($("senhaPerfilInput")) {
-        $("senhaPerfilInput").value = "";
-    }
+    campo("nomePerfilInput", usuario.nome_usuario || "");
+    campo("emailPerfilInput", usuario.email || "");
+    campo("biografiaInput", usuario.biografia || "");
+    campo("senhaPerfilInput", "");
 
     if ($("fotoPerfil")) {
-        $("fotoPerfil").src =
-            obterImagemUsuario(usuario) ||
-        "../img/logo.png";
+        $("fotoPerfil").onerror = () => { $("fotoPerfil").onerror = null; $("fotoPerfil").src = "../img/logo.png"; };
+        $("fotoPerfil").src = urlImagemSegura(usuario.foto_perfil) || "../img/logo.png";
     }
 }
-
-// =========================================================
-// CARREGAR PERFIL
-// =========================================================
 
 async function carregarPerfil() {
     const usuario = obterUsuario();
-
     if (!usuario?.id_usuario || !obterToken()) return;
 
-        // Mostra na hora os dados já salvos neste navegador.
-    try {
-        preencherPerfil(usuario);
-    } catch {
-        // Faltou algum dado salvo: aguarda o servidor.
-    }
+    try { preencherPerfil(usuario); } catch {}
 
     try {
-        const resposta = await fetch(
+        const dados = await buscarJSON(
             `${API}/usuarios/perfil/${usuario.id_usuario}`,
-            {
-                headers: headersAutenticacao(),
-                cache: "no-store"
-            }
+            { headers: headersAutenticacao(), cache: "no-store" }
         );
-
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            throw new Error(
-                dados.mensagem || "Erro ao carregar perfil"
-            );
-        }
 
         preencherPerfil(dados.usuario);
 
-        localStorage.setItem(
-            "usuarioLogado",
-            JSON.stringify({
-                ...usuario,
-                ...dados.usuario
-            })
-        );
-
+        // Relê o usuário salvo (o token pode ter mudado durante a espera).
+        localStorage.setItem("usuarioLogado", JSON.stringify({ ...(obterUsuario() || usuario), ...dados.usuario }));
     } catch (erro) {
         console.error("Erro ao carregar perfil:", erro);
-
-        if ($("mensagemPerfil")) {
-            $("mensagemPerfil").textContent =
-                "Erro ao conectar com o servidor.";
-        }
+        mostrarMensagem("Erro ao conectar com o servidor.");
     }
 }
 
-// =========================================================
-// MOSTRAR / ESCONDER EDIÇÃO
-// =========================================================
-
 function alternarEdicao(mostrar) {
-    if ($("areaEdicaoPerfil")) {
-        $("areaEdicaoPerfil").style.display =
-            mostrar ? "block" : "none";
-    }
-
-    if ($("botaoAlterarFoto")) {
-        $("botaoAlterarFoto").style.display =
-            mostrar ? "inline-block" : "none";
-    }
-
-    if ($("btnEditarPerfil")) {
-        $("btnEditarPerfil").style.display =
-            mostrar ? "none" : "inline-block";
-    }
+    if ($("areaEdicaoPerfil")) $("areaEdicaoPerfil").style.display = mostrar ? "block" : "none";
+    if ($("botaoAlterarFoto")) $("botaoAlterarFoto").style.display = mostrar ? "inline-block" : "none";
+    if ($("btnEditarPerfil")) $("btnEditarPerfil").style.display = mostrar ? "none" : "inline-block";
 }
 
 $("btnEditarPerfil")?.addEventListener("click", () => {
     alternarEdicao(true);
-
-    $("areaEdicaoPerfil")?.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-    });
+    $("areaEdicaoPerfil")?.scrollIntoView({ behavior: "smooth", block: "center" });
 });
 
 $("btnCancelarEdicao")?.addEventListener("click", () => {
     alternarEdicao(false);
-
-    if ($("fotoPerfil")) {
-        delete $("fotoPerfil").dataset.novaFoto;
-    }
-
+    if ($("fotoPerfil")) delete $("fotoPerfil").dataset.novaFoto;
     carregarPerfil();
 });
 
-// =========================================================
-// ALTERAR FOTO
-// =========================================================
-
-$("inputFoto")?.addEventListener("change", event => {
+$("inputFoto")?.addEventListener("change", async event => {
     const arquivo = event.target.files?.[0];
-
     if (!arquivo) return;
 
-    if (
-        !/^image\/(png|jpeg|webp|gif)$/.test(arquivo.type) ||
-        arquivo.size > 2 * 1024 * 1024
-    ) {
-        if ($("mensagemPerfil")) {
-            $("mensagemPerfil").textContent =
-                "Escolha uma imagem PNG, JPEG, WebP ou GIF com até 2 MB.";
-        }
-
+    if (!/^image\/(png|jpeg|webp|gif)$/.test(arquivo.type) || arquivo.size > 8 * 1024 * 1024) {
+        mostrarMensagem("Escolha uma imagem PNG, JPEG, WebP ou GIF com até 8 MB.");
         event.target.value = "";
         return;
     }
 
-    const leitor = new FileReader();
+    try {
+        const reduzida = await reduzirImagem(arquivo);
 
-    leitor.onload = () => {
         if ($("fotoPerfil")) {
-            $("fotoPerfil").src = leitor.result;
-            $("fotoPerfil").dataset.novaFoto = leitor.result;
+            $("fotoPerfil").src = reduzida;
+            $("fotoPerfil").dataset.novaFoto = reduzida;
         }
 
-        if ($("mensagemPerfil")) {
-            $("mensagemPerfil").textContent =
-                "Foto selecionada. Clique em salvar.";
-        }
-    };
-
-    leitor.readAsDataURL(arquivo);
+        mostrarMensagem("Foto selecionada. Clique em salvar.");
+    } catch (erro) {
+        mostrarMensagem(erro.message);
+        event.target.value = "";
+    }
 });
-
-// =========================================================
-// SALVAR ALTERAÇÕES
-// =========================================================
 
 $("formPerfil")?.addEventListener("submit", async event => {
     event.preventDefault();
 
     const usuario = obterUsuario();
-
     if (!usuario || !obterToken()) return;
 
     const nome = $("nomePerfilInput")?.value.trim();
@@ -377,406 +273,242 @@ $("formPerfil")?.addEventListener("submit", async event => {
     const biografia = $("biografiaInput")?.value.trim() || "";
 
     if (!nome || !email) {
-        $("mensagemPerfil").textContent =
-            "Preencha nome e e-mail.";
+        mostrarMensagem("Preencha nome e e-mail.", "#ff5c7c");
         return;
     }
 
     try {
-        const resposta = await fetch(
+        await buscarJSON(
             `${API}/usuarios/perfil/${usuario.id_usuario}`,
             {
                 method: "PUT",
-
-                headers: headersAutenticacao({
-                    "Content-Type": "application/json"
-                }),
-
+                headers: headersAutenticacao({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
-                    nome,
-                    email,
-                    senha,
-                    biografia,
-                    foto_perfil:
-                        $("fotoPerfil")?.dataset.novaFoto ||
-                        usuario.foto_perfil ||
-                        null
+                    nome, email, senha, biografia,
+                    foto_perfil: $("fotoPerfil")?.dataset.novaFoto || usuario.foto_perfil || null
                 })
-            }
+            },
+            { tentativas: 1, timeout: 30000 }
         );
 
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            throw new Error(
-                dados.mensagem || "Erro ao salvar perfil"
-            );
-        }
-
-        if ($("fotoPerfil")) {
-            delete $("fotoPerfil").dataset.novaFoto;
-        }
-
-        if ($("inputFoto")) {
-            $("inputFoto").value = "";
-        }
+        if ($("fotoPerfil")) delete $("fotoPerfil").dataset.novaFoto;
+        if ($("inputFoto")) $("inputFoto").value = "";
 
         await carregarPerfil();
-
         alternarEdicao(false);
 
-        if ($("mensagemPerfil")) {
-            $("mensagemPerfil").textContent =
-                "Perfil atualizado com sucesso!";
+        // A foto pode ter mudado: o feed precisa buscar de novo.
+        localStorage.removeItem("entreNotas_feedCache");
+        localStorage.removeItem("entreNotas_fotosAutores");
 
-            $("mensagemPerfil").style.color = "#54d98b";
-        }
-
+        mostrarMensagem("Perfil atualizado com sucesso!", "#54d98b");
     } catch (erro) {
         console.error(erro);
-
-        if ($("mensagemPerfil")) {
-            $("mensagemPerfil").textContent = erro.message;
-        }
+        mostrarMensagem(erro.message || "Erro ao salvar perfil.", "#ff5c7c");
     }
 });
-
-// =========================================================
-// SAIR DA CONTA
-// =========================================================
-
 
 $("btnSairConta")?.addEventListener("click", async () => {
-    if (!confirm("Deseja realmente sair da sua conta?")) {
-        return;
-    }
+    if (!confirm("Deseja realmente sair da sua conta?")) return;
 
     try {
-        // Encerra a sessão do Supabase
-        const { error } = await supabaseFrontend.auth.signOut();
-
-        if (error) {
-            throw error;
+        // O cliente do Supabase pode não existir nesta página: não pode impedir a saída.
+        if (typeof supabaseFrontend !== "undefined") {
+            await supabaseFrontend.auth.signOut();
         }
-
-        // Remove os dados locais do usuário
-        localStorage.removeItem("usuarioLogado");
-
-        // Volta para a tela de login
-        window.location.replace("login.html");
-
     } catch (erro) {
-        console.error("Erro ao sair da conta:", erro);
-        alert("Não foi possível sair da conta. Tente novamente.");
+        console.error("Erro ao encerrar a sessão:", erro);
+    } finally {
+        localStorage.removeItem("usuarioLogado");
+        location.replace("login.html");
     }
 });
 
 // =========================================================
-// CURTIDAS PADRONIZADAS
+// CURTIDAS
 // =========================================================
+function lerCacheCurtidas(idUsuario) {
+    try {
+        const valor = JSON.parse(localStorage.getItem(PREFIXO_CURTIDAS + idUsuario));
+        return Array.isArray(valor) ? new Set(valor.map(Number)) : null;
+    } catch { return null; }
+}
+
+function salvarCacheCurtidas(idUsuario, ids) {
+    try { localStorage.setItem(PREFIXO_CURTIDAS + idUsuario, JSON.stringify([...ids].map(Number))); }
+    catch {}
+}
 
 function curtidaHTML(avaliacao) {
-    const id = Number(avaliacao.id);
-
-    const total = Math.max(
-        0,
-        Number(avaliacao.total_curtidas) || 0
-    );
+    const total = Math.max(0, Number(avaliacao.total_curtidas) || 0);
 
     return `
-        <button
-            type="button"
-            class="btn-curtir"
-            data-id="${id}"
-            disabled
-            aria-pressed="false"
-            aria-label="Curtir avaliação"
-        >
+        <button type="button" class="btn-curtir" data-id="${Number(avaliacao.id)}"
+            disabled aria-pressed="false" aria-label="Curtir avaliação">
             <span class="icone-curtida" aria-hidden="true">♡</span>
             <span class="quantidade-curtidas">${total}</span>
         </button>
     `;
 }
 
-function pintarCurtida(botao, ativo) {
+function pintarCurtida(botao, ativo, total) {
     botao.classList.toggle("curtido", ativo);
-
     botao.setAttribute("aria-pressed", String(ativo));
+    botao.setAttribute("aria-label", ativo ? "Remover curtida" : "Curtir avaliação");
 
-    botao.setAttribute(
-        "aria-label",
-        ativo ? "Remover curtida" : "Curtir avaliação"
-    );
+    const icone = botao.querySelector(".icone-curtida");
+    if (icone) icone.textContent = ativo ? "♥" : "♡";
 
-    botao.querySelector(".icone-curtida").textContent =
-        ativo ? "♥" : "♡";
-}
-
-async function carregarCurtidasDoUsuario(botoes) {
-    const usuario = obterUsuario();
-
-    if (!usuario || !obterToken() || !botoes.length) return;
-
-    botoes.forEach(botao => {
-        botao.disabled = true;
-    });
-
-    try {
-        const resposta = await fetch(
-            `${API}/usuarios/avaliacoes/curtidas/minhas?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
-            {
-                cache: "no-store",
-                headers: headersAutenticacao()
-            }
-        );
-
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            throw new Error(
-                dados.mensagem || "Erro ao verificar curtidas"
-            );
-        }
-
-        const curtidas = new Set(
-            (dados.curtidas || []).map(Number)
-        );
-
-        botoes.forEach(botao => {
-            pintarCurtida(
-                botao,
-                curtidas.has(Number(botao.dataset.id))
-            );
-            botao.disabled = false;
-        });
-
-    } catch (erro) {
-        console.error(erro);
-
-        botoes.forEach(botao => {
-            botao.title = "Não foi possível verificar as curtidas.";
-        });
+    if (total !== undefined) {
+        const q = botao.querySelector(".quantidade-curtidas");
+        if (q) q.textContent = total;
     }
 }
 
-async function verificarCurtida(id, botao) {
-    const usuario = obterUsuario();
+function pintarTodas() {
+    if (!curtidas) return;
 
-    if (!usuario || !obterToken() || !botao) return;
-
-    botao.disabled = true;
-
-    try {
-        const resposta = await fetch(
-            `${API}/usuarios/avaliacoes/${id}/curtiu?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
-            {
-                cache: "no-store",
-                headers: headersAutenticacao()
-            }
-        );
-
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            throw new Error(
-                dados.mensagem || "Erro ao verificar curtida"
-            );
-        }
-
-        pintarCurtida(botao, Boolean(dados.curtiu));
+    document.querySelectorAll("#listaMinhasAvaliacoes .btn-curtir").forEach(botao => {
+        if (botao.dataset.acaoEmAndamento) return;
+        pintarCurtida(botao, curtidas.has(Number(botao.dataset.id)));
         botao.disabled = false;
+    });
+}
 
+async function carregarCurtidasDoUsuario() {
+    const usuario = obterUsuario();
+    if (!usuario || !obterToken()) return;
+
+    curtidas = lerCacheCurtidas(usuario.id_usuario);
+    pintarTodas();
+
+    try {
+        const dados = await buscarJSON(
+            `${API}/usuarios/avaliacoes/curtidas/minhas?id_usuario=${encodeURIComponent(usuario.id_usuario)}`,
+            { headers: headersAutenticacao() },
+            { tentativas: 2 }
+        );
+
+        const novo = new Set((dados.curtidas || []).map(Number));
+        alteracoesLocais.forEach((ativo, id) => ativo ? novo.add(id) : novo.delete(id));
+
+        curtidas = novo;
+        salvarCacheCurtidas(usuario.id_usuario, novo);
     } catch (erro) {
-        console.error(erro);
-        botao.title = "Não foi possível verificar a curtida.";
+        console.error("Erro ao verificar curtidas:", erro);
+        curtidas = curtidas || new Set();
+    } finally {
+        alteracoesLocais.clear();
     }
+
+    pintarTodas();
 }
 
 async function alternarCurtida(botao) {
     const usuario = obterUsuario();
-
     if (!usuario || !obterToken() || botao.disabled) return;
 
     const id = Number(botao.dataset.id);
-    const ativo = botao.classList.contains("curtido");
+    const estava = botao.classList.contains("curtido");
+    const totalAntes = Number(botao.querySelector(".quantidade-curtidas")?.textContent) || 0;
 
+    pintarCurtida(botao, !estava, Math.max(0, totalAntes + (estava ? -1 : 1)));
     botao.disabled = true;
+    botao.dataset.acaoEmAndamento = "1";
+
+    let ativoFinal = !estava;
 
     try {
-        const resposta = await fetch(
+        await buscarJSON(
             `${API}/usuarios/avaliacoes/${id}/curtir`,
             {
-                method: ativo ? "DELETE" : "POST",
-
-                headers: headersAutenticacao({
-                    "Content-Type": "application/json"
-                }),
-
-                body: JSON.stringify({
-                    id_usuario: usuario.id_usuario
-                })
-            }
+                method: estava ? "DELETE" : "POST",
+                headers: headersAutenticacao({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ id_usuario: usuario.id_usuario })
+            },
+            { tentativas: 1, timeout: 20000 }
         );
-
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            if (
-                String(dados.mensagem || "")
-                    .toLowerCase()
-                    .includes("já curtiu")
-            ) {
-                const contador = botao.querySelector(
-                    ".quantidade-curtidas"
-                );
-
-                if (!ativo) {
-                    contador.textContent =
-                        (Number(contador.textContent) || 0) + 1;
-                }
-
-                pintarCurtida(botao, true);
-                return;
-            }
-
-            throw new Error(
-                dados.mensagem || "Não foi possível alterar a curtida"
-            );
-        }
-
-        pintarCurtida(botao, !ativo);
-
-        const contador = botao.querySelector(
-            ".quantidade-curtidas"
-        );
-
-        contador.textContent = Math.max(
-            0,
-            (Number(contador.textContent) || 0) +
-            (ativo ? -1 : 1)
-        );
-
     } catch (erro) {
-        console.error(erro);
-        alert("Erro ao alterar curtida.");
-
+        if (!estava && /já curtiu/i.test(erro.message)) {
+            ativoFinal = true;
+            pintarCurtida(botao, true, totalAntes);
+        } else {
+            console.error(erro);
+            ativoFinal = estava;
+            pintarCurtida(botao, estava, totalAntes);
+            alert("Não foi possível alterar a curtida.");
+        }
     } finally {
+        delete botao.dataset.acaoEmAndamento;
         botao.disabled = false;
     }
+
+    const conjunto = curtidas || lerCacheCurtidas(usuario.id_usuario) || new Set();
+    if (ativoFinal) conjunto.add(id); else conjunto.delete(id);
+    curtidas = conjunto;
+    salvarCacheCurtidas(usuario.id_usuario, conjunto);
+    alteracoesLocais.set(id, ativoFinal);
 }
 
 // =========================================================
-// MONTAR AVALIAÇÃO DO PERFIL
+// MINHAS AVALIAÇÕES
 // =========================================================
-
 function montarMinhaAvaliacao(avaliacao) {
     const id = Number(avaliacao.id);
-
     if (!Number.isSafeInteger(id) || id <= 0) return "";
 
-    const capa = obterCapaAlbum(avaliacao);
+    const capa = urlImagemSegura(avaliacao.capa_album);
+
     const capaHTML = capa
-        ? `
-            <img
-                class="capa-musica-feed"
-                src="${escaparHTML(capa)}"
-                alt="Capa do álbum"
-            >
-        `
-        : `
-            <div
-                class="capa-musica-feed capa-placeholder"
-                aria-hidden="true"
-            >♫</div>
-        `;
+        ? `<img class="capa-musica-feed" src="${escaparHTML(capa)}" alt="Capa do álbum" loading="lazy" decoding="async">`
+        : `<div class="capa-musica-feed capa-placeholder" aria-hidden="true">♫</div>`;
 
     return `
-        <article
-            class="card-minha-avaliacao"
-            data-avaliacao-id="${id}"
-        >
-
-            <div class="capa-musica-container">
-                ${capaHTML}
-            </div>
+        <article class="card-minha-avaliacao" data-avaliacao-id="${id}">
+            <div class="capa-musica-container">${capaHTML}</div>
 
             <div class="conteudo-minha-avaliacao informacoes-musica">
-
                 <h3>${escaparHTML(avaliacao.musica)}</h3>
 
                 <p class="artista-avaliacao">
-                    <strong>Artista:</strong>
-                    ${escaparHTML(avaliacao.artista)}
+                    <strong>Artista:</strong> ${escaparHTML(avaliacao.artista)}
                 </p>
 
                 <p class="comentario-avaliacao">${escaparHTML(avaliacao.comentario)}</p>
 
                 ${gerarEstrelas(avaliacao.nota)}
 
-                <p class="data-postagem">
-                    ${escaparHTML(formatarData(avaliacao.data_avaliacao))}
-                </p>
+                <p class="data-postagem">${escaparHTML(formatarData(avaliacao.data_avaliacao))}</p>
 
-                <div class="area-preview-feed">
-                    ${gerarPreview(avaliacao)}
-                </div>
+                <div class="area-preview-feed">${gerarPreview(avaliacao)}</div>
 
                 <div class="acoes-minha-avaliacao">
-
                     ${curtidaHTML(avaliacao)}
-
-                    <button
-                        type="button"
-                        class="botao-excluir-avaliacao"
-                        data-id="${id}"
-                    >
+                    <button type="button" class="botao-excluir-avaliacao" data-id="${id}">
                         Excluir avaliação
                     </button>
-
                 </div>
-
             </div>
-
         </article>
     `;
 }
 
-// =========================================================
-// CARREGAR MINHAS AVALIAÇÕES
-// =========================================================
-const CHAVE_CACHE_MINHAS = "entreNotas_minhas";
-
 function lerCacheMinhas(idUsuario) {
     try {
-        const salvo = JSON.parse(
-            localStorage.getItem(CHAVE_CACHE_MINHAS)
-        );
-
-        return salvo && Number(salvo.id_usuario) === Number(idUsuario)
-            ? salvo.avaliacoes
-            : null;
-    } catch {
-        return null;
-    }
+        const salvo = JSON.parse(localStorage.getItem(CHAVE_CACHE_MINHAS));
+        return salvo && Number(salvo.id_usuario) === Number(idUsuario) ? salvo.avaliacoes : null;
+    } catch { return null; }
 }
 
 function salvarCacheMinhas(idUsuario, avaliacoes) {
-    try {
-        localStorage.setItem(
-            CHAVE_CACHE_MINHAS,
-            JSON.stringify({ id_usuario: idUsuario, avaliacoes })
-        );
-    } catch {
-        // Sem espaço no navegador: segue sem cache.
-    }
+    try { localStorage.setItem(CHAVE_CACHE_MINHAS, JSON.stringify({ id_usuario: idUsuario, avaliacoes })); }
+    catch {}
 }
 
 function renderizarMinhas(container, minhas) {
     if ($("contadorAvaliacoes")) {
-        $("contadorAvaliacoes").textContent = `
-            ${minhas.length}
-            ${minhas.length === 1 ? "avaliação" : "avaliações"}
-        `;
+        $("contadorAvaliacoes").textContent =
+            `${minhas.length} ${minhas.length === 1 ? "avaliação" : "avaliações"}`;
     }
 
     if (!minhas.length) {
@@ -789,9 +521,8 @@ function renderizarMinhas(container, minhas) {
         return;
     }
 
-    container.innerHTML = minhas
-        .map(montarMinhaAvaliacao)
-        .join("");
+    container.innerHTML = minhas.map(montarMinhaAvaliacao).join("");
+    pintarTodas();
 }
 
 async function carregarMinhasAvaliacoes(usarCache = true) {
@@ -800,132 +531,75 @@ async function carregarMinhasAvaliacoes(usarCache = true) {
 
     if (!usuario?.id_usuario || !obterToken() || !container) return;
 
-    // Mostra na hora o que foi salvo da última visita.
-    const emCache = usarCache
-        ? lerCacheMinhas(usuario.id_usuario)
-        : null;
+    const emCache = usarCache ? lerCacheMinhas(usuario.id_usuario) : null;
 
-    if (emCache) {
-        renderizarMinhas(container, emCache);
-    }
+    if (emCache) renderizarMinhas(container, emCache);
+    else container.innerHTML = `<p aria-live="polite">Carregando suas avaliações...</p>`;
 
     try {
-        const resposta = await fetch(
+        const dados = await buscarJSON(
             `${API}/usuarios/avaliacoes/usuario/${usuario.id_usuario}`,
-            {
-                cache: "no-store",
-                headers: headersAutenticacao()
-            }
+            { headers: headersAutenticacao(), cache: "no-store" }
         );
-
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            throw new Error(
-                dados.mensagem || "Erro ao listar avaliações"
-            );
-        }
 
         const minhas = dados.avaliacoes || [];
 
         salvarCacheMinhas(usuario.id_usuario, minhas);
 
-        // Só redesenha se algo mudou.
         if (!emCache || JSON.stringify(emCache) !== JSON.stringify(minhas)) {
             renderizarMinhas(container, minhas);
         }
 
-        const botoes = Array.from(
-            container.querySelectorAll(".btn-curtir")
-        );
-
-        if (botoes.length) {
-            await carregarCurtidasDoUsuario(botoes);
-        }
-
+        if (minhas.length) await carregarCurtidasDoUsuario();
     } catch (erro) {
-        console.error(
-            "Erro ao carregar avaliações do perfil:",
-            erro
-        );
-
-        if (!emCache) {
-            container.innerHTML = `
-                <p>Erro ao carregar suas avaliações.</p>
-            `;
-        }
+        console.error("Erro ao carregar avaliações do perfil:", erro);
+        if (!emCache) container.innerHTML = `<p>Erro ao carregar suas avaliações.</p>`;
     }
 }
-
-// =========================================================
-// EXCLUIR AVALIAÇÃO
-// =========================================================
 
 async function excluirAvaliacao(id) {
     const usuario = obterUsuario();
 
-    if (
-        !usuario ||
-        !obterToken() ||
-        !confirm("Tem certeza que deseja excluir esta avaliação?")
-    ) {
-        return;
-    }
+    if (!usuario || !obterToken() || !confirm("Tem certeza que deseja excluir esta avaliação?")) return;
 
     try {
-        const resposta = await fetch(
+        await buscarJSON(
             `${API}/usuarios/avaliacoes/${id}`,
             {
                 method: "DELETE",
-
-                headers: headersAutenticacao({
-                    "Content-Type": "application/json"
-                }),
-
-                body: JSON.stringify({
-                    id_usuario: usuario.id_usuario
-                })
-            }
+                headers: headersAutenticacao({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ id_usuario: usuario.id_usuario })
+            },
+            { tentativas: 1, timeout: 20000 }
         );
 
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            throw new Error(
-                dados.mensagem || "Não foi possível excluir."
-            );
-        }
-
         localStorage.removeItem("entreNotas_feedCache");
-
         await carregarMinhasAvaliacoes(false);
-
     } catch (erro) {
         console.error(erro);
-        alert(erro.message);
+        alert(erro.message || "Não foi possível excluir.");
     }
 }
 
-// =========================================================
-// EVENTOS DOS CARDS
-// =========================================================
-
 $("listaMinhasAvaliacoes")?.addEventListener("click", event => {
     const like = event.target.closest(".btn-curtir");
+    if (like) { alternarCurtida(like); return; }
 
-    if (like) {
-        alternarCurtida(like);
-        return;
-    }
-
-    const excluir = event.target.closest(
-        ".botao-excluir-avaliacao"
-    );
-
-    if (excluir) {
-        excluirAvaliacao(Number(excluir.dataset.id));
-    }
+    const excluir = event.target.closest(".botao-excluir-avaliacao");
+    if (excluir) excluirAvaliacao(Number(excluir.dataset.id));
 });
+
+$("listaMinhasAvaliacoes")?.addEventListener("error", event => {
+    const el = event.target;
+
+    if (el.tagName === "IMG" && el.classList.contains("capa-musica-feed")) {
+        const div = document.createElement("div");
+        div.className = "capa-musica-feed capa-placeholder";
+        div.setAttribute("aria-hidden", "true");
+        div.textContent = "♫";
+        el.replaceWith(div);
+    }
+}, true);
 
 if (usuarioLogado) {
     carregarPerfil();
@@ -935,23 +609,13 @@ if (usuarioLogado) {
 // =========================================================
 // CABEÇALHO
 // =========================================================
-
 const cabecalho = document.querySelector(".cabecalho");
-
 let ultimaRolagem = window.scrollY;
 
 if (cabecalho) {
-    window.addEventListener(
-        "scroll",
-        () => {
-            cabecalho.classList.toggle(
-                "cabecalho--hidden",
-                window.scrollY > ultimaRolagem &&
-                window.scrollY > 120
-            );
-
-            ultimaRolagem = window.scrollY;
-        },
-        { passive: true }
-    );
+    window.addEventListener("scroll", () => {
+        cabecalho.classList.toggle("cabecalho--hidden", window.scrollY > ultimaRolagem && window.scrollY > 120);
+        ultimaRolagem = window.scrollY;
+    }, { passive: true });
 }
+})();
