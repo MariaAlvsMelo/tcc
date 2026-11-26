@@ -406,14 +406,43 @@ async function verificarLoginGoogle() {
 
         if (!sessao) return;
 
-        const { data: perfil, error: erroPerfil } =
+        const colunas = "id_usuario, nome_usuario, foto_perfil, biografia";
+
+        // maybeSingle: se não houver perfil, devolve null em vez de dar erro 406.
+        let { data: perfil, error: erroPerfil } =
             await supabaseFrontend
                 .from("usuarios")
-                .select("id_usuario, nome_usuario, foto_perfil, biografia")
+                .select(colunas)
                 .eq("auth_user_id", sessao.user.id)
-                .single();
+                .maybeSingle();
 
         if (erroPerfil) throw erroPerfil;
+
+        // Primeiro acesso com Google: cria o perfil caso ainda não exista.
+        if (!perfil) {
+            const meta = sessao.user.user_metadata || {};
+
+            const nome =
+                meta.nome_usuario ||
+                meta.full_name ||
+                meta.name ||
+                (sessao.user.email || "").split("@")[0] ||
+                "Usuário";
+
+            const { data: criado, error: erroCriar } =
+                await supabaseFrontend
+                    .from("usuarios")
+                    .insert({
+                        auth_user_id: sessao.user.id,
+                        nome_usuario: nome
+                    })
+                    .select(colunas)
+                    .single();
+
+            if (erroCriar) throw erroCriar;
+
+            perfil = criado;
+        }
 
         const usuarioLogado = {
             ...perfil,
@@ -431,6 +460,10 @@ async function verificarLoginGoogle() {
 
     } catch (erro) {
         console.error("Erro ao finalizar login Google:", erro);
+
+        // Encerra a sessão para a página não repetir o erro a cada recarga.
+        try { await supabaseFrontend.auth.signOut(); } catch {}
+
         alert("Não foi possível carregar seu perfil. Tente novamente.");
     }
 }
