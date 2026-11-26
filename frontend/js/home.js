@@ -21,12 +21,14 @@ const TTL_COMENTARIOS = 60 * 1000;
 
 const avaliacoesPorId = new Map();
 const fotos = new Map();              // id_usuario -> url da foto
-const fotosTentadas = new Set();      // ids já consultados no perfil público
+const fotosTentadas = new Set(); 
+const fotosT = new Map();             // id_usuario -> quando a foto foi guardada     // ids já consultados no perfil público
 const respostasCache = new Map();     // id_avaliacao -> { t, lista }
 const respostasEmAndamento = new Map();
 const alteracoesLocais = new Map();   // curtidas feitas durante a sincronização
 
-let curtidas = null;                  // Set de ids curtidos (null = ainda desconhecido)
+let curtidas = null;   
+let falhasFoto = 0;               // Set de ids curtidos (null = ainda desconhecido)
 let todas = [];
 let exibidos = 0;
 let observador = null;
@@ -107,15 +109,28 @@ function dadosAutor(a) {
     };
 }
 
+// Foto enorme (base64) não entra no HTML: espera a miniatura ficar pronta.
 function fotoDoAutor(autor) {
-    return urlImagemSegura(autor.foto) || fotos.get(autor.id) || "";
+    const salva = fotos.get(autor.id);
+    if (salva) return salva;
+
+    const url = urlImagemSegura(autor.foto);
+    return url.startsWith("data:") && url.length > FOTO_MAX_CACHE ? "" : url;
 }
+
+const TTL_FOTOS = 24 * 60 * 60 * 1000;
 
 function carregarFotosSalvas() {
     try {
         const salvo = JSON.parse(localStorage.getItem(CHAVE_FOTOS)) || {};
-        Object.entries(salvo).forEach(([id, url]) => {
-            if (urlImagemSegura(url)) fotos.set(Number(id), url);
+
+        Object.entries(salvo).forEach(([id, item]) => {
+            const url = urlImagemSegura(item?.u);
+
+            if (url && Date.now() - item.t < TTL_FOTOS) {
+                fotos.set(Number(id), url);
+                fotosT.set(Number(id), item.t);
+            }
         });
     } catch {}
 }
@@ -123,18 +138,61 @@ function carregarFotosSalvas() {
 function salvarFotos() {
     try {
         const obj = {};
+
         Array.from(fotos).slice(-150).forEach(([id, url]) => {
-            if (url.length <= FOTO_MAX_CACHE) obj[id] = url;
+            if (url.length <= FOTO_MAX_CACHE) obj[id] = { u: url, t: fotosT.get(id) || Date.now() };
         });
+
         localStorage.setItem(CHAVE_FOTOS, JSON.stringify(obj));
     } catch {}
+}
+
+// Reduz foto grande (base64) para ~96px: fica leve na tela e cabe no cache.
+function miniaturizar(url, lado = 96) {
+    return new Promise(resolve => {
+        if (!/^data:image\//i.test(url) || url.length <= 6000) return resolve(url);
+
+        const img = new Image();
+
+        img.onload = () => {
+            try {
+                const menor = Math.min(img.width, img.height) || 1;
+                const canvas = document.createElement("canvas");
+                canvas.width = canvas.height = lado;
+
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(0, 0, lado, lado);
+                ctx.drawImage(img, (img.width - menor) / 2, (img.height - menor) / 2, menor, menor, 0, 0, lado, lado);
+
+                resolve(canvas.toDataURL("image/jpeg", 0.8));
+            } catch { resolve(url); }
+        };
+
+        img.onerror = () => resolve(url);
+        img.src = url;
+    });
+}
+
+// Guarda a foto (já miniaturizada), mostra no feed e salva para as próximas visitas.
+async function definirFoto(id, url) {
+    const final = await miniaturizar(url);
+
+    fotos.set(id, final);
+    fotosT.set(id, Date.now());
+    aplicarFoto(id, final);
+    salvarFotos();
 }
 
 function registrarFotos(lista) {
     lista.forEach(a => {
         const autor = dadosAutor(a);
         const url = urlImagemSegura(autor.foto);
-        if (autor.id && url) fotos.set(autor.id, url);
+
+        if (autor.id && url && !fotos.has(autor.id) && !fotosTentadas.has(autor.id)) {
+            fotosTentadas.add(autor.id);
+            definirFoto(autor.id, url);
+        }
     });
 }
 
@@ -181,34 +239,21 @@ function aplicarTodasFotos() {
 }
 
 // Se a API do feed não trouxer a foto, busca no perfil público (só autores que faltam).
+// Se a API do feed não trouxer a foto, busca no perfil público, um autor por vez
+// e sem insistir quando o servidor está lento (essa resposta é pesada).
 async function buscarFotosFaltantes(ids) {
-    const faltando = [...new Set(ids)].filter(id => id && !fotos.has(id) && !fotosTentadas.has(id));
-    if (!faltando.length) return;
+    const faltando = [...new Set(ids)].filter(id => id && !fotos.has(id) && !fotosTentadas.has(id)).slice(0, 6);
 
-    faltando.forEach(id => fotosTentadas.add(id));
+    for (const id of faltando) {
+        if (falhasFoto >= 2) return;
+        fotosTentadas.add(id);
 
-    let indice = 0;
-
-    async function trabalhador() {
-        while (indice < faltando.length) {
-            const id = faltando[indice++];
-
-            try {
-                const dados = await buscarJSON(
-                    `${API}/usuarios/perfil-publico/${id}`, {}, { tentativas: 2, timeout: 15000 }
-                );
-                const url = urlImagemSegura(dados.usuario?.foto_perfil);
-
-                if (url) {
-                    fotos.set(id, url);
-                    aplicarFoto(id, url);
-                }
-            } catch {}
-        }
+        try {
+            const dados = await buscarJSON(`${API}/usuarios/perfil-publico/${id}`, {}, { tentativas: 1, timeout: 20000 });
+            const url = urlImagemSegura(dados.usuario?.foto_perfil);
+            if (url) await definirFoto(id, url);
+        } catch { falhasFoto++; }
     }
-
-    await Promise.all([trabalhador(), trabalhador(), trabalhador()]);
-    salvarFotos();
 }
 
 // =========================================================
@@ -837,6 +882,21 @@ async function carregarAvaliacoes() {
     }
 }
 
+// Leva para o perfil público o que o Feed já sabe do autor: o perfil abre na hora.
+function guardarSementePerfil(href) {
+    const id = Number(new URLSearchParams(String(href).split("?")[1] || "").get("id"));
+    if (!id) return;
+
+    const avaliacoes = todas.filter(a => dadosAutor(a).id === id);
+    if (!avaliacoes.length) return;
+
+    try {
+        sessionStorage.setItem(`entreNotas_semente_${id}`, JSON.stringify({
+            usuario: { id_usuario: id, nome_usuario: dadosAutor(avaliacoes[0]).nome, foto_perfil: fotos.get(id) || "" },
+            avaliacoes: avaliacoes.map(versaoLeve)
+        }));
+    } catch {}
+}
 // =========================================================
 // EVENTOS
 // =========================================================
@@ -848,10 +908,16 @@ if (feed) {
     carregarFotosSalvas();
 
     const eu = obterUsuarioLogado();
-    const minhaFoto = urlImagemSegura(eu?.foto_perfil);
-    if (eu?.id_usuario && minhaFoto) fotos.set(Number(eu.id_usuario), minhaFoto);
+        const minhaFoto = urlImagemSegura(eu?.foto_perfil);
+
+    if (eu?.id_usuario && minhaFoto && !fotos.has(Number(eu.id_usuario))) {
+        fotosTentadas.add(Number(eu.id_usuario));
+        definirFoto(Number(eu.id_usuario), minhaFoto);
+    }
 
     feed.addEventListener("click", event => {
+        const linkPerfil = event.target.closest("a.link-perfil-autor[href]");
+        if (linkPerfil) guardarSementePerfil(linkPerfil.getAttribute("href")); // a navegação segue normal
         const respostas = event.target.closest(".btn-toggle-respostas");
         if (respostas) { abrirTelaComentarios(Number(respostas.dataset.id)); return; }
 

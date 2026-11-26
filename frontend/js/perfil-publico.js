@@ -59,6 +59,7 @@ async function buscarJSON(url, opcoes = {}, { tentativas = 3, timeout = 25000 } 
             if (resposta.ok && dados?.sucesso) return dados;
 
             const erro = new Error(dados?.mensagem || "Servidor indisponível no momento.");
+            erro.status = resposta.status;
             erro.definitivo = Boolean(dados) && resposta.status < 500;
             throw erro;
         } catch (erro) {
@@ -312,8 +313,9 @@ function exibirPerfilPublico(usuario, avaliacoes) {
     };
 
     definir("nomePerfilPublico", nome);
-    definir("biografiaPerfilPublico", usuario.biografia || "Este usuário ainda não adicionou uma biografia.");
-    definir("totalAvaliacoesPublicas", `${total} ${total === 1 ? "avaliação" : "avaliações"}`);
+    definir("biografiaPerfilPublico", usuario.biografia === undefined
+        ? "Carregando biografia..."
+        : (usuario.biografia || "Este usuário ainda não adicionou uma biografia."));    definir("totalAvaliacoesPublicas", `${total} ${total === 1 ? "avaliação" : "avaliações"}`);
 
     const elementoFoto = document.getElementById("fotoPerfilPublico");
 
@@ -358,6 +360,29 @@ function salvarCachePerfil(chave, usuario, avaliacoes) {
     catch {}
 }
 
+// Dados que o Feed deixou prontos ao clicar no autor (mostram o perfil na hora).
+function lerSemente(id) {
+    try {
+        const chave = `entreNotas_semente_${id}`;
+        const semente = JSON.parse(sessionStorage.getItem(chave));
+        sessionStorage.removeItem(chave);
+        return semente && semente.usuario ? semente : null;
+    } catch { return null; }
+}
+
+function falhar(erro) {
+    console.error("Erro ao carregar perfil público:", erro);
+    if (!mensagem) return;
+
+    mensagem.textContent = `Não foi possível carregar o perfil${erro.status ? ` (código ${erro.status})` : ""}. `;
+
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.textContent = "Tentar novamente";
+    botao.addEventListener("click", () => location.reload());
+    mensagem.appendChild(botao);
+}
+
 async function carregarPerfilPublico() {
     const id = Number(new URLSearchParams(location.search).get("id"));
 
@@ -372,11 +397,12 @@ async function carregarPerfilPublico() {
     }
 
     const chave = `entreNotas_perfilPublico_${id}`;
-    const cache = lerCachePerfil(chave);
+        const cache = lerCachePerfil(chave);
+    const inicial = cache || lerSemente(id);
 
-    if (cache) {
-        try { exibirPerfilPublico(cache.usuario || {}, cache.avaliacoes || []); }
-        catch (erro) { console.error("Cache do perfil inválido:", erro); }
+    if (inicial) {
+        try { exibirPerfilPublico(inicial.usuario || {}, inicial.avaliacoes || []); }
+        catch (erro) { console.error("Dados iniciais do perfil inválidos:", erro); }
     } else if (mensagem) {
         mensagem.textContent = "Carregando perfil...";
     }
@@ -395,8 +421,13 @@ async function carregarPerfilPublico() {
 
         if (mudou) exibirPerfilPublico(usuario, avaliacoes);
     } catch (erro) {
-        console.error("Erro ao carregar perfil público:", erro);
-        if (!cache && mensagem) mensagem.textContent = erro.message || "Não foi possível carregar o perfil.";
+                if (!inicial) {
+            falhar(erro);
+        } else if (!cache) {
+            console.error("Erro ao atualizar perfil público:", erro);
+            const bio = document.getElementById("biografiaPerfilPublico");
+            if (bio) bio.textContent = "Não foi possível carregar a biografia agora.";
+        }
     }
 }
 
