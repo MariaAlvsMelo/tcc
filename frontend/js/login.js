@@ -434,7 +434,8 @@ async function verificarLoginGoogle() {
                     .from("usuarios")
                     .insert({
                         auth_user_id: sessao.user.id,
-                        nome_usuario: nome
+                        nome_usuario: nome,
+                        email: sessao.user.email
                     })
                     .select(colunas)
                     .single();
