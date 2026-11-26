@@ -73,6 +73,41 @@ const logado = Boolean(obterToken());
 formAvaliacao.style.display = logado ? "" : "none";
 if (avaliarSemLogin) avaliarSemLogin.style.display = logado ? "none" : "flex";
 
+// Acorda o servidor (Render) enquanto a pessoa escreve a avaliação:
+// quando ela clicar em enviar, o backend já está pronto.
+if (logado) fetch(`${API}/health`, { cache: "no-store" }).catch(() => {});
+
+// =========================================================
+// FEED: coloca a nova avaliação no topo do cache da Home
+// =========================================================
+const CHAVE_FEED = "entreNotas_feedCache";
+const ITENS_NO_CACHE = 40;
+
+// Retorna true se conseguiu atualizar o cache (a Home mostra na hora e
+// confirma com o servidor em segundo plano).
+function adicionarAoCacheFeed(nova, usuario) {
+    try {
+        if (!nova || !Number.isSafeInteger(Number(nova.id))) return false;
+
+        const atual = JSON.parse(localStorage.getItem(CHAVE_FEED));
+        if (!Array.isArray(atual) || !atual.length) return false;
+
+        const item = {
+            ...nova,
+            id_usuario: usuario.id_usuario,
+            nome_usuario: usuario.nome_usuario || "Usuário",
+            foto_perfil: "", // a Home já usa a foto guardada do próprio usuário
+            total_curtidas: 0
+        };
+
+        const lista = [item, ...atual.filter(a => Number(a.id) !== Number(nova.id))];
+        localStorage.setItem(CHAVE_FEED, JSON.stringify(lista.slice(0, ITENS_NO_CACHE)));
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 // =========================================================
 // PRÉVIA
 // =========================================================
@@ -339,11 +374,16 @@ formAvaliacao.addEventListener("submit", async event => {
         limparPreview();
         esconderSugestoes();
 
-        // O feed e "minhas avaliações" precisam buscar de novo.
-        localStorage.removeItem("entreNotas_feedCache");
+        // "Minhas avaliações" precisa buscar de novo.
         localStorage.removeItem("entreNotas_minhas");
 
-        setTimeout(() => { location.href = "home.html"; }, 800);
+        // Feed: insere a nova avaliação no cache para aparecer instantaneamente.
+        // Se não for possível (cache vazio/servidor antigo), limpa como antes.
+        if (!adicionarAoCacheFeed(resultado.avaliacao, usuario)) {
+            localStorage.removeItem(CHAVE_FEED);
+        }
+
+        setTimeout(() => { location.href = "home.html"; }, 300);
     } catch (erro) {
         console.error("Erro ao enviar avaliação:", erro);
 

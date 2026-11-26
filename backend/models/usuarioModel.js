@@ -10,11 +10,32 @@ function obterCliente(token) {
         : supabase;
 }
 
+// Cache curto (token -> id_usuario): evita 2 consultas ao Supabase
+// (auth.getUser + select em usuarios) a cada ação do mesmo usuário.
+// O insert continua usando o token do usuário, então o RLS segue valendo.
+const CACHE_ID_TTL = 60 * 1000;
+const cacheIdUsuario = new Map();
+
 async function obterIdUsuario(token) {
     if (!token) {
         throw new Error("Usuário não autenticado.");
     }
 
+    const guardado = cacheIdUsuario.get(token);
+
+    if (guardado && Date.now() - guardado.t < CACHE_ID_TTL) {
+        return guardado.id;
+    }
+
+    const id = await buscarIdUsuario(token);
+
+    if (cacheIdUsuario.size > 500) cacheIdUsuario.clear();
+    cacheIdUsuario.set(token, { t: Date.now(), id });
+
+    return id;
+}
+
+async function buscarIdUsuario(token) {
     const cliente = obterCliente(token);
 
     const { data: authData, error: authError } =

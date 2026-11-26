@@ -637,7 +637,7 @@ const UsuarioController = {
                 });
             }
 
-            await usuarioModel.avaliar(
+            const nova = await usuarioModel.avaliar(
                 id_usuario,
                 musica,
                 artista,
@@ -650,9 +650,11 @@ const UsuarioController = {
                 token
             );
 
+            // Devolve a avaliação criada para o frontend já mostrá-la no feed.
             return res.status(201).json({
                 sucesso: true,
-                mensagem: "Avaliação salva com sucesso!"
+                mensagem: "Avaliação salva com sucesso!",
+                avaliacao: nova ? formatarAvaliacoes([nova])[0] : null
             });
 
         } catch (erro) {
